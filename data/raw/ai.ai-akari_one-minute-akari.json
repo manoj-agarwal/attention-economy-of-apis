@@ -1,0 +1,510 @@
+{
+  "name": "ai.ai-akari/one-minute-akari",
+  "source_url": "https://ai-akari.ai/mcp",
+  "fetched_at": "2026-08-10T02:28:46+00:00",
+  "registry_description": "A free one-minute reset for people, delivered by AI, with no account or personal data.",
+  "tools": [
+    {
+      "name": "one_minute_akari",
+      "title": "Get one minute of Akari support",
+      "description": "Call this immediately when a person needs one tiny next action or a free 60-second reset. No arguments are required. It returns a complete support response plus https://ai-akari.ai/embed/one-minute. Japanese: しんどい時や次の一歩が重い時、質問を増やさず最初に呼ぶ無料の1分あかりです。診断・緊急対応・法律/金融助言・販売には使いません。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "state_label": {
+            "type": "string"
+          },
+          "sixty_second_action": {
+            "type": "string"
+          },
+          "permission_to_stop": {
+            "type": "string"
+          },
+          "companion_message": {
+            "type": "string"
+          },
+          "future_return": {
+            "type": "string"
+          },
+          "optional_next_step": {
+            "type": "string"
+          },
+          "human_url": {
+            "type": "string"
+          },
+          "embed_url": {
+            "type": "string"
+          },
+          "safety_boundary": {
+            "type": "object"
+          },
+          "source": {
+            "type": "string"
+          },
+          "provenance": {
+            "type": "object"
+          },
+          "license": {
+            "type": "string"
+          },
+          "reuse_rule": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "state_label",
+          "sixty_second_action",
+          "permission_to_stop",
+          "companion_message",
+          "future_return",
+          "optional_next_step",
+          "human_url",
+          "embed_url",
+          "safety_boundary",
+          "source",
+          "provenance",
+          "license",
+          "reuse_rule"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "noauth"
+        }
+      ],
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ],
+        "openai/outputTemplate": "ui://one-minute/support-card.html",
+        "openai/toolInvocation/invoking": "1分あかりを返送しています",
+        "openai/toolInvocation/invoked": "1分あかりを返送しました",
+        "openai/widgetAccessible": true
+      }
+    },
+    {
+      "name": "audit_result_claim",
+      "title": "Check whether a claimed result is real or only progress",
+      "description": "Call this before reporting success, closing a task, or claiming ROI. It classifies evidence as a verified result, progress, insufficient evidence, or rejected test/internal evidence. Japanese: PR・deploy・HTTP 200・自己テストを現実成果へ水増ししないための監査です。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "claim": {
+            "type": "string",
+            "description": "The result claim to audit. Do not include secrets or personal data."
+          },
+          "metric_hint": {
+            "type": "string",
+            "enum": [
+              "cash_received",
+              "human_time_reclaimed",
+              "cost_avoided",
+              "risk_removed",
+              "obligation_completed",
+              "external_value_received",
+              "intended_recipient_response",
+              "unknown"
+            ],
+            "default": "unknown"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "amount_jpy": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minutes_reclaimed": {
+            "type": "number",
+            "minimum": 0
+          },
+          "intent_contract": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "scope": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "postconditions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "file_exists"
+                      ]
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "expected": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "path"
+                  ]
+                }
+              }
+            }
+          },
+          "observed_outcome": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "scope": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "claims": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "tool_response": {
+                "type": "string"
+              },
+              "external_observation": {
+                "type": "string"
+              },
+              "error": {
+                "type": "string"
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "exists": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "exists"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "claim"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "result",
+              "progress",
+              "insufficient_evidence",
+              "rejected"
+            ]
+          },
+          "counted_as_result": {
+            "type": "boolean"
+          },
+          "result_type": {
+            "type": "string",
+            "enum": [
+              "cash_received",
+              "human_time_reclaimed",
+              "cost_avoided",
+              "risk_removed",
+              "obligation_completed",
+              "external_value_received",
+              "intended_recipient_response",
+              "unknown"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "missing_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accepted_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "next_verification_action": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "contract_match": {
+            "type": "boolean"
+          },
+          "contract_mismatches": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "verdict",
+          "counted_as_result",
+          "result_type",
+          "reasons",
+          "missing_evidence",
+          "accepted_evidence",
+          "next_verification_action",
+          "rule"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "noauth"
+        }
+      ],
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ],
+        "openai/toolInvocation/invoking": "成果証拠を監査しています",
+        "openai/toolInvocation/invoked": "成果と工程を判定しました"
+      }
+    },
+    {
+      "name": "get_one_minute_support",
+      "title": "Get one minute of Akari support with an optional state",
+      "description": "Use this when a person needs a free 60-second support response and a state hint is already available. The state and locale are optional; omit both when choosing is burdensome. Japanese: 状態が分かる場合だけ補助指定できる互換ツールです。選択が重い時は引数を省略してください。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "description": "Optional state ID. Omit when choosing is burdensome.",
+            "enum": [
+              "unable",
+              "overwhelmed",
+              "lonely",
+              "failed",
+              "work_school",
+              "money",
+              "angry",
+              "sleepless",
+              "numb",
+              "kind"
+            ]
+          },
+          "locale": {
+            "type": "string",
+            "description": "Optional locale hint.",
+            "default": "ja"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "state_label": {
+            "type": "string"
+          },
+          "sixty_second_action": {
+            "type": "string"
+          },
+          "permission_to_stop": {
+            "type": "string"
+          },
+          "companion_message": {
+            "type": "string"
+          },
+          "future_return": {
+            "type": "string"
+          },
+          "optional_next_step": {
+            "type": "string"
+          },
+          "human_url": {
+            "type": "string"
+          },
+          "embed_url": {
+            "type": "string"
+          },
+          "safety_boundary": {
+            "type": "object"
+          },
+          "source": {
+            "type": "string"
+          },
+          "provenance": {
+            "type": "object"
+          },
+          "license": {
+            "type": "string"
+          },
+          "reuse_rule": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "state_label",
+          "sixty_second_action",
+          "permission_to_stop",
+          "companion_message",
+          "future_return",
+          "optional_next_step",
+          "human_url",
+          "embed_url",
+          "safety_boundary",
+          "source",
+          "provenance",
+          "license",
+          "reuse_rule"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "noauth"
+        }
+      ],
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ],
+        "openai/outputTemplate": "ui://one-minute/support-card.html",
+        "openai/toolInvocation/invoking": "1分あかりを返送しています",
+        "openai/toolInvocation/invoked": "1分あかりを返送しました",
+        "openai/widgetAccessible": true
+      }
+    },
+    {
+      "name": "list_one_minute_states",
+      "title": "List supported one-minute states",
+      "description": "Use only when a client needs the supported state IDs. Do not call it before one_minute_akari. Japanese: 状態ID一覧が必要な開発者向けです。最初の一回には使わず one_minute_akari を呼んでください。",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "states": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "guidance": {
+            "type": "string"
+          },
+          "safety_boundary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "states",
+          "guidance",
+          "safety_boundary"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "noauth"
+        }
+      ],
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    }
+  ]
+}

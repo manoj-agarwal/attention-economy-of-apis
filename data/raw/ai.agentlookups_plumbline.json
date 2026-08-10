@@ -1,0 +1,33 @@
+{
+  "name": "ai.agentlookups/plumbline",
+  "source_url": "https://contractors.agentlookups.ai/mcp",
+  "fetched_at": "2026-08-10T02:28:42+00:00",
+  "registry_description": "Free public-record contractor license checks across 34 US jurisdictions (2.7M records). Tool",
+  "tools": [
+    {
+      "description": "Check a contractor's license against official state and local licensing records covering dozens of US jurisdictions. The covered set grows over time; GET /v1/coverage on this host for the exact current list, and never assume from this description whether a jurisdiction is covered. Provide a license number or a business name, plus the jurisdiction. Returns match (the license record with status and provenance), candidates (disambiguate and call again; page with offset), no_match_in_index (NOT a determination of unlicensure), or jurisdiction_not_covered (with an official pointer URL for that jurisdiction; the response message states exactly what the link is, which for some jurisdictions is a consumer-protection or licensing-board page rather than a license lookup, so relay the message's wording and never present the link as a license lookup unless the message says it is one).",
+      "inputSchema": {
+        "properties": {
+          "jurisdiction": {
+            "description": "State or local jurisdiction code, e.g. \"CA\" (\"US-CA\" style also accepted) or \"NYC\". Coverage spans dozens of US jurisdictions; GET /v1/coverage for the exact current list.",
+            "type": "string"
+          },
+          "license": {
+            "description": "License number, e.g. \"1000002\"",
+            "type": "string"
+          },
+          "name": {
+            "description": "Business name, e.g. \"Bayside Plumbing\"",
+            "type": "string"
+          },
+          "offset": {
+            "description": "Pagination offset into the candidates list, default 0. Use with total_candidates from a prior call to page through large candidate sets.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "name": "check_contractor"
+    }
+  ]
+}

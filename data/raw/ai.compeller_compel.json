@@ -1,0 +1,831 @@
+{
+  "name": "ai.compeller/compel",
+  "source_url": "https://compeller.ai/api/mcp",
+  "fetched_at": "2026-08-10T02:30:40+00:00",
+  "registry_description": "Create and track AI music videos and audio-reactive visuals from songs.",
+  "tools": [
+    {
+      "name": "get_capabilities",
+      "description": "Get Compeller platform capabilities, supported features, and API version.",
+      "annotations": {
+        "title": "Get Compeller capabilities",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "get_pricing",
+      "description": "Get current Compeller subscription plans and pricing.",
+      "annotations": {
+        "title": "Get Compeller pricing",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "list_styles",
+      "description": "List available visual styles for Compeller video generation.",
+      "annotations": {
+        "title": "List visual styles",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "upload_media",
+      "description": "Get upload instructions for media files (audio, images, video). Returns the upload URL and required headers. Requires API token authentication.",
+      "annotations": {
+        "title": "Get media upload instructions",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Filename for the upload"
+          },
+          "mime_type": {
+            "type": "string",
+            "description": "MIME type of the file"
+          },
+          "type": {
+            "type": "string",
+            "description": "Media type: audio, image, video, or text"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "search_music",
+      "description": "Search Deezer preview tracks by song, artist, or album. Use this when the user provides a song string but no MP3/WAV/FLAC file.",
+      "annotations": {
+        "title": "Search music previews",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Song, artist, or album search query"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return (default 10, max 20)"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "create_compel_from_music",
+      "description": "Create a compel from a selected Deezer preview track. If the user provides an audio file instead, upload that file and use create_compel.",
+      "annotations": {
+        "title": "Create Compel from music search",
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "track_id": {
+            "type": "integer",
+            "description": "Deezer track id returned by search_music"
+          },
+          "title": {
+            "type": "string",
+            "description": "Optional compel title override"
+          },
+          "style": {
+            "type": "string",
+            "description": "Visual style. Use one of the exact ids returned by list_styles (e.g. \"Cinematic Realistic\", \"Anime / Manga\"). Omit to use the account default.",
+            "enum": [
+              "Cinematic Realistic",
+              "Photo Realistic",
+              "Cyberpunk",
+              "Anime / Manga",
+              "Film Noir",
+              "Watercolor Painting",
+              "Oil Painting",
+              "3D Render / Pixar",
+              "Retro 80s Synthwave",
+              "Vintage Film Grain",
+              "Comic Book / Pop Art",
+              "Fantasy / Ethereal",
+              "Horror / Dark Gothic",
+              "Steampunk",
+              "Neon Glow",
+              "Minimalist / Abstract",
+              "Surrealist",
+              "Documentary",
+              "Vaporwave",
+              "Pencil Sketch",
+              "Noir Detective",
+              "Claymation / Stop Motion",
+              "Studio Ghibli",
+              "Baroque / Renaissance",
+              "Lo-Fi / Grainy VHS",
+              "Glitch Art / Digital",
+              "Psychedelic"
+            ]
+          },
+          "target_platform": {
+            "type": "string",
+            "description": "Target platform; sets the aspect ratio when aspect_ratio is omitted.",
+            "enum": [
+              "tiktok",
+              "reels",
+              "shorts",
+              "instagram",
+              "square",
+              "youtube",
+              "web"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "description": "Explicit aspect ratio override (takes precedence over target_platform).",
+            "enum": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ]
+          },
+          "artist_context": {
+            "type": "string",
+            "description": "Additional creative context"
+          }
+        },
+        "required": [
+          "track_id"
+        ]
+      }
+    },
+    {
+      "name": "create_compel",
+      "description": "Create a Compeller generation job from primary audio media and optional reference media. Returns compel id, status, and links to track progress and retrieve renderings.",
+      "annotations": {
+        "title": "Create Compel from uploaded audio",
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title for the compel"
+          },
+          "primary_media_id": {
+            "type": "integer",
+            "description": "ID of the uploaded audio media to use as the primary track"
+          },
+          "style": {
+            "type": "string",
+            "description": "Visual style. Use one of the exact ids returned by list_styles (e.g. \"Cinematic Realistic\", \"Anime / Manga\"). Omit to use the account default.",
+            "enum": [
+              "Cinematic Realistic",
+              "Photo Realistic",
+              "Cyberpunk",
+              "Anime / Manga",
+              "Film Noir",
+              "Watercolor Painting",
+              "Oil Painting",
+              "3D Render / Pixar",
+              "Retro 80s Synthwave",
+              "Vintage Film Grain",
+              "Comic Book / Pop Art",
+              "Fantasy / Ethereal",
+              "Horror / Dark Gothic",
+              "Steampunk",
+              "Neon Glow",
+              "Minimalist / Abstract",
+              "Surrealist",
+              "Documentary",
+              "Vaporwave",
+              "Pencil Sketch",
+              "Noir Detective",
+              "Claymation / Stop Motion",
+              "Studio Ghibli",
+              "Baroque / Renaissance",
+              "Lo-Fi / Grainy VHS",
+              "Glitch Art / Digital",
+              "Psychedelic"
+            ]
+          },
+          "target_platform": {
+            "type": "string",
+            "description": "Target platform; sets the aspect ratio when aspect_ratio is omitted.",
+            "enum": [
+              "tiktok",
+              "reels",
+              "shorts",
+              "instagram",
+              "square",
+              "youtube",
+              "web"
+            ]
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "description": "Explicit aspect ratio override (takes precedence over target_platform).",
+            "enum": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ]
+          },
+          "artist_context": {
+            "type": "string",
+            "description": "Additional creative context about the artist or song"
+          }
+        },
+        "required": [
+          "title",
+          "primary_media_id"
+        ]
+      }
+    },
+    {
+      "name": "get_compel",
+      "description": "Get the current status, progress, and details of a Compeller generation job.",
+      "annotations": {
+        "title": "Get Compel status",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "compel_id": {
+            "type": "integer",
+            "description": "The compel ID to check"
+          }
+        },
+        "required": [
+          "compel_id"
+        ]
+      }
+    },
+    {
+      "name": "start_render",
+      "description": "Start rendering a READY compel with default configuration so an agent can continue to final MP4 without opening the browser UI.",
+      "annotations": {
+        "title": "Start Compel render",
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "compel_id": {
+            "type": "integer",
+            "description": "The READY compel ID to render"
+          }
+        },
+        "required": [
+          "compel_id"
+        ]
+      }
+    },
+    {
+      "name": "list_compels",
+      "description": "List all Compeller generation jobs for the authenticated account, newest first.",
+      "annotations": {
+        "title": "List Compels",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return (default 20, max 100)"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Pagination offset"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "search_compels",
+      "description": "Search Compeller generation jobs by title for the authenticated account.",
+      "annotations": {
+        "title": "Search Compels",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query to match against compel titles"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return (default 20)"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "list_renderings",
+      "description": "List all video renderings for a specific compel.",
+      "annotations": {
+        "title": "List Compel renderings",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "compel_id": {
+            "type": "integer",
+            "description": "The compel ID to list renderings for"
+          }
+        },
+        "required": [
+          "compel_id"
+        ]
+      }
+    },
+    {
+      "name": "get_rendering",
+      "description": "Get details of a specific video rendering.",
+      "annotations": {
+        "title": "Get rendering details",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rendering_id": {
+            "type": "integer",
+            "description": "The rendering ID to retrieve"
+          }
+        },
+        "required": [
+          "rendering_id"
+        ]
+      }
+    },
+    {
+      "name": "search_media",
+      "description": "Search and list uploaded media files for the authenticated account.",
+      "annotations": {
+        "title": "Search uploaded media",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Filter by media type: audio, image, video, or text"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return (default 20, max 100)"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Pagination offset"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "register_webhook",
+      "description": "Register an HTTPS endpoint to receive signed push notifications for compel lifecycle events (compel.ready when renderable, compel.completed, compel.failed). Returns webhook_id and the HMAC-SHA256 signing secret exactly once - store the secret immediately, it is never returned again. Deliveries are signed via X-Compeller-Signature: sha256=<hex> over the raw body. Delivery is at-least-once: a failed delivery is retried with backoff (up to 6 attempts) and every retry carries the same X-Compeller-Event-Id, so dedupe on it.",
+      "annotations": {
+        "title": "Register webhook",
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "HTTPS URL to deliver events to (max 2048 chars)"
+          },
+          "events": {
+            "type": "array",
+            "description": "Event types to subscribe to. Omit or pass [\"*\"] for all. Known types: compel.ready (renderable - call start_render), compel.completed, compel.failed.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "*",
+                "compel.ready",
+                "compel.completed",
+                "compel.failed"
+              ]
+            }
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "list_webhooks",
+      "description": "List all webhook endpoints registered for the authenticated account. Secrets are never returned by this tool.",
+      "annotations": {
+        "title": "List webhooks",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "delete_webhook",
+      "description": "Delete a webhook endpoint by id. Removes the registration and stops future deliveries.",
+      "annotations": {
+        "title": "Delete webhook",
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "webhook_id": {
+            "type": "integer",
+            "description": "The webhook id returned by register_webhook or list_webhooks"
+          }
+        },
+        "required": [
+          "webhook_id"
+        ]
+      }
+    },
+    {
+      "name": "test_webhook_delivery",
+      "description": "Synchronously POST a synthetic webhook.test event to a registered endpoint. Uses the same HMAC-SHA256 signature as real deliveries, runs the standard URL safety check at delivery time, and returns {webhook_id, event_id, event_type, delivered, response_status, response_body_preview, latency_ms, error?}. Ignores the endpoint's events subscription - test delivery is always on-demand. Use this to verify your integration before relying on compel.completed / compel.failed events.",
+      "annotations": {
+        "title": "Test webhook delivery",
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "webhook_id": {
+            "type": "integer",
+            "description": "The webhook id to test. Must belong to the authenticated account."
+          }
+        },
+        "required": [
+          "webhook_id"
+        ]
+      }
+    },
+    {
+      "name": "update_webhook",
+      "description": "Update one or more mutable fields on a registered webhook endpoint: url, events, active. At least one of these must be provided. Validation mirrors register_webhook (https-only, <= 2048 chars, URL safety blocklist). Returns the updated endpoint (secret is never returned by this tool - use rotate_webhook_secret for that).",
+      "annotations": {
+        "title": "Update webhook",
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "webhook_id": {
+            "type": "integer",
+            "description": "The webhook id to update"
+          },
+          "url": {
+            "type": "string",
+            "description": "New HTTPS URL (max 2048 chars)"
+          },
+          "events": {
+            "type": "array",
+            "description": "Replacement event types. Omit to leave unchanged. [\"*\"] or an empty filtered list resets to wildcard.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "*",
+                "compel.ready",
+                "compel.completed",
+                "compel.failed"
+              ]
+            }
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Toggle delivery on/off without losing the registration"
+          }
+        },
+        "required": [
+          "webhook_id"
+        ]
+      }
+    },
+    {
+      "name": "rotate_webhook_secret",
+      "description": "Mint a new HMAC-SHA256 signing secret for a registered webhook endpoint. The previous secret is invalidated immediately - integrators must update their receiver before the next compel terminal event fires. Returns the new secret exactly once; store it on receipt.",
+      "annotations": {
+        "title": "Rotate webhook secret",
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "webhook_id": {
+            "type": "integer",
+            "description": "The webhook id to rotate the secret on"
+          }
+        },
+        "required": [
+          "webhook_id"
+        ]
+      }
+    },
+    {
+      "name": "cancel_compel",
+      "description": "Cancel an in-progress compel. Dequeues it if still queued, otherwise cancels any active external (AI provider) tasks and transitions it to CANCELLED. Idempotent - cancelling an already-CANCELLED compel succeeds. Use to stop a mis-prompted or runaway job before it consumes more render minutes.",
+      "annotations": {
+        "title": "Cancel a compel",
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "compel_id": {
+            "type": "integer",
+            "description": "The compel ID to cancel"
+          }
+        },
+        "required": [
+          "compel_id"
+        ]
+      }
+    },
+    {
+      "name": "get_account_credits",
+      "description": "Get the authenticated account's render-minute balance and plan: minutes remaining (free + paid), monthly allowance, plan code, and whether the quota is exceeded. Call before starting an expensive render so an agent can make cost-aware decisions.",
+      "annotations": {
+        "title": "Get account credits",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "list_lighting_effects",
+      "description": "List the COM-497 starter lighting effects available to launch as cues (e.g. \"gobo-cycle\", \"x-move\", \"dimmer-pulse\"). Each effect carries an id, the capabilities it needs, and a launch_contract template. Use the returned id as effect_id for launch_lighting_cue.",
+      "annotations": {
+        "title": "List lighting effects",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "launch_lighting_cue",
+      "description": "Launch a starter lighting effect onto a stage as a live cue (e.g. \"gobo-cycle on the stage's 7R beams at speed 0.5\"). Pass effect_id (from list_lighting_effects) and optional variables to override effect defaults. Validation is loud: an unknown effect, a launch_contract whose bindings a stage cannot render, or a missing required field is rejected. Returns the active cue including its launch_id, resolved variables, and launch_contract for REACT. REACT executes the cue per-frame; the live strobe slider stays authoritative and is never raised by a launch.",
+      "annotations": {
+        "title": "Launch lighting cue",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "stage_id": {
+            "type": "integer",
+            "description": "The stage to launch onto (must belong to the authenticated account)"
+          },
+          "effect_id": {
+            "type": "string",
+            "description": "COM-497 starter effect id from list_lighting_effects, e.g. \"gobo-cycle\""
+          },
+          "variables": {
+            "type": "object",
+            "description": "Optional variable overrides (name -> value), e.g. {\"speed\": 0.5}. Defaults come from the effect."
+          },
+          "launch_contract": {
+            "type": "object",
+            "description": "Advanced: an explicit launch_contract to launch instead of resolving one from effect_id."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "list_lighting_cues",
+      "description": "List the live (non-stopped) lighting cues REACT is executing, including each cue's launch_id, resolved variables, launch_contract, and feedback. Optionally scope to one stage.",
+      "annotations": {
+        "title": "List lighting cues",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "stage_id": {
+            "type": "integer",
+            "description": "Optional stage id to scope the listing to (must belong to the authenticated account)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "get_lighting_cue",
+      "description": "Fetch a single live lighting cue by its launch_id, including resolved variables, launch_contract, and REACT feedback.",
+      "annotations": {
+        "title": "Get lighting cue",
+        "readOnlyHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "launch_id": {
+            "type": "string",
+            "description": "The launch_id returned by launch_lighting_cue or list_lighting_cues"
+          }
+        },
+        "required": [
+          "launch_id"
+        ]
+      }
+    },
+    {
+      "name": "stop_lighting_cue",
+      "description": "Stop a live cue by its launch_id. Idempotent - the cue is marked stop-requested so REACT drops it on its next refresh.",
+      "annotations": {
+        "title": "Stop lighting cue",
+        "readOnlyHint": false,
+        "destructiveHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "launch_id": {
+            "type": "string",
+            "description": "The launch_id of the cue to stop"
+          }
+        },
+        "required": [
+          "launch_id"
+        ]
+      }
+    },
+    {
+      "name": "set_lighting_cue_variables",
+      "description": "Update variables on a live cue (e.g. change cycle speed or intensity mid-show). Only the variables you pass change; the rest keep their current values. Stopped cues are rejected.",
+      "annotations": {
+        "title": "Set lighting cue variables",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "launch_id": {
+            "type": "string",
+            "description": "The launch_id of the cue to update"
+          },
+          "variables": {
+            "type": "object",
+            "description": "Variables to set (name -> value), e.g. {\"speed\": 0.75}"
+          }
+        },
+        "required": [
+          "launch_id",
+          "variables"
+        ]
+      }
+    },
+    {
+      "name": "ack_lighting_cue",
+      "description": "REACT/BAE acknowledgement for a launch_id. Idempotently records whether the executor accepted or rejected the cue and which executor observed it.",
+      "annotations": {
+        "title": "Ack lighting cue",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "launch_id": {
+            "type": "string",
+            "description": "The launch_id to acknowledge"
+          },
+          "accepted": {
+            "type": "boolean",
+            "description": "true when REACT/BAE accepted the cue for execution"
+          },
+          "rejected_reason": {
+            "type": "string",
+            "description": "Required by convention when accepted=false"
+          },
+          "executor_id": {
+            "type": "string",
+            "description": "Stable REACT/BAE executor instance id"
+          },
+          "observed_at": {
+            "type": "string",
+            "description": "Executor observation timestamp"
+          }
+        },
+        "required": [
+          "launch_id",
+          "accepted"
+        ]
+      }
+    },
+    {
+      "name": "report_lighting_cue",
+      "description": "REACT/BAE report-back for cue status, active variables, skipped bindings, capability misses, last_frame_at, and errors.",
+      "annotations": {
+        "title": "Report lighting cue",
+        "readOnlyHint": false,
+        "destructiveHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "launch_id": {
+            "type": "string",
+            "description": "The launch_id to report"
+          },
+          "status": {
+            "type": "string",
+            "description": "ACTIVE, STOP_REQUESTED, or STOPPED"
+          },
+          "active_variables": {
+            "type": "object",
+            "description": "Variables actually being sampled by REACT/BAE"
+          },
+          "skipped_bindings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "capability_misses": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "last_frame_at": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "executor_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "launch_id"
+        ]
+      }
+    }
+  ]
+}

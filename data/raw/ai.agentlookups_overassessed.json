@@ -1,0 +1,29 @@
+{
+  "name": "ai.agentlookups/overassessed",
+  "source_url": "https://overassessed.agentlookups.ai/mcp",
+  "fetched_at": "2026-08-10T02:28:42+00:00",
+  "registry_description": "Maryland property-assessment fairness checks vs similar homes, with appeal windows and links.",
+  "tools": [
+    {
+      "description": "Fairness check for a Maryland property assessment: where the address sits among genuinely similar homes (same reassessment group, similar size/lot/age, same zip), the group's median sales ratio, verdict branch (fair/review/elevated/insufficient), and Maryland's appeal windows with official filing links. If several parcels share the address, returns multiple_matches with account ids; re-call with acct.",
+      "inputSchema": {
+        "properties": {
+          "acct": {
+            "description": "SDAT account id from a prior multiple_matches result (wins over address)",
+            "type": "string"
+          },
+          "address": {
+            "description": "Street address as the roll writes it, e.g. 1 STATE CIR (no unit numbers, no city)",
+            "type": "string"
+          },
+          "zip": {
+            "description": "5-digit zip (recommended; addresses repeat across Maryland)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "check_assessment"
+    }
+  ]
+}

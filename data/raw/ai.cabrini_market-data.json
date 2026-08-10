@@ -1,0 +1,617 @@
+{
+  "name": "ai.cabrini/market-data",
+  "source_url": "https://cabrini.ai/mcp",
+  "fetched_at": "2026-08-10T02:30:14+00:00",
+  "registry_description": "US stock market data for AI agents — 23 years of minute bars, SEC filings, fundamentals.",
+  "tools": [
+    {
+      "name": "query_minute_bars",
+      "description": "Full trading day of intraday bars for one US stock (interval 3-240 min, default 3m). Every bar carries absolute open/high/low/close plus pct_open/pct_high/pct_low/pct_close (fractional change from that day's open), volume and transactions. $0.025 USDC.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker (e.g. AAPL)"
+          },
+          "date": {
+            "type": "string",
+            "description": "YYYY-MM-DD"
+          },
+          "interval": {
+            "type": "integer",
+            "description": "Bar interval in minutes: 3, 6, 9, 12, 15, 30, 60, or 240 (default 3)"
+          }
+        },
+        "required": [
+          "ticker",
+          "date"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "25000",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "25000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "query"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.025
+      }
+    },
+    {
+      "name": "list_tickers",
+      "description": "List all tickers that traded on a given date. $0.005 USDC.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "YYYY-MM-DD"
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "5000",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "5000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "query"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.005
+      }
+    },
+    {
+      "name": "query_range",
+      "description": "Multi-day intraday bars for one ticker (interval 3-240 min, default 3m). Every bar carries absolute open/high/low/close plus fractional change from that day's own open — percentages reset daily, not cumulative. $0.01/day, no day limit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker (e.g. AAPL)"
+          },
+          "start": {
+            "type": "string",
+            "description": "Start date YYYY-MM-DD"
+          },
+          "end": {
+            "type": "string",
+            "description": "End date YYYY-MM-DD"
+          },
+          "interval": {
+            "type": "integer",
+            "description": "Bar interval in minutes: 3, 6, 9, 12, 15, 30, 60, or 240 (default 3)"
+          }
+        },
+        "required": [
+          "ticker",
+          "start",
+          "end"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "10000/day",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "10000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "trading day"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.01
+      }
+    },
+    {
+      "name": "query_batch",
+      "description": "Multiple tickers for one date. Every bar carries absolute open/high/low/close plus fractional change from that ticker's own daily open. $0.02/ticker, no limit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tickers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of ticker symbols"
+          },
+          "date": {
+            "type": "string",
+            "description": "YYYY-MM-DD"
+          }
+        },
+        "required": [
+          "tickers",
+          "date"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "20000/ticker",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "20000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "ticker"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.02
+      }
+    },
+    {
+      "name": "scan_market",
+      "description": "Scan all US stocks on a date for custom criteria (gaps, volume, change). Returns pct_change, range_pct, pct_gap, true_range_pct, volume and volume_ratio per match — criteria in percent (5 = 5%), outputs fractional (0.05 = 5%). $0.10 USDC.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "YYYY-MM-DD"
+          },
+          "gap_up_pct": {
+            "type": "number",
+            "description": "Min gap up % from prior close"
+          },
+          "gap_down_pct": {
+            "type": "number",
+            "description": "Min gap down % from prior close"
+          },
+          "change_pct_min": {
+            "type": "number",
+            "description": "Min intraday change %"
+          },
+          "change_pct_max": {
+            "type": "number",
+            "description": "Max intraday change %"
+          },
+          "volume_min": {
+            "type": "integer",
+            "description": "Min total volume"
+          },
+          "volume_ratio_min": {
+            "type": "number",
+            "description": "Min volume vs prior day (e.g. 2.0)"
+          },
+          "range_pct_min": {
+            "type": "number",
+            "description": "Min intraday range (high-low)/open as a percent, e.g. 5 for 5%"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results (default 50)"
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "100000",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "100000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "scan"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.1
+      }
+    },
+    {
+      "name": "query_daily",
+      "description": "Daily OHLCV bars plus VWAP, range_pct and true_range_pct for one ticker over a date range. range_pct = (high - low) / open is a ready-made volatility read; true_range_pct also captures the overnight gap. Day-level aggregates — the cheapest way to cover long histories. $0.001/year.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker (e.g. AAPL)"
+          },
+          "start": {
+            "type": "string",
+            "description": "Start date YYYY-MM-DD"
+          },
+          "end": {
+            "type": "string",
+            "description": "End date YYYY-MM-DD"
+          }
+        },
+        "required": [
+          "ticker",
+          "start",
+          "end"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "1000/year",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "1000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "year"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.001
+      }
+    },
+    {
+      "name": "get_brief",
+      "description": "Full research brief: price, fundamentals, insiders, splits for one ticker. $0.25 USDC.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker (e.g. NVDA)"
+          },
+          "date": {
+            "type": "string",
+            "description": "As-of date YYYY-MM-DD (default: today)"
+          },
+          "lookback_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365,
+            "description": "Days of price history, 1-365 (default 30)"
+          }
+        },
+        "required": [
+          "ticker"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "250000",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "250000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "brief"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.25
+      }
+    },
+    {
+      "name": "get_company",
+      "description": "Company profile: name, CIK, industry, exchange, fiscal year. $0.005 USDC.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker (e.g. AAPL)"
+          }
+        },
+        "required": [
+          "ticker"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "5000",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "5000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "query"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.005
+      }
+    },
+    {
+      "name": "get_fundamentals",
+      "description": "Quarterly fundamentals from SEC EDGAR (revenue, EPS, margins, etc). $0.02 USDC.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker (e.g. AAPL)"
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter metrics"
+          },
+          "from_date": {
+            "type": "string",
+            "description": "Start date YYYY-MM-DD"
+          },
+          "to_date": {
+            "type": "string",
+            "description": "End date YYYY-MM-DD"
+          }
+        },
+        "required": [
+          "ticker"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "20000",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "20000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "query"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.02
+      }
+    },
+    {
+      "name": "get_insiders",
+      "description": "Insider transactions (Form 4) from SEC EDGAR. $0.02 USDC.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker (e.g. AAPL)"
+          },
+          "from_date": {
+            "type": "string",
+            "description": "Start date YYYY-MM-DD"
+          },
+          "to_date": {
+            "type": "string",
+            "description": "End date YYYY-MM-DD"
+          }
+        },
+        "required": [
+          "ticker"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "20000",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "20000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "query"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.02
+      }
+    },
+    {
+      "name": "get_filings",
+      "description": "SEC filing index (10-K, 10-Q, 8-K, proxies) for a ticker. $0.01 USDC; add sections=[risk_factors, mdna] to extract full section text from the latest 10-K/10-Q for $0.05.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker (e.g. AAPL)"
+          },
+          "types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter to filing types, e.g. [\"10-K\", \"8-K\"]"
+          },
+          "from_date": {
+            "type": "string",
+            "description": "Start date YYYY-MM-DD"
+          },
+          "to_date": {
+            "type": "string",
+            "description": "End date YYYY-MM-DD"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Extract section text: risk_factors and/or mdna"
+          },
+          "accession": {
+            "type": "string",
+            "description": "Extract sections from this specific filing accession number"
+          }
+        },
+        "required": [
+          "ticker"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "10000-50000",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "10000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "query"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.01
+      }
+    },
+    {
+      "name": "get_bars",
+      "description": "Resampled intraday bars at custom timeframes (3, 6, 9, 12, 15, 30, 60, 240 min) for one ticker. Every bar carries absolute open/high/low/close plus fractional change from the daily open, whatever the interval, and volume and transactions. $0.015 USDC per day.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker (e.g. AAPL)"
+          },
+          "interval": {
+            "type": "integer",
+            "description": "Bar interval in minutes: 3, 6, 9, 12, 15, 30, 60, or 240"
+          },
+          "date": {
+            "type": "string",
+            "description": "Trading date YYYY-MM-DD"
+          },
+          "start": {
+            "type": "string",
+            "description": "Multi-day start date"
+          },
+          "end": {
+            "type": "string",
+            "description": "Multi-day end date"
+          },
+          "adjusted": {
+            "type": "boolean",
+            "description": "Apply split adjustment (default false)"
+          }
+        },
+        "required": [
+          "ticker",
+          "interval"
+        ]
+      },
+      "x402_payment": {
+        "required": true,
+        "price": "15000",
+        "asset": "USDC",
+        "network": "eip155:8453",
+        "receiver": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0"
+      },
+      "_meta": {
+        "x402/payment-required": true,
+        "x402/price": {
+          "scheme": "exact",
+          "network": "eip155:8453",
+          "amount": "15000",
+          "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "payTo": "0xb40867B72334463eE9bF5D2bD933eab5FB4ab8e0",
+          "unit": "day"
+        },
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 0.015
+      }
+    },
+    {
+      "name": "get_sample",
+      "description": "FREE, no payment: real intraday OHLCV bars for AAPL on 2024-01-02, identical in shape to a paid query. Call this first to verify data quality before spending. Takes no arguments — fixed ticker and date.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_pricing",
+      "description": "Pricing and data coverage information. Free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_stats",
+      "description": "Platform statistics. Free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

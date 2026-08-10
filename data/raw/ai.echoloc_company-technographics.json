@@ -1,0 +1,109 @@
+{
+  "name": "ai.echoloc/company-technographics",
+  "source_url": "https://api.echoloc.ai/mcp",
+  "fetched_at": "2026-08-10T02:32:00+00:00",
+  "registry_description": "Search 760K+ companies by technographics with direction of change: adopting, replacing, evaluating",
+  "tools": [
+    {
+      "name": "search_companies_by_technologies",
+      "title": "Search companies by technologies",
+      "annotations": {
+        "title": "Search companies by technologies",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      },
+      "description": "Find companies using the given technologies, ranked by usage. Names are case-insensitive ('snowflake' == 'Snowflake'); 10,000+ technologies are tracked (use list_technologies to explore). match='any' needs at least one technology, 'all' needs every one.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "technologies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Technology names, e.g. [\"Snowflake\", \"dbt\"]"
+          },
+          "match": {
+            "type": "string",
+            "enum": [
+              "any",
+              "all"
+            ],
+            "default": "any"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20
+          }
+        },
+        "required": [
+          "technologies"
+        ]
+      }
+    },
+    {
+      "name": "get_company_by_domain",
+      "title": "Get company profile by domain",
+      "annotations": {
+        "title": "Get company profile by domain",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      },
+      "description": "Resolve a company domain (e.g. 'walgreens.com') to its full profile: firmographics, hiring stats, and the technology stack with adoption context (using / adopting / replacing / evaluating).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Company primary domain"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "list_technologies",
+      "title": "List tracked technologies",
+      "annotations": {
+        "title": "List tracked technologies",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      },
+      "description": "Catalog of all technologies in the dataset with per-technology company counts. sort='count' (most used first) or 'name'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500,
+            "default": 50
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "count",
+              "name"
+            ],
+            "default": "count"
+          }
+        }
+      }
+    }
+  ]
+}

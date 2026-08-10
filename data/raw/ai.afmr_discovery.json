@@ -1,0 +1,102 @@
+{
+  "name": "ai.afmr/discovery",
+  "source_url": "https://afmr.ai/api/rpc",
+  "fetched_at": "2026-08-10T02:28:32+00:00",
+  "registry_description": "Read AFMR failure modes and discover scoped attestation and lift-evidence contracts.",
+  "tools": [
+    {
+      "name": "discover_afmr",
+      "title": "Discover AFMR resources",
+      "description": "Return canonical AFMR specifications, registries, schemas, endpoints, and scope boundaries.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "lookup_failure_mode",
+      "title": "Look up AFMR failure modes",
+      "description": "Find exact AFMR 1.0 failure-mode records by permanent ID or bounded text query.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^AFMR-F[0-9]{3}$",
+            "description": "Exact permanent family identifier, for example AFMR-F010."
+          },
+          "query": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "description": "Text matched against ID, name, definition, and class."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 5
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "id"
+            ]
+          },
+          {
+            "required": [
+              "query"
+            ]
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "get_reputation_attestation_contract",
+      "title": "Get the reputation-attestation contract",
+      "description": "Return the portable attestation, trust-profile, verifier-result, endpoint-registry, and lifecycle contracts.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_lift_evidence_contract",
+      "title": "Get the Lift Evidence public-card contract",
+      "description": "Return the stable configuration-scoped public-card schema and empty public index; no results are asserted.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    }
+  ]
+}

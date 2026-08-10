@@ -1,0 +1,100 @@
+{
+  "name": "ai.chinamarketing/intelligence",
+  "source_url": "https://api.chinamarketing.ai/mcp",
+  "fetched_at": "2026-08-10T02:30:27+00:00",
+  "registry_description": "Remote MCP server for China brand visibility, destination demand, and KOL discovery workflows.",
+  "tools": [
+    {
+      "name": "get_brand_visibility_snapshot",
+      "description": "Generate a China brand visibility snapshot with summary assessment, scored strengths and gaps, and priority actions.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "brand_name"
+        ],
+        "properties": {
+          "brand_name": {
+            "type": "string",
+            "description": "Brand or entity to evaluate."
+          },
+          "category": {
+            "type": "string",
+            "description": "Commercial category or sector."
+          },
+          "market_scope": {
+            "type": "string",
+            "description": "China-facing scope, platform focus, or audience scope."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional analyst notes or campaign context."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_destination_demand_snapshot",
+      "description": "Generate a China outbound destination demand snapshot with demand direction, notable signals, risk framing, and priority actions.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "destination"
+        ],
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Destination city, market, or country to evaluate."
+          },
+          "origin_market": {
+            "type": "string",
+            "description": "Origin market for the demand check.",
+            "default": "China"
+          },
+          "travel_window": {
+            "type": "string",
+            "description": "Optional YYYY-MM or period label for the check."
+          },
+          "audience_segment": {
+            "type": "string",
+            "description": "Optional audience or traveler segment."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_kol_shortlist",
+      "description": "Generate a decision-ready China KOL shortlist with creator candidates, selection rationale, risk flags, and next steps.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "brand_name",
+          "category"
+        ],
+        "properties": {
+          "brand_name": {
+            "type": "string",
+            "description": "Brand or campaign owner name."
+          },
+          "category": {
+            "type": "string",
+            "description": "Campaign or product category."
+          },
+          "campaign_goal": {
+            "type": "string",
+            "description": "Optional campaign objective."
+          },
+          "platform_focus": {
+            "type": "array",
+            "description": "Optional list of preferred platforms.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

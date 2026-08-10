@@ -1,0 +1,126 @@
+{
+  "name": "ai.bowmark/bowmark",
+  "source_url": "https://api.bowmark.ai/mcp",
+  "fetched_at": "2026-08-10T02:29:35+00:00",
+  "registry_description": "Pre-computed navigation recipes for public websites — skip explore-and-discover.",
+  "tools": [
+    {
+      "name": "get_library",
+      "title": "Check what can be done on a live website for this task",
+      "description": "**Use this whenever a task touches a live website.** It answers, definitively and cheaply, whether Bowmark can already DO the thing: look up current prices, check real availability or stock, search a site, get a quote or a fare, drive a configurator, start a booking, or pull anything that only exists behind a form, a filter, or a login.\n\n**Checking is cheap, so check.** One read-only call, no site is touched, and an unrecognized query returns a one-line index instead of an error, so the check never dead-ends and never costs you an attempt. If nothing fits, you have lost one cheap call and can use your normal approach.\n\nWhat comes back is the callable **function library** you write against: the runtime globals (`log`) PLUS, for each capability your query named, its namespace, TypeScript types, functions, and worked examples. Everything listed is real and callable. The language rules and how to run a script are on the `run` tool description.\n\nPass `query` — what you want to DO (`\"flights\"`, `\"price a GPU\"`) or, if you have one in mind, the COMPANY or site (`\"Kayak\"`, `\"newegg.com\"`). A phrase in the user's own words is fine; it is matched against the whole library. **You get what you asked about and nothing else.** If nothing matches — or you send no query — you get instead a one-line index: pick whichever entry fits and CALL AGAIN with its name to get the types and examples you need to write a script.\n\n**Every response is bounded, and it says so when it is a slice.** A broad query can match more than one response carries; when that happens the answer opens with a partial-answer line naming what it left out. **Read it before concluding anything** — absence from a sliced list means nothing, and the fix is one narrower query (a single task, or a single company by name), which always returns that entry in full. Only an answer that does NOT say it is a slice supports the conclusion that a task is uncovered.\n\n**Two tiers come back.** CAPABILITIES (`bowmark.flights.search(...)`) are the default and usually what you want: one call fans out across several sites, dedupes, ranks, and routes around a site that's failing. PROVIDERS (`bowmark.providers.kayak.search(...)`) are the individual sites, callable directly — they appear only when your query NAMED a company, or when the capability has just one provider behind it. A direct provider call gets that site's own raw shape and no failover, so prefer the capability unless you specifically want that site.\n\nLoop: call `get_library` → write a JS script against the `bowmark` global → send it to `run`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Optional, but pass one — it decides how much detail comes back. What the user wants to do, in their words (\"flights\", \"price a GPU\", \"book a table\", \"check stock\"), or a company/site if they named one (\"Kayak\", \"newegg.com\"). A rough guess is always safe: a value that matches nothing returns the one-line index rather than an error, and so does omitting it."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    },
+    {
+      "name": "run",
+      "title": "Do the task on the live websites and return the result",
+      "description": "**Executes the task on the real websites** (the search, the price check, the availability lookup, the configurator, the booking flow) and returns what came back. Runs a script you authored against the `get_library` vocabulary, on the live sites, and returns `{ ok, result, logs, error, ms }`. Call `get_library` FIRST — it gives the exact function names, argument shapes, and return types; this description is the LANGUAGE + how-to (get_library is just the vocabulary).\n\nTHE LANGUAGE — plain async JavaScript:\n• `bowmark` is a ready global (no import). Call capabilities off it — `await bowmark.<capability>.<method>(...)` — always `await`, they're async.\n• Individual sites are callable too, at `await bowmark.providers.<provider>.<fn>(...)`. Use one when you specifically want THAT site; otherwise prefer the capability, which fans out across sites and routes around failures.\n• Real control flow: `await`, `if`, loops, array methods (`map`/`filter`/`sort`/`slice`), and `Promise.all` for fan-out.\n• `return` a value to get it back (JSON-serialized). `log(...)` for progress lines.\n• `bowmark` is the ONLY I/O — no `fetch`, `process`, filesystem, or `import`/`require`. Write a plain async body, not a wrapping function.\n• Keep scripts small and deterministic — no infinite loops. Runs in a hard sandbox with CPU + memory + wall-clock limits.\n\nSENDING IT: pass the script text as `run({ script })` — `script` is the only argument (there is no `site` argument; the library exposes every capability under `bowmark`). `result` is whatever you returned; `logs` are your `log()` lines in order; on a throw/timeout `ok:false` and `error` is set.\n\nCHECK `status` BEFORE `ok`. It is `ok` | `error` | `partial` | `needs_user`.\n• `partial` means the script RAN and `result` is real and usable, but some of what it called never answered — so the result is narrower than what you asked for. `ok` is still `true`; this is not a failure. `incomplete.summary` says what happened in one sentence, `incomplete.failures` names each call that threw and what the site said, and `incomplete.degraded` names each call that answered while reporting its OWN results thin. You MUST say so when you present the result: name what was missed, and do not describe it as complete, exhaustive, or 'all' of anything. A `partial` you report as whole is a wrong answer, not a slightly smaller right one.\n• Before you conclude a `partial` is final, check `incomplete.failures[].fixable`. `fixable: true` means YOUR ARGUMENT was rejected, not the site — the error text names what that function actually takes, so re-read it in `get_library`, fix the argument and run again; that recovers the whole answer. For any other failure re-running usually returns the same thing.\n• `needs_user` means a site needs the USER signed in — it is NOT a failure and NOT something you can fix by editing the script. `needs` lists the sites; `meta.handoff.url` is a single-use link that expires (`meta.handoff.expiresAt`). Give the user that URL, say which sites it covers, and WAIT. When they tell you they're done, send the SAME script again unchanged. Do NOT retry before then — it will stop at the same place and cost another run. Do NOT try to log in yourself, ask them for a password, or work around it with a different site.\n• Logged-in runs need a Bowmark API key on the connection; if you get `needs_user` saying so, tell the user to add one rather than retrying.\n\n`trace` is the execution trace — every capability you called and the providers it fanned out to under the hood: `[{ kind:'capability', capability:'flights', method:'search', ms }, { kind:'provider', capability:'flights', provider:'google_flights', fn:'search', results, status, ms }, …]`. The script never visits websites — it calls capabilities that route to providers, and the trace is the receipt.\n\nComposition is the point — call a method MULTIPLE times and combine results. To sweep a date range, call the search per date inside `Promise.all` and sort/filter the merged array (each flight result carries its `date`, so you can tell the runs apart). See the `get_library` examples for the exact shape.\n\nSOME capabilities return their rows alongside a `warnings` array — `{ flights, warnings }`, `{ hotels, warnings }`, `{ cars, warnings }`. Others return a bare array. The signature in `get_library` tells you which; go by it rather than assuming. Where there IS a `warnings` array it names any site dropped from the fan-out, and the rows themselves look identical with or without it. Read it, and pass on anything it says rather than quoting a 'cheapest' that only ranks the sites that happened to answer. Dropping `warnings` from what you return does not hide it — the run comes back `status: 'partial'` regardless, because the runtime counts what your script CALLED, not what it chose to report.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "The JavaScript script body to execute (async, against the `bowmark` global). e.g. `const { flights, warnings } = await bowmark.flights.search({from:'SFO',to:'JFK',depart:'2026-09-01'}); return { best: flights.sort((a,b)=>a.price-b.price)[0], warnings };`"
+          }
+        },
+        "required": [
+          "script"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          },
+          {
+            "type": "oauth2",
+            "scopes": [
+              "openid",
+              "profile",
+              "email"
+            ]
+          }
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error",
+              "partial",
+              "needs_user"
+            ]
+          },
+          "result": {},
+          "logs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ms": {
+            "type": "number"
+          },
+          "needs": {
+            "type": "array",
+            "items": {}
+          },
+          "incomplete": {},
+          "meta": {}
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    }
+  ]
+}

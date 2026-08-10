@@ -1,0 +1,44 @@
+{
+  "name": "ai.canivibe/status",
+  "source_url": "https://canivibe.ai/mcp",
+  "fetched_at": "2026-08-10T02:30:19+00:00",
+  "registry_description": "Live status and health checks for AI coding providers: Claude, Cursor, Copilot, Codex and more.",
+  "tools": [
+    {
+      "name": "ai_provider_status",
+      "description": "Get the live status of AI coding providers (Claude, OpenAI, Copilot, Cursor, OpenRouter and more). Returns status, how long each provider has been in its current state, and last check time. Pass service_id for one provider, omit it for all.",
+      "inputSchema": {
+        "properties": {
+          "service_id": {
+            "description": "Optional provider id, e.g. claude, openai, github_copilot, cursor, openrouter",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "check_provider_health",
+      "description": "Check whether one or more AI coding providers are healthy enough to use right now. Returns healthy=true only when every requested provider is operational (or within the allowed statuses). Use this before starting work that depends on a provider, or to decide which provider to route to.",
+      "inputSchema": {
+        "properties": {
+          "allow_degraded": {
+            "description": "Treat degraded performance as healthy (default false)",
+            "type": "boolean"
+          },
+          "services": {
+            "description": "Provider ids to check, e.g. [\"claude\", \"openrouter\"]",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "services"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

@@ -1,0 +1,465 @@
+{
+  "name": "ai.drillr/drillr",
+  "source_url": "https://gateway.drillr.ai/mcp/data",
+  "fetched_at": "2026-08-10T02:31:54+00:00",
+  "registry_description": "The financial MCP for AI agents - 90+ financial tables, SEC filings, signals, alt-data.",
+  "tools": [
+    {
+      "name": "sec_report_list",
+      "description": "Use to discover which SEC filings exist for a ticker before searching content.\nFor the actual content use sec_report_search instead.\n\nList indexed SEC filings for a given ticker with a summary header.\n\nReturns: summary (period coverage, per-type counts) + table of up to 50 filings\n(fiscal_year, fiscal_quarter, filing_type, filing_date, period_start, period_end).\n\nfiling_types filter: omit for main reports only (US 10-K/10-Q/20-F/S-1/DEF 14A\n+ /A amendments; JP 120/140/160; HK/A-share annual_report / quarterly_report /\nq1_report; excludes ad-hoc 8-K/6-K); pass [] for all indexed types; pass explicit\nallowlist to override.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker, e.g. NVDA, 6758.T, 00700.HK, 600519.SH"
+          },
+          "filing_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by filing type. Omit for default (periodic reports + IPO/shelf registrations + amendments; excludes ad-hoc disclosures). Pass [] for all indexed types. Pass an explicit allowlist to override — use values from the `filing_type` column of a prior unfiltered call."
+          }
+        },
+        "required": [
+          "ticker"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "sec_report_search",
+      "description": "Use when you need narrative content from company filings — risk factors, MD&A, guidance language, deal terms, accounting policies, share structure. For consolidated financial numbers use run_sql on financial_statements instead.\n\nSemantic search over the full text of company-filed reports; returns matching passages.\n\nCoverage: US + Japan + Hong Kong + China A-shares. US = SEC EDGAR (including foreign issuers' 20-F/6-K). Japan = EDINET, `.T` ticker (6758.T). Hong Kong = HKEX filings, 5-digit `.HK` ticker (00700.HK). A-shares = `.SH`/`.SZ` (600519.SH, 300750.SZ).\n\nParameters:\n- query (required): natural-language search; phrase it as the concept or section name you want, e.g. \"share repurchase authorization\", \"Risk Factors\". Run a few phrasings rather than one broad query.\n- ticker (required): US bare (NVDA), Japan `.T`, HK `.HK`, A-share `.SH`/`.SZ`, ADRs as their US symbol (SONY).\n- filing_types (optional): US = SEC form names (10-K, 10-Q, 8-K, 20-F, 6-K, DEF 14A, S-1/F-1, + amendments). Japan = EDINET NUMERIC codes: 120 (annual), 140 (quarterly), 160 (semi-annual). HK/A-share = plain names — annual_report; A-share quarters per-quarter (q1_report, ...); HK quarterly results all quarterly_report. OMIT to search all types.\n- period_start / period_end (optional): yyyy-mm window; omit to search all history.\n- top_k (optional): max passages to return (default 10).\n\nScope: indexes ONLY company-filed reports — NOT institutional filings (13F-HR/13D/13G; for those use insider_and_institution_activities with source='institution').\n\nSection targets: non-GAAP reconciliations → earnings 8-K (Ex 99.1); dilution / SBC / buyback → \"Shareholders' Equity\"; segment breakdown → \"Segment Information\"; guidance → \"Outlook\" in MD&A; exec comp → DEF 14A.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker, e.g. NVDA, 6758.T, 00700.HK, 600519.SH"
+          },
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "top_k": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "default": 10
+          },
+          "period_start": {
+            "type": "string",
+            "description": "Start period YYYY-MM"
+          },
+          "period_end": {
+            "type": "string",
+            "description": "End period YYYY-MM"
+          },
+          "filing_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "ticker",
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "company_search",
+      "description": "Use for qualitative company discovery (industry, business model, supply chain, competitors, management background). For numerical screening (revenue, margins, ratios, growth rates) use run_sql on company_snapshot instead.\n\nDrillr's company knowledge base — searchable across industry classification, product offerings, business model, segment structure, competitive landscape, supply chain, management background, and customer profile.\n\nCoverage: US, Japan, Hong Kong, and China A-shares. `market` accepts one lowercase value or a list from `us | jp | hk | cn`; omit it or pass `[]` for all four. List order does not set priority.\n\nPass a natural-language description (for example, \"Hong Kong and China EV battery suppliers\"). Returns a structured list of matching companies with context snippets.\n\nONLY for finding a LIST of companies by description.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Natural-language company description"
+          },
+          "market": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "us",
+                  "jp",
+                  "hk",
+                  "cn"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/properties/market/anyOf/0"
+                },
+                "maxItems": 4
+              }
+            ],
+            "description": "Optional market filter. Pass one lowercase value or a list from 'us' | 'jp' | 'hk' | 'cn'. Omit or pass [] for all four; list order does not set priority."
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "ticker_lookup",
+      "description": "Resolve a company name, brand, or ticker substring to canonical ticker(s). Use this FIRST when the user mentions a company by name/brand/nickname before running any ticker-keyed tool.\n\nInput:\n- query (required): company name, brand, or ticker substring, e.g. \"Apple\", \"苹果\", \"AAPL\", \"OpenAI\"\n- market (optional): \"us\" | \"jp\" | \"hk\" | \"cn\" — omit to search all markets\n\nReturns up to 5 matches ranked by prefix-hit first, then name length. Returned\nsymbols carry their market suffix: US bare (AAPL), Japan `.T`, Hong Kong 5-digit\n`.HK` (00700.HK), A-share `.SH`/`.SZ` (600519.SH).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Company name or ticker substring (case-insensitive). Matches historical names + tickers too."
+          },
+          "market": {
+            "type": "string",
+            "enum": [
+              "us",
+              "jp",
+              "hk",
+              "cn"
+            ],
+            "description": "Optional market filter: 'us' | 'jp' | 'hk' | 'cn'. Omit to search all markets."
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "run_sql",
+      "description": "PostgreSQL SELECT over financial / market / alt-data tables — returns structured rows.\n\nHard rules (query fails otherwise):\n- SELECT only, no CTE (`WITH ... AS`) — use subqueries.\n- Period columns are TEXT, not dates — `period_end` is 'YYYY-MM'. Compare as strings (`period_end >= '2024-01'`); a `::date` cast on it fails.\n- Filter structured tables by ticker (`WHERE ticker IN ('AAPL','MSFT')`; screening: add `ticker NOT LIKE '%-%'` to drop preferred stock).\n\nCore equity coverage: US, Japan, Hong Kong, and China A-shares. Tickers are US bare (AAPL), Japan `.T` (6758.T), Hong Kong `.HK` (00700.HK), and A-shares `.SH`/`.SZ` (600519.SH, 300750.SZ). financial_statements, company_snapshot, and price_volume_history span all four. Specialized tables vary — call get_table_schema before treating an empty result as a finding.\n\nTables by domain (call get_table_schema for detail):\n- Market: price_volume_history (OHLCV history; MUST filter ticker + time_frame), index_price, equity_extended_rt (pre/after/overnight quotes)\n- Fundamentals: financial_statements (GAAP income/balance/cashflow), company_snapshot (ratios, per-share, growth)\n- Earnings: earning_call_summary, earning_call_calendar\n- Analyst: analyst_ratings, analyst_ratings_consensus\n- Ownership: insider_and_institution_activities\n- 8-K events: executive_change, company_deal_events, debt_issuance, securities_offering\n- Executives: executive_profile, executive_compensation\n- Alt-data: macro / industry / trade / AI-supply-chain — call list_tables(categories=[...])",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sql": {
+            "type": "string",
+            "description": "PostgreSQL SELECT query"
+          }
+        },
+        "required": [
+          "sql"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_table_schema",
+      "description": "Use BEFORE run_sql when you're unsure which columns a table has.\n\nLook up column definitions (name, type, description) for a data table.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "table_name": {
+            "type": "string",
+            "enum": [
+              "financial_statements",
+              "company_snapshot",
+              "price_volume_history",
+              "earning_call_summary",
+              "insider_and_institution_activities",
+              "index_price",
+              "equity_extended_rt",
+              "analyst_ratings",
+              "analyst_ratings_consensus",
+              "earning_call_calendar",
+              "executive_profile",
+              "executive_compensation",
+              "executive_change",
+              "company_deal_events",
+              "debt_issuance",
+              "securities_offering",
+              "eia_generators",
+              "eia_retail_prices",
+              "eia_regional_hourly",
+              "epochai_data_centers",
+              "epochai_data_center_timelines",
+              "epochai_gpu_clusters",
+              "epochai_dc_cooling_towers",
+              "epochai_dc_chillers",
+              "epochai_chip_types",
+              "epochai_ml_hardware",
+              "epochai_chip_organizations",
+              "epochai_chip_sales_cumulative",
+              "epochai_chip_sales_by_chip",
+              "epochai_chip_sales_by_designer",
+              "epochai_chip_owners_cumulative_by_chip",
+              "epochai_chip_owners_cumulative_by_designer",
+              "epochai_chip_owners_quarters_by_chip",
+              "tsmc_revenue",
+              "twcustoms_trade",
+              "computeprices_gpus_dim",
+              "computeprices_gpu_offer_daily",
+              "computeprices_gpu_offers",
+              "computeprices_providers_dim",
+              "skypilot_ondemand_price",
+              "skypilot_spot_price",
+              "skypilot_instance_dim",
+              "epochai_models",
+              "epochai_benchmark_scores",
+              "epochai_benchmark_runs",
+              "epochai_ai_companies",
+              "epochai_ai_companies_revenue_reports",
+              "epochai_ai_companies_usage_reports",
+              "epochai_ai_companies_staff_reports",
+              "epochai_ai_companies_funding_rounds",
+              "epochai_ai_companies_compute_spend",
+              "epochai_polling",
+              "arena_leaderboard",
+              "litellm_price_history",
+              "litellm_models_dim",
+              "computeprices_llm_prices",
+              "computeprices_llm_price_daily",
+              "computeprices_llms_dim",
+              "comtrade_country",
+              "comtrade_hs_code",
+              "census_import_export",
+              "fred_series",
+              "fred_observations",
+              "fred_macro_daily",
+              "polymarket_events",
+              "polymarket_markets",
+              "polymarket_outcomes",
+              "polymarket_trades",
+              "polymarket_daily",
+              "polymarket_volume_daily",
+              "polymarket_holders_daily",
+              "kalshi_events",
+              "kalshi_markets",
+              "kalshi_trades",
+              "kalshi_daily",
+              "kalshi_volume_daily",
+              "mineral_deposit",
+              "mineral_deposit_commodity",
+              "mineral_deposit_operator",
+              "mineral_country_supply",
+              "mineral_critical_snapshot",
+              "fiscal_year_config"
+            ]
+          }
+        },
+        "required": [
+          "table_name"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "fiscal_utility",
+      "description": "Use to convert between fiscal year/quarter and calendar months for a ticker before filtering period_end columns.\n\nCoverage warning: fiscal-year configuration is primarily US, with sparse JP/HK entries and no China A-share coverage in the verified dataset. Do not assume this tool supports a ticker merely because the core equity tables do.\n\nForward: ticker + fiscal_year + fiscal_quarter → period_start/period_end. Reverse: ticker + yyyy_mm → fiscal_year/fiscal_quarter.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Stock ticker. Coverage is primarily US; sparse JP/HK; no China A-share configuration."
+          },
+          "fiscal_year": {
+            "type": "integer",
+            "description": "Fiscal year (required for forward conversion)"
+          },
+          "fiscal_quarter": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4,
+            "description": "Quarter 1-4, or 0 for full fiscal year (required for forward conversion)"
+          },
+          "yyyy_mm": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}$",
+            "description": "Calendar month yyyy-mm (required for reverse conversion)"
+          }
+        },
+        "required": [
+          "ticker"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_tables",
+      "description": "List alternative-data tables under the given categories. Returns each table's name,\none-line purpose, and column names (call get_table_schema if you need column\ntypes/comments). Batch up to 5 categories in one call; omit categories, or pass [\"all\"], to\nget the category index instead.\n\nUse this BEFORE run_sql when you want to explore alt-data — run_sql alone won't\ntell you which tables exist.\n\nAvailable categories:\n- Energy & Power — US power plants, electricity prices, regional hourly generation/demand\n- Data Centers — facilities, GPU clusters, cooling\n- Semiconductors — AI chip specs, sales, ownership, foundry revenue, customs trade\n- Compute Pricing — GPU rental, cloud VM spot/on-demand, instance specs\n- Model Development — model specs, benchmarks, AI companies, AI polling, LLM arena\n- Inference Economics — LLM API pricing across providers\n- Macro & Trade — UN Comtrade, US Census trade flows, FRED macro series\n- Prediction Markets — Polymarket and Kalshi events, markets, trades, daily aggregates\n- Critical Minerals — USGS mineral deposits, country supply, critical materials",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Energy & Power",
+                "Data Centers",
+                "Semiconductors",
+                "Compute Pricing",
+                "Model Development",
+                "Inference Economics",
+                "Macro & Trade",
+                "Prediction Markets",
+                "Critical Minerals",
+                "all"
+              ]
+            },
+            "maxItems": 5,
+            "description": "Altdata category names (see tool description for the list). Omit, or pass \"all\", for the category index."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "news_search",
+      "description": "Use for any news, event, development, or statement question about a company,\ntheme, or the market.\n\nCovers US, Japan, Hong Kong and A-share markets; The `ticker` filter takes\nexchange-suffixed symbols: US bare (AAPL), Japan `.T` (7203.T), Hong Kong\n`.HK` (00700.HK), A-share `.SH`/`.SZ` (600519.SH). \n\nReturns Markdown: a `## Stories` numbered list (each storyline once), then flat\n`## Events` and `## Claims` tables (claims = attributed statements: analyst\nactions, corporate guidance, central-bank remarks). The Events `story` column\nrefers back to the Stories number. `sources` counts corroborating reports;\n`first_reported`/`last_reported` give the reporting span. Lowest-ranked stories\nare dropped to fit length; the meta line flags how many were omitted.\n\nAt least one of query/theme/ticker/since/until is required. Per-parameter detail\nis on the input schema — search_type=claims needs query/ticker/a time window,\nnot theme.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Semantic query (English). One of query/theme/ticker/since/until required."
+          },
+          "theme": {
+            "type": "string",
+            "description": "Theme word, resolved to the nearest canonical theme. Not valid with search_type=claims."
+          },
+          "ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "description": "Exact ticker symbol(s) — a single symbol, an array, or a comma-separated string; multiple tickers are an OR/overlap filter. US symbols bare (AAPL); other markets carry their exchange suffix — 7203.T, 00700.HK, 600519.SH. Company names/brands are NOT resolved here; resolve a name via ticker_lookup/company_search first."
+          },
+          "since": {
+            "type": "string",
+            "description": "ISO8601; filter time_event >= since."
+          },
+          "until": {
+            "type": "string",
+            "description": "ISO8601; filter time_event < until."
+          },
+          "search_type": {
+            "type": "string",
+            "enum": [
+              "all",
+              "events",
+              "claims"
+            ],
+            "description": "all (default) | events | claims (opinions/statements only)."
+          },
+          "order_by": {
+            "type": "string",
+            "enum": [
+              "relevance",
+              "event_time",
+              "create_time"
+            ],
+            "description": "Result ordering. relevance (default) | event_time (newest event time first) | create_time (most recently ingested first)."
+          },
+          "top_k": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Story count. Default 10, max 50."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

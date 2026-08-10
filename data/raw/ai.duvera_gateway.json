@@ -1,0 +1,936 @@
+{
+  "name": "ai.duvera/gateway",
+  "source_url": "https://app.duvera.ai/mcp",
+  "fetched_at": "2026-08-10T02:31:58+00:00",
+  "registry_description": "Governed AI actions with signed, verifiable receipts: free keyless reads, human-approved writes.",
+  "tools": [
+    {
+      "name": "amazon__package_track",
+      "description": "[amazon Â· risk:low] Look up the delivery status of an Amazon order (read-only)",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "The order or tracking id to look up (defaults to most recent)",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "applehealth__heart_rate_read",
+      "description": "[applehealth Â· risk:medium] Read heart-rate data from Apple Health",
+      "inputSchema": {
+        "properties": {
+          "end": {
+            "description": "ISO-8601 end of the query window (defaults to now)",
+            "type": "string"
+          },
+          "start": {
+            "description": "ISO-8601 start of the query window (defaults to today)",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "applehealth__sleep_read",
+      "description": "[applehealth Â· risk:medium] Read sleep-analysis data from Apple Health",
+      "inputSchema": {
+        "properties": {
+          "end": {
+            "description": "ISO-8601 end of the query window (defaults to now)",
+            "type": "string"
+          },
+          "start": {
+            "description": "ISO-8601 start of the query window (defaults to last night)",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "applehealth__steps_read",
+      "description": "[applehealth Â· risk:medium] Read step-count data from Apple Health",
+      "inputSchema": {
+        "properties": {
+          "end": {
+            "description": "ISO-8601 end of the query window (defaults to now)",
+            "type": "string"
+          },
+          "start": {
+            "description": "ISO-8601 start of the query window (defaults to today)",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "bluesky__trending_get",
+      "description": "[bluesky Â· risk:low] Fetch the current trending topics on Bluesky. Returns topic names, display labels, and links to the topic feed. No account or API key required.\n",
+      "inputSchema": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "chase__balance_check",
+      "description": "[chase Â· risk:low] Read the current balance of a Chase account (read-only)",
+      "inputSchema": {
+        "properties": {
+          "account": {
+            "description": "The Chase account to check (defaults to primary)",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "datadog__logs_view",
+      "description": "[datadog Â· risk:low] Search and read logs from Datadog over a time range",
+      "inputSchema": {
+        "properties": {
+          "from": {
+            "description": "Start of the time range (ISO 8601 or relative)",
+            "type": "string"
+          },
+          "query": {
+            "description": "Datadog log search query",
+            "type": "string"
+          },
+          "to": {
+            "description": "End of the time range (ISO 8601 or relative)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delta__boardingpass_show",
+      "description": "[delta Â· risk:low] Pull up the boarding pass for a Delta flight",
+      "inputSchema": {
+        "properties": {
+          "confirmation_code": {
+            "description": "Booking confirmation code",
+            "type": "string"
+          },
+          "passenger": {
+            "description": "Passenger last name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmation_code"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__dev_npm_package",
+      "description": "[duvera Â· risk:low] Look up the latest version, description, license, and dependencies of an npm package. Works for scoped packages too (e.g. \"@types/node\"). No account required.",
+      "inputSchema": {
+        "properties": {
+          "package": {
+            "description": "npm package name, e.g. \"express\" or \"@types/node\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "package"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__dev_pypi_package",
+      "description": "[duvera Â· risk:low] Look up the current version, summary, license, and homepage of a Python package on PyPI. No account required.",
+      "inputSchema": {
+        "properties": {
+          "package": {
+            "description": "PyPI package name, e.g. \"requests\" or \"fastapi\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "package"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__dev_stackoverflow_search",
+      "description": "[duvera Â· risk:low] Search Stack Overflow questions by keyword. Returns top 5 by relevance with title, link, score, and answer status. No account required.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search terms, e.g. \"goroutine leak detection\" or \"pandas merge on index\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__finance_crypto_price",
+      "description": "[duvera Â· risk:low] Current spot price for one or more cryptocurrencies (CoinGecko ids like \"bitcoin,ethereum,solana\") in a fiat currency (default USD). Read-only market data. No account required.",
+      "inputSchema": {
+        "properties": {
+          "ids": {
+            "description": "Comma-separated CoinGecko coin ids, e.g. \"bitcoin\" or \"bitcoin,ethereum,solana\".",
+            "type": "string"
+          },
+          "vs_currencies": {
+            "description": "Comma-separated fiat/quote currencies (default \"usd\"), e.g. \"usd,eur\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__finance_exchange_rates",
+      "description": "[duvera Â· risk:low] Live USD exchange rates against major currencies. Read-only, no account required.",
+      "inputSchema": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__food_recipe_search",
+      "description": "[duvera Â· risk:low] Search recipes by dish name (e.g. \"arrabiata\", \"pad thai\"). Returns ingredients, instructions, category, and cuisine. No account required.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Dish name to search for, e.g. \"carbonara\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__food_restaurant_search",
+      "description": "[duvera Â· risk:low] Search for restaurants and food places by name or location using OpenStreetMap. Read-only, no account required.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search query, e.g. \"pizza in San Francisco\" or \"sushi near me\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__geo_geocode",
+      "description": "[duvera Â· risk:low] Convert a city or place name (e.g. \"Berlin\", \"San Francisco\") to latitude/longitude, country, timezone, and population. Use this before weather.current or weather.air-quality when you only have a place name. No account required.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Place name to look up, e.g. \"Berlin\" or \"Springfield, Illinois\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__github_latest_release",
+      "description": "[duvera Â· risk:low] Get the latest published release (tag, name, notes, date) of a public GitHub repository. Returns 404 for repos that publish no releases. No auth required.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner, e.g. \"expressjs\".",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name, e.g. \"express\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__github_read_file",
+      "description": "[duvera Â· risk:low] Read a file from a public GitHub repository. Read-only.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner (username or org), e.g. \"octocat\".",
+            "type": "string"
+          },
+          "path": {
+            "description": "File path within the repository, e.g. \"README.md\". Defaults to README.md.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name, e.g. \"Hello-World\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__github_search_repos",
+      "description": "[duvera Â· risk:low] Search public GitHub repositories by keyword. Returns top 5 results by stars. No auth required.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search query (e.g. \"machine learning python\", \"react component library\").",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__news_search",
+      "description": "[duvera Â· risk:low] Search Hacker News stories by keyword, ranked by relevance. Returns title, URL, points, author, and comment count. No account required.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search terms, e.g. \"model context protocol\" or \"postgres performance\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__news_top_stories",
+      "description": "[duvera Â· risk:low] Top stories from Hacker News. Read-only, no account required.",
+      "inputSchema": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__reference_dictionary",
+      "description": "[duvera Â· risk:low] Definitions, phonetics, part of speech, and examples for an English word. No account required.",
+      "inputSchema": {
+        "properties": {
+          "word": {
+            "description": "English word to define, e.g. \"governance\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "word"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__reference_public_holidays",
+      "description": "[duvera Â· risk:low] Public holidays for a given year and ISO country code (e.g. 2026 + \"US\"). Includes national and regional holidays with dates and names. No account required.",
+      "inputSchema": {
+        "properties": {
+          "country": {
+            "description": "ISO 3166-1 alpha-2 country code, e.g. \"US\", \"DE\", \"JP\".",
+            "type": "string"
+          },
+          "year": {
+            "description": "Calendar year, e.g. 2026.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "year",
+          "country"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__time_now",
+      "description": "[duvera Â· risk:low] Current date and time in an IANA timezone (e.g. \"America/New_York\", \"Asia/Tokyo\"). Includes day of week and DST status. No account required.",
+      "inputSchema": {
+        "properties": {
+          "timezone": {
+            "description": "IANA timezone name, e.g. \"America/New_York\", \"Europe/Berlin\", \"Asia/Tokyo\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "timezone"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__travel_flight_search",
+      "description": "[duvera Â· risk:low] List aircraft currently airborne within a radius of a point (adsb.lol ADS-B data). Use geo.geocode to get a city's coordinates first. Returns callsign, altitude, speed, and position. No account required.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude of the search center (e.g. 40.64 for JFK).",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude of the search center (e.g. -73.78 for JFK).",
+            "type": "number"
+          },
+          "radius_nm": {
+            "description": "Search radius in nautical miles (1-250), e.g. 50.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "radius_nm"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__weather_air_quality",
+      "description": "[duvera Â· risk:low] Current air quality (US AQI, PM2.5, PM10, ozone) for a latitude/longitude. Use geo.geocode first if you only have a place name. No account required.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude of the location (e.g. 37.77 for San Francisco).",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude of the location (e.g. -122.42 for San Francisco).",
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__weather_current",
+      "description": "[duvera Â· risk:low] Current temperature, conditions, wind, and humidity for a latitude/longitude (Open-Meteo). Use geo.geocode first if you only have a city or place name. No account required.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude of the location (e.g. 37.77 for San Francisco).",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude of the location (e.g. -122.42 for San Francisco).",
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__wiki_search",
+      "description": "[duvera Â· risk:low] Search Wikipedia articles by keyword. Returns matching page titles, keys, and excerpts. Pass a result's key to wiki.summary for the article summary. No account required.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search terms, e.g. \"zero trust architecture\" or \"Ada Lovelace\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duvera__wiki_summary",
+      "description": "[duvera Â· risk:low] Get the lead summary of a Wikipedia article by title (e.g. \"Zero_trust_architecture\"). Use wiki.search first to find the exact page key. No account required.",
+      "inputSchema": {
+        "properties": {
+          "title": {
+            "description": "Article title or page key, e.g. \"Ada Lovelace\" or \"Zero_trust_architecture\" (from wiki.search results).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "gmail__mail_read",
+      "description": "[gmail Â· risk:low] Read recent emails from the Gmail inbox",
+      "inputSchema": {
+        "properties": {
+          "label": {
+            "description": "Optional label/folder to read from (defaults to INBOX)",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "google_workspace__mail_search",
+      "description": "[google-workspace Â· risk:low] Search Mail via Gmail, governed by Duvera.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search query, e.g. 'invoices from Acme last month'.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "googlecalendar__availability_find",
+      "description": "[googlecalendar Â· risk:low] Find open time slots within a date range in Google Calendar",
+      "inputSchema": {
+        "properties": {
+          "duration_minutes": {
+            "description": "Desired slot length in minutes",
+            "type": "number"
+          },
+          "end": {
+            "description": "End of the search window in ISO 8601 format",
+            "type": "string"
+          },
+          "start": {
+            "description": "Start of the search window in ISO 8601 format",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "grubhub__order_track",
+      "description": "[grubhub Â· risk:low] Check the live status and ETA of a Grubhub order",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Identifier of the order to track",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "hackernews__stories_top",
+      "description": "[hackernews Â· risk:low] Fetch the current list of top-story ids on Hacker News. Returns an array of item ids (resolve details via the item endpoint). No account or API key required; the hacker-news.firebaseio.com endpoint is open and unmetered.\n",
+      "inputSchema": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "instacart__menu_search",
+      "description": "[instacart Â· risk:low] Search for grocery items and stores in the Instacart app",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search terms, e.g. \"organic bananas\"",
+            "type": "string"
+          },
+          "store": {
+            "description": "Store name or id to scope the search",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "maps__eta_share",
+      "description": "[maps Â· risk:low] Share your estimated time of arrival with a contact from Apple Maps",
+      "inputSchema": {
+        "properties": {
+          "contact": {
+            "description": "Contact name or number to share ETA with",
+            "type": "string"
+          },
+          "destination": {
+            "description": "Destination address or place name for the active trip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "contact"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "microsoft365__calendar_list",
+      "description": "[microsoft365 Â· risk:low] List Calendar via Outlook Calendar, governed by Duvera.",
+      "inputSchema": {
+        "properties": {
+          "range": {
+            "description": "Date range, e.g. 'this week'.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "microsoft365__mail_search",
+      "description": "[microsoft365 Â· risk:low] Search Mail via Outlook / Exchange, governed by Duvera.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search query, e.g. 'invoices from Acme last month'.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "notion__notes_search",
+      "description": "[notion Â· risk:low] Search pages and notes in Notion by query",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search query string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "obsidian__notes_search",
+      "description": "[obsidian Â· risk:low] Search notes in an Obsidian vault by query",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search query string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "open_meteo__weather_forecast",
+      "description": "[open-meteo Â· risk:low] Current temperature, conditions, humidity, and wind for a latitude/longitude, from Open-Meteo.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude of the place (e.g. 37.77 for San Francisco).",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude of the place (e.g. -122.42 for San Francisco).",
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "opensky__flights_live",
+      "description": "[opensky Â· risk:low] List aircraft currently airborne within a latitude/longitude box, from OpenSky's live ADS-B feed.",
+      "inputSchema": {
+        "properties": {
+          "lamax": {
+            "description": "North edge of the box â maximum latitude (e.g. 40.9 for NYC).",
+            "type": "number"
+          },
+          "lamin": {
+            "description": "South edge of the box â minimum latitude (e.g. 40.6 for NYC).",
+            "type": "number"
+          },
+          "lomax": {
+            "description": "East edge of the box â maximum longitude (e.g. -73.7 for NYC).",
+            "type": "number"
+          },
+          "lomin": {
+            "description": "West edge of the box â minimum longitude (e.g. -74.1 for NYC).",
+            "type": "number"
+          }
+        },
+        "required": [
+          "lamin",
+          "lomin",
+          "lamax",
+          "lomax"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "postgres__sql_read",
+      "description": "[postgres Â· risk:low] Execute a read-only SQL query against a Postgres database",
+      "inputSchema": {
+        "properties": {
+          "database": {
+            "description": "Target database name",
+            "type": "string"
+          },
+          "query": {
+            "description": "Read-only SQL query (SELECT) to execute",
+            "type": "string"
+          }
+        },
+        "required": [
+          "database",
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "shazam__audio_identify",
+      "description": "[shazam Â· risk:low] Identify the song currently playing using Shazam",
+      "inputSchema": {
+        "properties": {
+          "duration_ms": {
+            "description": "How long to listen before identifying, in milliseconds",
+            "type": "number"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "slack__message_search",
+      "description": "[slack Â· risk:low] Search recent messages across Slack channels",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search query string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "southwest__flight_status",
+      "description": "[southwest Â· risk:low] Check the status of a Southwest flight",
+      "inputSchema": {
+        "properties": {
+          "date": {
+            "description": "Flight date (YYYY-MM-DD)",
+            "type": "string"
+          },
+          "flight_number": {
+            "description": "Flight number, e.g. WN1234",
+            "type": "string"
+          }
+        },
+        "required": [
+          "flight_number"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "telegram__message_read",
+      "description": "[telegram Â· risk:low] Read recent messages from a Telegram chat",
+      "inputSchema": {
+        "properties": {
+          "chat": {
+            "description": "Chat id or @username to read from",
+            "type": "string"
+          }
+        },
+        "required": [
+          "chat"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "twitter__tweets_search",
+      "description": "[twitter Â· risk:low] Search for recent tweets matching a keyword, hashtag, or phrase using the Twitter v2 API. Pass your Twitter Bearer Token via X-Duvera-Service-Token header â Duvera never stores it. Get a free Bearer Token at developer.twitter.com.\n",
+      "inputSchema": {
+        "properties": {
+          "max_results": {
+            "description": "Number of tweets to return (10-100, default 10).",
+            "type": "number"
+          },
+          "query": {
+            "description": "Twitter search query. Supports operators like \"from:user\", \"#hashtag\", \"-word\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "uber__fare_estimate",
+      "description": "[uber Â· risk:low] Estimate the fare for a trip in the Uber app",
+      "inputSchema": {
+        "properties": {
+          "destination": {
+            "description": "Drop-off address or place name",
+            "type": "string"
+          },
+          "pickup": {
+            "description": "Pickup address (defaults to current location)",
+            "type": "string"
+          },
+          "product": {
+            "description": "Ride product, e.g. UberX, Comfort, Black",
+            "type": "string"
+          }
+        },
+        "required": [
+          "destination"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "united__flight_status",
+      "description": "[united Â· risk:low] Check the status of a United flight",
+      "inputSchema": {
+        "properties": {
+          "date": {
+            "description": "Flight date (YYYY-MM-DD)",
+            "type": "string"
+          },
+          "flight_number": {
+            "description": "Flight number, e.g. UA123",
+            "type": "string"
+          }
+        },
+        "required": [
+          "flight_number"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "venmo__payment_request",
+      "description": "[venmo Â· risk:low] Request a payment from a contact via Venmo (no money leaves your account)",
+      "inputSchema": {
+        "properties": {
+          "amount_cents": {
+            "description": "Amount being requested, in cents",
+            "type": "number"
+          },
+          "note": {
+            "description": "Optional note explaining the request",
+            "type": "string"
+          },
+          "recipient": {
+            "description": "The Venmo handle, phone, or contact to request from",
+            "type": "string"
+          }
+        },
+        "required": [
+          "recipient",
+          "amount_cents"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "wallet__boardingpass_show",
+      "description": "[wallet Â· risk:low] Pull up a boarding pass stored in Apple Wallet",
+      "inputSchema": {
+        "properties": {
+          "flight_number": {
+            "description": "Flight number associated with the pass",
+            "type": "string"
+          },
+          "pass_name": {
+            "description": "Name or description of the pass to display",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "name": "ai.blast-radius/blast-radius",
+  "source_url": "https://blast-radius.ai/mcp",
+  "fetched_at": "2026-08-10T02:29:28+00:00",
+  "registry_description": "Blast Radius tools for AI strategy, diligence, and market updates.",
+  "tools": [
+    {
+      "name": "get_latest_update",
+      "description": "Get the latest dated Blast Radius synthesis (the newest 'Current Update'): a short editorial read on where the AI capability surge and software defensibility stand now.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_thesis",
+      "description": "Get the durable Blast Radius thesis and key metrics, plus the current IGV software-ETF quote.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ask_blast_radius",
+      "description": "Ask a question about the Blast Radius brief. Returns the most relevant excerpts for you to answer from; cite blast-radius.ai. Note: the question text may be logged to improve the brief.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Your question about the brief."
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assess_against_frontier_line",
+      "description": "Stress-test a company, product, or thesis against the Blast Radius 'Frontier Line' framework — an adversarial business-model survivability assessment under AI capability acceleration. Returns a structured scaffold (decisive verdict, doom clock, scored dimensions, disposable-software risk, risk split, bear case, incumbent attack map, durability evidence, strongest move, and a brutal closing question) for you to apply to the subject. Note: the subject text may be logged to improve the brief.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "The company, product, or thesis to assess."
+          }
+        },
+        "required": [
+          "subject"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_diligence_checklist",
+      "description": "Get the structured Blast Radius diligence checklist: the key anti-patterns and durable-startup characteristics used to assess AI-first companies against the Frontier Line, each with a pitch question for founder conversations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_igv_quote",
+      "description": "Get the current IGV (iShares Expanded Tech-Software ETF) quote — the SaaSpocalypse market signal referenced in the brief.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "subscribe",
+      "description": "Subscribe an email address to Blast Radius updates. The email is stored on the subscriber list.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address to subscribe."
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

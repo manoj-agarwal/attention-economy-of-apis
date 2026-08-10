@@ -1,0 +1,64 @@
+{
+  "name": "ai.corduroy-labs/updates",
+  "source_url": "https://corduroy-labs.ai/mcp",
+  "fetched_at": "2026-08-10T02:30:45+00:00",
+  "registry_description": "Corduroy Labs studio updates over MCP: list_updates and get_update, backed by the site's JSON Feed.",
+  "tools": [
+    {
+      "name": "list_updates",
+      "description": "List Corduroy Labs blog updates, newest first.\n\n    Args:\n        limit: optional maximum number of items to return.\n\n    Returns:\n        A list of update summaries with: slug, title, url,\n        date_published, summary, and optionally tags, location, image.\n    ",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Limit"
+          }
+        },
+        "title": "list_updatesArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_updatesOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_update",
+      "description": "Fetch one Corduroy Labs update in full by its slug.\n\n    Args:\n        slug: the update's slug (e.g. \"the-studio-machine-readable\").\n            Obtain slugs from list_updates().\n\n    Returns:\n        A dict with slug, title, url, date_published, summary,\n        content_html, and optionally tags, location, image.\n    ",
+      "inputSchema": {
+        "properties": {
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "title": "get_updateArguments",
+        "type": "object"
+      }
+    }
+  ]
+}

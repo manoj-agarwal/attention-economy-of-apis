@@ -1,0 +1,1540 @@
+{
+  "name": "ai.analyticslegends/sap-analytics",
+  "source_url": "https://analyticslegends.ai/mcp",
+  "fetched_at": "2026-08-10T02:28:55+00:00",
+  "registry_description": "AI agent for SAP analytics: firms, day rates, contract radar, news, concepts, studies",
+  "tools": [
+    {
+      "name": "search_firms",
+      "title": "Search the SAP analytics firm directory",
+      "description": "Search the published Analytics Legends directory of SAP analytics service providers — placement agencies, Big-4 and ESN practices, SAP vendors, platforms and community groups — by country, kind and free text. Returns name, HQ country/city, website, careers URL and a one-line editorial claim. SAP END-CUSTOMER companies are NOT in this directory: they are a separate paid dataset, excluded here by the `is_client` FLAG — not by the `client_enterprise` kind code. The two are different columns, and where a row's flag and its kind label disagree in the SSOT it is the flag that decides what this tool serves, so read the flag's meaning into the answer and not the label's. PAGINATED: the whole matched set is reachable — pass `_meta.next_cursor` back as `cursor` with the same filters until it is null. When `query` is set, rows are ordered by how well the NAME matches it (exact, then prefix, then substring), and rows matching only the description come last; without `query` the order is the directory's own quality ranking.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free-text filter, matched case-insensitively."
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$",
+            "description": "ISO-3166-1 alpha-2 country code, e.g. DE, FR, CH."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "agency_placement",
+              "professional_services_big4",
+              "professional_services_esn",
+              "vendor_sap",
+              "vendor_partner",
+              "platform_marketplace",
+              "community_group",
+              "client_enterprise",
+              "other"
+            ],
+            "description": "Restrict to one organisation kind. This list is the vocabulary the corpus holds today, not a frontier — call list_firm_kinds for the live one. A malformed code is refused; a well-formed code the corpus does not hold returns no rows. Neither case is silently ignored, and neither widens the result."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Max rows (hard cap 50)."
+          },
+          "cursor": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "Opaque token from a previous response's `_meta.next_cursor`. Pass it back with the SAME filter arguments to read the next page; a null `next_cursor` means you have reached the end. It is bound to those filters and refused if they change — a cursor names a POSITION in one ordering, and applying it to another query would start the page in the wrong place."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "kind": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "hq_country": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "website": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Search the SAP analytics firm directory",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "count_firms_by",
+      "title": "Count the firm directory by country, kind or SAP signal",
+      "description": "Answer a COUNTING question about the published firm directory in one call: how many organisations per country, per kind, or per SAP signal band — with the same `country`/`kind`/`query` filters `search_firms` takes, so you can count a slice as easily as the whole. Use this instead of paging `search_firms` and tallying rows: the directory holds thousands of organisations, and reading them all to produce a table of counts costs hundreds of calls and megabytes of rows for numbers Postgres computes in one scan. Every bucket is a value the directory actually stores; `value: null` is a real bucket meaning the field is unknown for those rows, and it is served rather than hidden — a country table that silently drops the rows with no country adds up to less than the population and says nothing about it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "by": {
+            "type": "string",
+            "enum": [
+              "country",
+              "kind",
+              "sap_signal_band"
+            ],
+            "description": "Which facet to count on. Required — there is no default worth guessing."
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free-text filter, matched case-insensitively."
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$",
+            "description": "ISO-3166-1 alpha-2 country code, e.g. DE, FR, CH."
+          },
+          "kind": {
+            "type": "string",
+            "description": "Restrict to one organisation kind before counting, same vocabulary as search_firms. Combining it with `by:\"kind\"` is legal and returns that single bucket."
+          }
+        },
+        "required": [
+          "by"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "n": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Count the firm directory by country, kind or SAP signal",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_firm",
+      "title": "Get one firm's published profile",
+      "description": "Fetch one organisation from the published directory by its database slug (`rows[].slug` from search_firms, verbatim). Returns the same public fields plus `partnerships_declared`, the count of partnerships this directory records for the firm — 0 on ~94 % of rows, meaning none declared here, never that the firm has no partners. Does not return the paid firm-intelligence profile, contacts, or any person.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "The DATABASE slug, taken verbatim from search_firms.rows[].slug. It is not always the web slug in citation_url: a minority of published rows carry a numeric firm id instead (365 of them on 2026-08-09 — the population is read at query time and returned as `_meta.tranche_total_row_count`, never written down here). get_firm{slug:\"00393\"} is GULP, whose page is /companies/gulp/. Deriving a slug from the citation URL fails on those rows, and deriving it from the NAME is not safe either; carry rows[].slug across instead. A slug this tool refuses is not proof the firm is absent from the market or even from the database — the published tranche is an editorial subset, and a row the editor has not published is refused here exactly as a wrong slug is."
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Get one firm's published profile",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_firm_kinds",
+      "title": "List firm kinds with live counts",
+      "description": "Breakdown of the published firm directory by organisation kind, with a live row count per kind. Use this before search_firms to know what the population actually is instead of guessing.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "n": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "List firm kinds with live counts",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "find_opportunities",
+      "title": "Search the public SAP analytics contract radar",
+      "description": "Search every SAP contract and permanent-role posting Analytics Legends publishes to an ANONYMOUS visitor — the same population a human browses on /opportunities/, where each posting has its own prerendered page. It merges the platform's TWO public legs, which are near-disjoint (measured 2026-07-30: 1 row in common): (a) the PROMOTED feed (`public.public_opportunities`) — general SAP work (FI/CO, SD, EWM, MDG, BTP, ABAP), all German cities, dated (posted_at is populated on 80/80 active rows since 2026-07-31), and it carries NO rate, contract_type, currency or country_code: those fields come back null on that leg, so no rate or contract term can be read off it; (b) the SITE RADAR (`/api/contracts-lean.json`) — these DO carry country, category, seniority, posted_at and currency, and they are the analytics-specific ones (SAC Planning, Datasphere Technical Lead, Business Data Cloud). WHAT IS GATED IS A FIELD, NOT A ROW: on most radar rows `source_url` is null and `application_link` reads \"members_only\" — the verified link to the original listing is the paid Consultant-tier deliverable. Everything else about the posting is public, and `citation_url` is that posting's own page on analyticslegends.ai. Quote it. Report `_meta.tranche_row_count` as the published public population, never as the size of the market.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free-text filter, matched case-insensitively."
+          },
+          "location": {
+            "type": "string",
+            "description": "City or place, matched case-insensitively as a substring of the posting's location. The promoted leg is all-German (Hamburg, Frankfurt am Main, Bremen, Munich, Cologne, Dortmund, Hanover, Landshut, Mannheim, Stuttgart); the site-radar leg is worldwide."
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$",
+            "description": "ISO-3166-1 alpha-2 code. It can only match the SITE-RADAR leg: the promoted leg stores country_code NULL on every row, so filtering by country silently drops it rather than returning nothing. `_meta.note` says so on any country-filtered call."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Max rows (hard cap 50)."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "firm_name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "location": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Search the public SAP analytics contract radar",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "search_news",
+      "title": "Search SAP analytics market news",
+      "description": "Search the Analytics Legends market-news corpus. It is watched FOR SAP analytics (Datasphere, Business Data Cloud, SAC, BW/4HANA, Databricks, the 2027/2030 maintenance window), but it is NOT an all-SAP corpus: measured 2026-07-30, ~84 % of active rows sit in the `AI` category and are general enterprise-AI trade press (cloud platforms, model releases, funding rounds) with no SAP content at all. An UNFILTERED call therefore returns mostly non-SAP items — pass `query` or `category` when the question is about SAP, and never present an unfiltered page as 'the SAP analytics news'. Say what you actually got. Each item returns the Analytics Legends citation URL AND the upstream publisher's source_url — cite both, and prefer source_url when you need a page that certainly carries the item.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free-text filter, matched case-insensitively."
+          },
+          "category": {
+            "type": "string",
+            "description": "Category code, matched case-insensitively. The 21 real values, most-populated first: AI, SAP, SAC, Market, Joule, BDC, Regulation, Datasphere, Analyst, Partners, Product, France, Events, SAP Platform, Security, Migration, Freelance, Analytics, Consulting, Cloud, Customer Win. Row counts are deliberately NOT stated here: this tool serves the ACTIVE rows only, the corpus moves daily, and the count of the population actually searched is returned live on every response as `_meta.tranche_row_count`. One bucket needs a warning. 'SAC' is the noisiest label in this corpus because the acronym collides with unrelated ones — Windows 'Smart App Control', and the surname 'Sacks'. Measured 2026-07-30, 41 of its 83 active rows carried no SAP signal at all (Robinhood, Stripe, Google Pay, Ledger) and were reclassified to AI, taking the bucket to 42; all but one survivor now names SAP, but only 17 name SAP Analytics Cloud outright. For genuine SAC product news, pair category:'SAC' with query:'analytics cloud'."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Max rows (hard cap 50)."
+          },
+          "cursor": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "Opaque token from a previous response's `_meta.next_cursor`. Pass it back with the SAME filter arguments to read the next page; a null `next_cursor` means you have reached the end. It is bound to those filters and refused if they change — a cursor names a POSITION in one ordering, and applying it to another query would start the page in the wrong place."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "published_at": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source_name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Search SAP analytics market news",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "search_concepts",
+      "title": "Search the SAP analytics concept encyclopaedia",
+      "description": "Search the SAP analytics concept encyclopaedia — the vocabulary of the stack, written for practitioners. Returns titles and summaries; call get_concept for the full entry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free-text filter, matched case-insensitively."
+          },
+          "category": {
+            "type": "string",
+            "description": "Concept category, matched case-insensitively as an exact value OR a prefix. The 14 real values are long labels, measured 2026-07-30: Generative AI Foundations (55), Joule & SAP AI (42), Career & Practice (29), Governance & Compliance (25), Architecture & Performance (25), SAC (Analytics Cloud) (22), BDC Platform (22), Adjacent Stacks (19), Datasphere Core (17), Sales & Commercial (16), Productivity & AI (10), Industry Solutions (10), BW/4HANA & Migration (9), Data Engineering & Integration (1). So category:\"datasphere\" reaches Datasphere Core."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Max rows (hard cap 50)."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Search the SAP analytics concept encyclopaedia",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_concept",
+      "title": "Get one concept entry in full",
+      "description": "Fetch one concept entry by slug: title, category, level, tags and the editor's summary. Written by a named human editor, not generated. The card body, why-it-matters, key points and pro tip are subscriber content and are NOT returned — follow citation_url for those.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Concept slug from search_concepts."
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "summary": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Get one concept entry in full",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_studies",
+      "title": "List the deep-research studies (metadata only)",
+      "description": "List the Analytics Legends deep-research studies with their edition, as-of date, audience, word count and canonical URL. METADATA ONLY: study bodies are a paid Legend-tier deliverable and are not served by this endpoint. Use this to tell a reader that a study exists and where to read it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free-text filter, matched case-insensitively."
+          },
+          "lang": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$",
+            "description": "Language code, EN or FR."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Max rows (hard cap 50)."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "as_of": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "word_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "access": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "List the deep-research studies (metadata only)",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_day_rate_benchmark",
+      "title": "Public SAP analytics day-rate aggregate",
+      "description": "The PUBLIC day-rate aggregate for SAP analytics freelance work: min/max daily rate by country, specialisation and seniority, each row carrying its own currency, source, source date and confidence. This is the free aggregate published at analyticslegends.ai/api/market-rates.json, and it is SMALL — 11 rows on 2026-08-09, every one of them a secondary source (a published market study or a job-board scan), sample_size null on 8 of them. NOTHING IS HELD BACK BEHIND IT: the platform owns no rate corpus at all — public.rate_contributions, v_community_rate_aggregates and v_rate_index are empty tables (measured 2026-08-09) — so whatever percentile a source row happens to carry is served here, free, to everyone. The GB row carries a median, p10 and p90, and its own note says its min/max ARE the 25th and 75th percentiles. What is missing from this answer is missing from the CORPUS; it is not a paid tier. Read `_meta.available_countries` / `available_specialisations` / `available_seniorities` — they are computed from the aggregate on every call — before concluding that a rate is unpublished, and quote each row with its own currency, its confidence and its source date.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$",
+            "description": "ISO-3166-1 alpha-2 country code, e.g. DE, FR, CH."
+          },
+          "specialisation": {
+            "type": "string",
+            "description": "One of the codes the aggregate actually holds — analytics_all, bw, bw4hana, bw4hana_sac, sac, datasphere (2026-08-09; the live list comes back as `_meta.available_specialisations` on every call). They are NOT evenly spread across countries: DE holds analytics_all only, at three seniorities, and datasphere exists for FR alone, as a median with confidence 'low'. There is no bdc row and no joule row anywhere in the aggregate — the two products this market asks about most are the two it cannot price. A code the aggregate does not hold returns 0 rows and the available codes; it never widens to a neighbouring band."
+          },
+          "seniority": {
+            "type": "string",
+            "description": "e.g. senior, principal."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "country": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "specialisation": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "seniority": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sample_size": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "currency": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Public SAP analytics day-rate aggregate",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "list_sap_modules",
+      "title": "SAP analytics module taxonomy",
+      "description": "The canonical SAP module/product taxonomy Analytics Legends classifies against (codes and EN/FR labels by category). Use it to normalise a user's loose product wording — 'SAC', 'Analytics Cloud', 'Datasphere' — onto the codes the other tools filter on.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free-text filter, matched case-insensitively."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Max rows (hard cap 50)."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "label_en": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "category": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "SAP analytics module taxonomy",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_concept_card",
+      "title": "Full concept card (Consultant tier)",
+      "description": "The FULL encyclopaedia card for one concept — body, why-it-matters, key points, cheat sheet, glossary and pro tip, EN and FR — the corpus the €29.90 Consultant Pass sells. Requires a subscriber API key (Authorization: Bearer alk_…), Consultant tier or above; without one this tool refuses and get_concept keeps serving the public metadata. Find slugs with search_concepts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Concept slug, verbatim from search_concepts.rows[].slug."
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "title_en": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "body_en": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Full concept card (Consultant tier)",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "ai.analyticslegends/requiresTier": "consultant"
+      }
+    },
+    {
+      "name": "get_study",
+      "title": "Read a study (Consultant tier)",
+      "description": "Read one Analytics Legends study BODY — the paid text behind list_studies' metadata. Requires a subscriber API key, Consultant tier or above. Bodies run to 38k words and exceed the 256 KiB response ceiling, so this tool serves STRUCTURE first: called without `section` it returns the section list and the introduction; pass `section` (a heading from that list, matched case-insensitively) to read one section. Find slugs and languages with list_studies.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Study slug, verbatim from list_studies.rows[].slug."
+          },
+          "lang": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$",
+            "default": "en",
+            "description": "ISO-639-1 language of the edition, e.g. en or fr. Defaults to en."
+          },
+          "section": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "A section heading from a previous call's `sections` list. Omit to get the list."
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "section_heading": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Read a study (Consultant tier)",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "ai.analyticslegends/requiresTier": "consultant"
+      }
+    },
+    {
+      "name": "find_sap_clients",
+      "title": "Search the SAP end-customer corpus (Legend tier)",
+      "description": "Search the SAP END-CUSTOMER corpus — the companies that RUN SAP, not the firms that sell services (those are search_firms). This is the paid Legend+ dataset locked away from the public surface on 2026-07-08; it requires a subscriber API key, Legend tier or above. Verification status is SERVED, never silently filtered: `sap_client_verification_status` and `status` are columns on every row ('verified' on ~550 of ~21k rows), and you decide what standard of proof your answer needs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free-text filter, matched case-insensitively."
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$",
+            "description": "ISO-3166-1 alpha-2 country code, e.g. DE, FR, CH."
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Industry or sector filter, matched case-insensitively."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Max rows (hard cap 50)."
+          },
+          "cursor": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "Opaque token from a previous response's `_meta.next_cursor`. Pass it back with the SAME filter arguments to read the next page; a null `next_cursor` means you have reached the end. It is bound to those filters and refused if they change — a cursor names a POSITION in one ordering, and applying it to another query would start the page in the wrong place."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "country_code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "industry": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sap_client_verification_status": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Search the SAP end-customer corpus (Legend tier)",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "ai.analyticslegends/requiresTier": "legend"
+      }
+    },
+    {
+      "name": "get_sap_client_profile",
+      "title": "One SAP end-customer profile (Legend tier)",
+      "description": "The full profile of one SAP end-customer — SAP footprint (products in use, modules known), analytics solutions, identity and evidence fields. Requires a subscriber API key, Legend tier or above. `id` comes verbatim from find_sap_clients.rows[].id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 160,
+            "description": "Profile id, verbatim from find_sap_clients.rows[].id."
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sap_products_used": {},
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "One SAP end-customer profile (Legend tier)",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "ai.analyticslegends/requiresTier": "legend"
+      }
+    },
+    {
+      "name": "get_firm_intel",
+      "title": "Firm intelligence profile (Legend tier)",
+      "description": "The paid intelligence profile of a services firm — SAP practice size and partner level, delivery flags per product, typical day rate and seniority, notable clients, Glassdoor and LinkedIn signals, analytics practice summary. Requires a subscriber API key, Legend tier or above. Person-shaped fields (contacts, founders, leadership, recruiters, postal addresses) are NEVER served by this endpoint at any tier — they remain behind the platform's signed-URL path. Search by name; the public directory (search_firms) is a different, wider population.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Firm name, matched case-insensitively. Omit to browse the corpus by data completeness."
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$",
+            "description": "ISO-3166-1 alpha-2 country code, e.g. DE, FR, CH."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 3,
+            "description": "Max rows (hard cap 10 — these rows are wide)."
+          },
+          "cursor": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "Opaque token from a previous response's `_meta.next_cursor`. Pass it back with the SAME filter arguments to read the next page; a null `next_cursor` means you have reached the end. It is bound to those filters and refused if they change — a cursor names a POSITION in one ordering, and applying it to another query would start the page in the wrong place."
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "result_count": {
+            "type": "integer"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "firm_id_unique": {},
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "sap_partner_level": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "typical_day_rate_eur": {},
+                "citation_url": {
+                  "type": "string"
+                },
+                "citation_scope": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "section_hub"
+                  ]
+                }
+              }
+            }
+          },
+          "_meta": {
+            "type": "object"
+          },
+          "_attribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "result_count",
+          "rows",
+          "_attribution"
+        ]
+      },
+      "annotations": {
+        "title": "Firm intelligence profile (Legend tier)",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "ai.analyticslegends/requiresTier": "legend"
+      }
+    }
+  ]
+}

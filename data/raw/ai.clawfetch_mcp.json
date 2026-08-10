@@ -1,0 +1,233 @@
+{
+  "name": "ai.clawfetch/mcp",
+  "source_url": "https://mcp.clawfetch.ai/mcp",
+  "fetched_at": "2026-08-10T02:30:31+00:00",
+  "registry_description": "Web intelligence for AI agents: fetch, render, extract, research. x402 micropayments, no API keys.",
+  "tools": [
+    {
+      "name": "fetch_url",
+      "description": "Fetch a URL and return its content as clean markdown. Works for articles, docs, blogs, product pages â any static HTML. Cost: $0.001 per request.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL to fetch"
+          },
+          "maxChars": {
+            "description": "Maximum characters to return (default: no limit). Use to control response size.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "render_page",
+      "description": "Render a JavaScript-heavy page using a stealth browser and return clean markdown. Use for SPAs, React/Vue/Angular apps, pages behind JS rendering. Cost: $0.002 per request.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL to render"
+          },
+          "maxChars": {
+            "description": "Maximum characters to return",
+            "type": "number"
+          },
+          "waitFor": {
+            "description": "CSS selector to wait for before extracting content (e.g., \".main-content\", \"#app\")",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "research_topic",
+      "description": "Research a topic using multiple sources. Returns a summary with cited sources. Great for market research, competitive analysis, fact-checking, and current events. Cost: $0.01 per request.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "The topic or question to research (e.g., \"latest developments in AI agent frameworks\")"
+          },
+          "sources": {
+            "description": "Number of sources to consult (default: 5, max: 10)",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10
+          }
+        },
+        "required": [
+          "topic"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "check_domains",
+      "description": "Check if one or more domain names are available for registration. Cost: $0.002 per request.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domains": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of domain names to check (e.g., [\"example.com\", \"myapp.io\"])"
+          }
+        },
+        "required": [
+          "domains"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "suggest_domains",
+      "description": "Generate available domain name suggestions based on a keyword or concept. Cost: $0.002 per request.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Keyword or concept to generate domain suggestions for (e.g., \"ai agent marketplace\")"
+          },
+          "tlds": {
+            "description": "Preferred TLDs to check (e.g., [\".com\", \".io\", \".ai\"]). Default: common TLDs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "count": {
+            "description": "Number of suggestions to generate (default: 10)",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 50
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "extract_data",
+      "description": "Extract structured data from a URL using a specialized extractor. Supports 17+ site types including GitHub repos/profiles, npm packages, Twitter/X profiles, LinkedIn, YouTube, Product Hunt, Hacker News, Reddit, and more. Cost: $0.003 per request.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL to extract data from (e.g., \"https://github.com/openai/openai-python\", \"https://www.npmjs.com/package/express\")"
+          },
+          "type": {
+            "description": "Optional extractor override (e.g. \"github\", \"coingecko\"). Auto-detected from the URL when omitted.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_extractors",
+      "description": "List all available structured data extractors with their supported domains and fields. Use this to discover what sites ClawFetch can extract typed data from. Cost: $0.001.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "parse_document",
+      "description": "Parse an office document (docx, pptx, xlsx, pdf, odt, ods, odp, rtf, epub, csv, doc, ppt) into clean GitHub-Flavored Markdown. Provide a document URL or a local file path. Deterministic Rust converter â headings, tables, and lists preserved. No OCR: scanned/image-only PDFs are rejected. Cost: $0.002 per request.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "URL of the document to download and parse (e.g. \"https://example.com/report.docx\")",
+            "type": "string",
+            "format": "uri"
+          },
+          "path": {
+            "description": "Local file path of the document to parse (read and uploaded as bytes)",
+            "type": "string"
+          },
+          "format": {
+            "description": "Optional explicit format override (e.g. \"csv\"). Auto-detected from bytes/extension when omitted.",
+            "type": "string"
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "health_check",
+      "description": "Check the ClawFetch API health status. Free â no x402 payment required.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "wallet_info",
+      "description": "Get the wallet address being used for x402 payments. Useful for checking balance or funding the wallet.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

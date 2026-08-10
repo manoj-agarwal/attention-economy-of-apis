@@ -1,7 +1,7 @@
 {
   "name": "ai.aarna/atars-mcp",
   "source_url": "https://mcp.aarna.ai/mcp",
-  "fetched_at": "2026-08-10T02:24:06+00:00",
+  "fetched_at": "2026-08-10T02:28:25+00:00",
   "registry_description": "Crypto market signals, technical indicators, and sentiment analysis for AI agents.",
   "tools": [
     {

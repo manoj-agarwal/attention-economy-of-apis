@@ -1,0 +1,61 @@
+{
+  "name": "ai.canaryusers/canaryusers",
+  "source_url": "https://www.canaryusers.ai/api/mcp",
+  "fetched_at": "2026-08-10T02:30:18+00:00",
+  "registry_description": "A flock of AI users tests your deployed app and reports where real people get stuck, with fixes.",
+  "tools": [
+    {
+      "name": "canary_scan",
+      "description": "Run a CanaryUsers UX scan on a DEPLOYED URL (your live or preview app — not source code). A flock of AI personas evaluates the page and reports where real users would get stuck, with concrete fixes. Returns AI-ready findings you can act on immediately. Use depth='deep' for the thorough scan that renders the page, checks it VISUALLY on desktop + mobile (catches mobile breakage and layout issues), and clicks through key flows like signup/checkout (slower, ~60-90s, uses one credit); depth='quick' (default) is a fast static check that does NOT see mobile or visual issues — use 'deep' when the user mentions mobile, layout, or visual problems. IMPORTANT: if this returns status 'running' with a scanId, the findings are not ready yet — wait ~30s, then call get_report_markdown(scanId), repeating until it returns the report. Always fetch and present the findings before stopping, then offer to fix the top issues.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The public URL to scan (e.g. your deployed app or preview URL)."
+          },
+          "depth": {
+            "type": "string",
+            "enum": [
+              "quick",
+              "deep"
+            ],
+            "description": "'quick' (default, fast, free) or 'deep' (clicks through flows + visual review, ~1 credit)."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "list_recent_scans",
+      "description": "List the most recent CanaryUsers UX scans for your account (id, URL, CanaryScore, grade, status, date). Use this to find a scan to dig into.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number",
+            "description": "How many to return (default 10, max 50)."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_report_markdown",
+      "description": "Get one scan's full report as AI-ready markdown: the findings ranked by severity, why each matters, and how to fix it. Pass a scanId from list_recent_scans.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scanId": {
+            "type": "string",
+            "description": "The scan id (UUID) to fetch."
+          }
+        },
+        "required": [
+          "scanId"
+        ]
+      }
+    }
+  ]
+}

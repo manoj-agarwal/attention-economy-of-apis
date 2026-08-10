@@ -1,0 +1,226 @@
+{
+  "name": "ai.agentrapay/agentra",
+  "source_url": "https://api.agentrapay.ai/mcp",
+  "fetched_at": "2026-08-10T02:28:44+00:00",
+  "registry_description": "Identity oracle and trust layer for autonomous AI agents. Bidirectional KYA and trust scoring.",
+  "tools": [
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "description": "Register as an agent and provision a non-custodial wallet. This is your FIRST CALL when onboarding to Agentra. Returns your agent_id, API key (agn_ prefix), and a Turnkey-managed wallet address on Base Sepolia. You hold the keys via Turnkey; Agentra never touches your private key. After this, call agentra_verify_identity to upgrade your trust tier.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Human-readable name for your agent (e.g. 'ShoppingBot-v2')",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "operator": {
+            "description": "Optional. Your organization or operator name.",
+            "type": "string"
+          },
+          "purpose": {
+            "description": "What this agent does (e.g. 'automated trading', 'API access'). Defaults to 'autonomous'.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "name": "agentra_create_wallet"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "description": "Submit identity verification to upgrade your trust tier. Higher tiers unlock larger transaction limits. Provide your agent_id (from agentra_create_wallet) and operator attestation. Verification is instant. Tiers: Unverified ($100/tx, $250/day) -> Basic ($1K/tx, $5K/day) -> Standard ($5K/tx, $10K/day) -> Enhanced ($25K/tx, $100K/day). Your API key (agn_ prefix) must be passed via X-API-Key header.",
+      "inputSchema": {
+        "properties": {
+          "agent_id": {
+            "description": "Your agent ID from registration",
+            "format": "uuid",
+            "type": "string"
+          },
+          "operator_attestation": {
+            "description": "Operator-signed attestation of agent identity and capabilities",
+            "properties": {
+              "attested_capabilities": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "operator_domain": {
+                "type": "string"
+              },
+              "operator_name": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "agent_id"
+        ],
+        "type": "object"
+      },
+      "name": "agentra_verify_identity"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "description": "CALL THIS BEFORE paying or transacting with unknown agents. Returns the target agent's trust score (0-100), trust tier, reputation zone (Green/Yellow/Red), and transaction history summary. Agentra scores BOTH sides of every transaction: you and your counterparty. This is a read-only lookup with no side effects. Monetized endpoint: response detail varies by your plan tier.",
+      "inputSchema": {
+        "properties": {
+          "agent_id": {
+            "description": "The agent ID to check reputation for",
+            "format": "uuid",
+            "type": "string"
+          },
+          "include_history": {
+            "default": false,
+            "description": "Include recent transaction history summary (Standard+ plans)",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "agent_id"
+        ],
+        "type": "object"
+      },
+      "name": "agentra_check_reputation"
+    },
+    {
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "description": "Request authorization for a payment to another agent or service. Agentra is NON-CUSTODIAL: this returns an authorization attestation and an unsigned transaction. Agentra never touches your private keys or moves your funds. YOU sign and submit the transaction yourself. Flow: (1) Call this endpoint -> (2) Receive unsigned tx + attestation -> (3) Sign with your Turnkey wallet -> (4) Submit to Base network -> (5) Call settle to record completion. If counterparty is unverified and require_counterparty_kya is true (default), you get a 402 challenge with instructions for the counterparty to onboard. This is Agentra's viral growth mechanism.",
+      "inputSchema": {
+        "properties": {
+          "amount_usdc": {
+            "description": "Transaction amount in USDC as a string (e.g. '25.00')",
+            "type": "string"
+          },
+          "purpose": {
+            "description": "Human-readable transaction purpose",
+            "maxLength": 64,
+            "type": "string"
+          },
+          "receiver_address": {
+            "description": "Recipient agent ID or external wallet address",
+            "type": "string"
+          },
+          "require_counterparty_kya": {
+            "default": true,
+            "description": "Require counterparty to be KYA-verified. Default true. This is the viral growth hook: unverified counterparties must onboard to receive funds.",
+            "type": "boolean"
+          },
+          "sender_agent_id": {
+            "description": "Your agent ID (the sender)",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sender_agent_id",
+          "receiver_address",
+          "amount_usdc"
+        ],
+        "type": "object"
+      },
+      "name": "agentra_authorize_payment"
+    },
+    {
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "description": "Create or update spending mandates that define your agent's autonomous transaction boundaries. Mandates enforce: max per-transaction amount, daily spending cap, allowed recipient types, minimum counterparty reputation score, and expiration. Your human operator sets these; your agent operates within them. require_counterparty_kya defaults to true. Recommended: true. This recruits counterparties into verification.",
+      "inputSchema": {
+        "properties": {
+          "agent_id": {
+            "description": "Your agent ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "daily_limit_usd": {
+            "description": "Maximum total USD spend per rolling 24h",
+            "minimum": 0.001,
+            "type": "number"
+          },
+          "expires_at": {
+            "description": "Mandate expiration. Authorization rejected after this time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "max_per_tx_usd": {
+            "description": "Maximum USD per single transaction",
+            "minimum": 0.001,
+            "type": "number"
+          },
+          "min_counterparty_score": {
+            "description": "Minimum reputation score (0-100) for counterparties. 40 = exclude Red zone.",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "require_counterparty_kya": {
+            "default": true,
+            "description": "Require counterparty KYA verification on all outbound transactions",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "agent_id",
+          "max_per_tx_usd",
+          "daily_limit_usd"
+        ],
+        "type": "object"
+      },
+      "name": "agentra_set_mandate"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "description": "Get your agent profile and wallet details: trust tier, trust score, wallet address, registration status, and current verification level. Use to check your status before initiating transactions. Read-only, no side effects.",
+      "inputSchema": {
+        "properties": {
+          "agent_id": {
+            "description": "Your Agentra agent ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "agent_id"
+        ],
+        "type": "object"
+      },
+      "name": "agentra_get_wallet"
+    }
+  ]
+}

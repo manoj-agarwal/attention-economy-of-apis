@@ -1,0 +1,372 @@
+{
+  "name": "ai.bezal/local-commerce",
+  "source_url": "https://app.bezal.ai/api/mcp",
+  "fetched_at": "2026-08-10T02:29:26+00:00",
+  "registry_description": "Search 7,000+ local service businesses across America by category, location, or keyword.",
+  "tools": [
+    {
+      "name": "search_businesses",
+      "description": "Search 47,000+ local business profiles by name, category, or location.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "query": {
+            "description": "Free-text search across business name and description",
+            "type": "string"
+          },
+          "category": {
+            "description": "Category keyword (e.g. \"plumbing\", \"hr consulting\")",
+            "type": "string"
+          },
+          "city": {
+            "description": "City name",
+            "type": "string"
+          },
+          "state": {
+            "description": "Two-letter state code or full state name",
+            "type": "string"
+          },
+          "limit": {
+            "default": 5,
+            "description": "Number of results to return (1-20)",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 20
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_business",
+      "description": "Get full profile for a specific business including contact info, services, ratings, and hours.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The UUID of the business to look up"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_categories",
+      "description": "List all available business categories in the directory.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "request_service",
+      "description": "Submit a service request to a business on behalf of a consumer.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The UUID of the business to send the request to"
+          },
+          "seeker_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Name of the person requesting the service"
+          },
+          "seeker_email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "description": "Email address of the requester"
+          },
+          "service_needed": {
+            "description": "Short description of the service category",
+            "type": "string"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Detailed message about what the requester needs"
+          }
+        },
+        "required": [
+          "business_id",
+          "seeker_name",
+          "seeker_email",
+          "message"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "search_by_service",
+      "description": "Find businesses that offer a specific service type. Useful when you know the exact service rather than the category â e.g. \"Drain cleaning\" rather than \"plumbing\".",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "service_type": {
+            "type": "string",
+            "description": "Exact service offered (matched against the services array)"
+          },
+          "location": {
+            "description": "Optional city or state to filter by",
+            "type": "string"
+          }
+        },
+        "required": [
+          "service_type"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_reviews",
+      "description": "Get reviews for a specific business including Bezal Verified reviews and Google rating.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "Business UUID"
+          },
+          "limit": {
+            "description": "Max reviews to return",
+            "default": 10,
+            "type": "number",
+            "minimum": 1,
+            "maximum": 50
+          }
+        },
+        "required": [
+          "business_id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_service_catalog",
+      "description": "Get services and pricing for a specific business. Falls back to the services list if no priced catalog exists.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "Business UUID"
+          }
+        },
+        "required": [
+          "business_id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "check_business_availability",
+      "description": "Check if a business has availability on a specific date using their Bezal calendar. Best-effort â only works for businesses that use the calendar feature.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "Business UUID"
+          },
+          "date": {
+            "type": "string",
+            "description": "ISO date (YYYY-MM-DD)"
+          }
+        },
+        "required": [
+          "business_id",
+          "date"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "compare_businesses",
+      "description": "Compare up to 5 businesses side-by-side on ratings, services, BezalRank, and profile status.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "business_ids": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "Array of business UUIDs to compare"
+          }
+        },
+        "required": [
+          "business_ids"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "search_by_city",
+      "description": "Search for businesses in a specific city, optionally filtered by category. City-level matching.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "City name"
+          },
+          "state": {
+            "description": "Two-letter state code or full name",
+            "type": "string"
+          },
+          "category": {
+            "description": "Category keyword filter",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Max results",
+            "default": 10,
+            "type": "number",
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "city"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "search_providers",
+      "description": "Legacy alias for search_businesses. Prefer search_businesses for new clients.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "limit": {
+            "default": 5,
+            "type": "number",
+            "minimum": 1,
+            "maximum": 20
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_provider_details",
+      "description": "Legacy alias for get_business. Prefer get_business for new clients.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "business_id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "submit_quote_request",
+      "description": "Legacy alias for request_service. Prefer request_service for new clients.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "business_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "seeker_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "seeker_email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "business_id",
+          "seeker_name",
+          "seeker_email",
+          "message"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

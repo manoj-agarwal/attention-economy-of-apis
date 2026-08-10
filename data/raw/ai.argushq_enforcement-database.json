@@ -1,0 +1,122 @@
+{
+  "name": "ai.argushq/enforcement-database",
+  "source_url": "https://argushq.ai/api/mcp",
+  "fetched_at": "2026-08-10T02:28:59+00:00",
+  "registry_description": "Search Argus HQ public FDA enforcement data: warning letters, recalls, approvals, 483s.",
+  "tools": [
+    {
+      "name": "search_enforcement",
+      "title": "Search FDA enforcement records",
+      "description": "Full-text search across all 1,000+ Argus HQ FDA enforcement pages (warning letters, recalls, approvals, 483 inspections) by keyword, product name, or company name.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 2,
+            "description": "Search text -- company name, product, or keyword"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_company_history",
+      "title": "Get a company's full FDA enforcement history",
+      "description": "Every FDA warning letter, recall, approval, and 483 citation Argus HQ has recorded for a given company, by its Argus HQ company slug (e.g. \"pfizer-inc\").",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Argus HQ company slug, e.g. \"pfizer-inc\""
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_recall_by_lot",
+      "title": "Look up a recall by lot number",
+      "description": "Finds every FDA recall record that references a specific product lot number.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lot_number": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The lot number printed on the product/packaging"
+          }
+        },
+        "required": [
+          "lot_number"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_warning_letter",
+      "title": "Look up an FDA warning letter by reference number",
+      "description": "Direct lookup of an FDA warning letter. Accepts either the FDA reference number printed in the letter itself (e.g. \"320-26-65\") or the fda.gov URL slug ID for the letter.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "wl_number": {
+            "type": "string",
+            "minLength": 1,
+            "description": "FDA warning letter reference number (e.g. \"320-26-65\") or fda.gov URL slug ID"
+          }
+        },
+        "required": [
+          "wl_number"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_recent_actions",
+      "title": "List recent FDA enforcement actions",
+      "description": "The most recent published FDA warning letters, recalls, approvals, and 483 citations across all streams.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "default": 7,
+            "description": "How many trailing days to include (default 7)"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

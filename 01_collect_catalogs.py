@@ -101,7 +101,7 @@ def parse_jsonrpc_response(resp):
 
 def find_result(messages, msg_id):
     for msg in messages:
-        if isinstance(msg, dict) and msg.get("id") == msg_id and "result" in msg:
+        if isinstance(msg, dict) and str(msg.get("id")) == str(msg_id) and "result" in msg:
             return msg["result"]
     return None
 
@@ -151,6 +151,22 @@ def mcp_tools_list(url):
     return tools
 
 
+def mcp_tools_list_with_retry(url, retries=1):
+    """Retry on transient network errors (ConnectionError, Timeout, 503)."""
+    for attempt in range(1 + retries):
+        try:
+            return mcp_tools_list(url)
+        except (requests.ConnectionError, requests.Timeout):
+            if attempt == retries:
+                raise
+            time.sleep(2)
+        except requests.HTTPError as exc:
+            if exc.response is not None and exc.response.status_code == 503 and attempt < retries:
+                time.sleep(2)
+                continue
+            raise
+
+
 def safe_filename(name):
     return re.sub(r"[^A-Za-z0-9._-]", "_", name)[:180]
 
@@ -173,7 +189,7 @@ def main():
                 continue
             url, _ = remote
             try:
-                tools = mcp_tools_list(url)
+                tools = mcp_tools_list_with_retry(url)
                 out = {"name": name, "source_url": url, "fetched_at": now_iso(),
                        "registry_description": srv.get("description", ""),
                        "tools": tools}

@@ -1,0 +1,559 @@
+{
+  "name": "ai.creativescope/creative-intelligence",
+  "source_url": "https://mcp.creativescope.ai/mcp",
+  "fetched_at": "2026-08-10T02:30:49+00:00",
+  "registry_description": "Mobile-game ad creative intelligence across SDK ad networks: search, rankings, AI hook analysis.",
+  "tools": [
+    {
+      "name": "search_creatives",
+      "description": "Search mobile game ad creatives by keyword or visual-description-like natural language. For an English request, send the original English concepts only. The service internally expands genre, hook, mood, art-style, and gameplay-mechanic concepts to Chinese source-label equivalents for retrieval; generated translations must not be inserted into the public request. Use this for finding UGC-style ads, winning creatives, opening hook examples, playable ads, and platform/country/genre slices. Results include the original creative asset as media_url when available. Creative tag fields are normalized to English in the result. Example: 'Find UGC-style match-3 video ads in the US.'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "description": "Natural-language search query in the user's original language. Do not append generated Chinese translations to an English query; the service performs Chinese source-label expansion internally.",
+            "type": "string"
+          },
+          "platform": {
+            "description": "Ad platform filter. Supported values: facebook, instagram, messenger, audience_network, threads, admob, youtube, tiktok, mintegral, unity, applovin, ironsource, vungle, pangle.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "country": {
+            "description": "ISO 3166-1 alpha-2 country code, for example US, JP, KR, GB.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "genre": {
+            "description": "Game genre or sub-genre in the user's original language, for example match-3, puzzle, or SLG. Chinese source-label expansion is internal.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "format": {
+            "description": "Creative format: image, video, or playable.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "orientation": {
+            "description": "Optional creative orientation: portrait, landscape, or square. For video, this is derived from existing media width and height metadata.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "date_range": {
+            "description": "Date range. Supports last_7_days, last_30_days, last_90_days, or 'YYYY-MM-DD..YYYY-MM-DD'. Defaults to last_90_days.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "limit": {
+            "description": "Number of creatives to return. Maximum 20.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "get_creative_detail",
+      "description": "Get one creative's delivery metadata and English creative insights, including opening hook signals, scene descriptions, and creative patterns when available. Example: 'Why does this winning creative work?'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "creative_id": {
+            "description": "Creative ID returned by search_creatives, find_similar_creatives, or get_creative_rankings.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "creative_id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "get_creative_rankings",
+      "description": "Get global or genre-level rising creative rankings by day, week, or month, or evergreen creative rankings from the monthly snapshot; platform and country filters are not supported. Evergreen data is monthly only; day/week requests are normalized to month and disclosed in request_echo. Use this to answer what's rising this week, what evergreen creatives keep working, or which hook patterns repeat in a genre. For platform- or country-filtered discovery, use search_creatives and do not describe those results as an official rising or evergreen ranking. Creative tag fields are normalized to English in the result. Example: 'Which SLG creatives are rising this month?'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "description": "Ranking type: rising or evergreen.",
+            "type": "string"
+          },
+          "period": {
+            "description": "Ranking period: day, week, or month. Evergreen supports month only; other values are normalized to month.",
+            "type": "string"
+          },
+          "genre": {
+            "description": "Optional genre/category filter in the user's original language, for example match-3 or SLG. Chinese source-label expansion is internal.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "limit": {
+            "description": "Number of ranked creatives to return. Maximum 20.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "type",
+          "period"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "generate_weekly_creative_brief",
+      "description": "Generate a compact creative brief from recent high-signal mobile game ads. Use this for weekly inspiration, hook mining, competitor creative planning, and UA brainstorming. Creative tag fields are normalized to English in the result. Example: 'Create this week's puzzle-game creative brief for Facebook.'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "genre": {
+            "description": "Game genre or sub-genre in the user's original language, for example match-3 or puzzle. Chinese source-label expansion is internal.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "platform": {
+            "description": "Ad platform filter. Supported values: facebook, instagram, messenger, audience_network, threads, admob, youtube, tiktok, mintegral, unity, applovin, ironsource, vungle, pangle.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "country": {
+            "description": "ISO 3166-1 alpha-2 country code, for example US, JP, KR, GB.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "format": {
+            "description": "Creative format: image, video, or playable.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "date_range": {
+            "description": "Date range. Supports last_7_days, last_30_days, last_90_days, or 'YYYY-MM-DD..YYYY-MM-DD'. Defaults to last_7_days.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "limit": {
+            "description": "Number of representative creatives to include. Maximum 20.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "search_advertisers",
+      "description": "Search advertisers, game studios, or mobile games by name and optional genre, region, and platform filters. Use the returned advertiser_id with get_advertiser_profile. Example: 'Find the advertiser for Last War.'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "description": "Advertiser, studio, or game name query.",
+            "type": "string"
+          },
+          "genre": {
+            "description": "Game genre or sub-genre filter in the user's original language. Chinese source-label expansion is internal.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "region": {
+            "description": "Region or ISO country code filter. Exact matching depends on current availability metadata.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "platform": {
+            "description": "Optional ad platform filter. Supported values include facebook, instagram, tiktok, admob, youtube, unity, applovin, mintegral, ironsource, vungle, and pangle.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "limit": {
+            "description": "Number of advertisers to return. Maximum 20.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "get_advertiser_profile",
+      "description": "Get an advertiser or game profile, including recent ad activity, creative volume, target countries, and platforms. Creative tag fields are normalized to English in the result. Example: 'Which markets and platforms is this game scaling on?'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "advertiser_id": {
+            "description": "Advertiser ID returned by search_advertisers or as game_id in creative results.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "advertiser_id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "get_reference_image_search_results",
+      "description": "Get completed reference-image search results. If the job is still running, returns polling guidance. Example: 'Show the matches from my reference-image search.'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "description": "Job ID returned by submit_reference_image_search.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Maximum number of hydrated creative records to return. Maximum 20.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "get_game_rank_markets",
+      "description": "List the countries, app-store categories, stores, and ranking types where a game appeared on a chart during a date range. Returns each observed dimension with best rank, latest rank, and ranked-day count. Ranking types are free, store-paid, and top-grossing. Only Google Play and iPhone App Store are exposed; iPad rankings are excluded. Date range defaults to the last 90 days and cannot exceed 365 days.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "game_id": {
+            "description": "Encrypted game ID returned by search_advertisers or as game_id/advertiser_id in other results.",
+            "type": "string"
+          },
+          "date_from": {
+            "description": "Start date in YYYY-MM-DD. Defaults to 89 days before date_to.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "date_to": {
+            "description": "End date in YYYY-MM-DD. Defaults to today.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "store": {
+            "description": "Store: all, google_play, or app_store. Defaults to all.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "rank_types": {
+            "description": "Ranking types: free, store_paid, grossing. Defaults to all three.",
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "default": null
+          },
+          "limit": {
+            "description": "Maximum dimension rows to return. Maximum 200; defaults to 100.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "game_id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "get_game_rank_trend",
+      "description": "Get one mobile game's daily app-store ranking performance over a date range. Returns free, store-paid, and top-grossing ranking series with best/latest rank and the matched country, category, and store. Use mode=best to select the game's best daily rank across supported countries and categories, or mode=exact for one country/category/store combination. Supported stores are Google Play, iPhone App Store, and all (Google Play plus iPhone App Store). Date range defaults to the last 90 days and cannot exceed 365 days.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "game_id": {
+            "description": "Encrypted game ID returned by search_advertisers or as game_id/advertiser_id in other results.",
+            "type": "string"
+          },
+          "date_from": {
+            "description": "Start date in YYYY-MM-DD. Defaults to 89 days before date_to.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "date_to": {
+            "description": "End date in YYYY-MM-DD. Defaults to today.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "mode": {
+            "description": "Query mode: best or exact. Defaults to best.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "store": {
+            "description": "Store: all, google_play, or app_store. Used as a constraint in both modes; defaults to all.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "country": {
+            "description": "ISO 3166-1 alpha-2 country code. Used by exact mode; defaults to US.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "category": {
+            "description": "App-store category. Used by exact mode; defaults to all categories.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "rank_types": {
+            "description": "Ranking types: free, store_paid, grossing. Defaults to all three.",
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "default": null
+          }
+        },
+        "required": [
+          "game_id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "submit_reference_image_search",
+      "description": "Submit a reference-image similarity search as an asynchronous job. Use this when the user provides a directly downloadable public HTTPS image URL. The URL must resolve to image bytes without login or hotlink protection; HTML pages, local paths, and base64 are not supported. The embedding provider validates image format and size asynchronously and returns IMAGE_FETCH_FAILED, INVALID_IMAGE, or EMBEDDING_MODEL_ERROR when processing cannot continue. Genre aliases are normalized internally. If a normalized genre produces no candidates, the completed result explicitly marks a visual-only fallback instead of silently returning an empty set. Example: 'Find ads visually similar to this reference image.'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "description": "Directly downloadable public HTTPS image URL. It must return image bytes without login or hotlink protection. Do not pass an HTML page, local path, base64, or expiring authenticated URL.",
+            "type": "string"
+          },
+          "country": {
+            "description": "Optional ISO 3166-1 alpha-2 country code, for example US, JP, KR, GB.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "genre": {
+            "description": "Optional game genre or sub-genre, for example SLG, match-3, puzzle, RPG. Aliases are normalized internally. If the normalized genre has no candidates, results may use an explicitly disclosed visual-only fallback.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "platform": {
+            "description": "Optional platform filter, for example facebook, instagram, tiktok, youtube, admob.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "format": {
+            "description": "Optional creative format: image, video, or playable.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "limit": {
+            "description": "Number of similar creatives to return when the job completes. Maximum 20.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "image_url"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "find_similar_creatives",
+      "description": "Find visually similar creatives using the stored vector of an existing creative. For a concept without an ID, query selects an explainable seed from available creative metadata and then uses the same vector-neighbor search. For an English concept, send the original English terms only. The service resolves Chinese source-label equivalents internally before selecting the seed. Returns creative records ordered from most to least visually similar; low-similarity and near-duplicate results are excluded, and raw similarity scores are not exposed. If request_echo.seed_basis identifies a proxy seed, clearly disclose that limitation instead of presenting the results as an exact concept match. Example: 'Show variants of the toilet run viral creative concept.'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "creative_id": {
+            "description": "Optional creative ID returned by search_creatives, get_creative_rankings, or get_reference_image_search_results. Supply creative_id or query.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "query": {
+            "description": "Optional concept query in the user's original language used to select a seed before vector similarity. Do not append generated translations; source-label expansion is internal. Supply query or creative_id.",
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "limit": {
+            "description": "Number of similar creatives to return. Maximum 20.",
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "get_reference_image_search_status",
+      "description": "Get the processing status of a reference-image search job. Example: 'Is my reference-image search finished yet?'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "description": "Job ID returned by submit_reference_image_search.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    }
+  ]
+}

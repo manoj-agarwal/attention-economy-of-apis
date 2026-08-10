@@ -1,0 +1,331 @@
+{
+  "name": "ai.boolsai/signals",
+  "source_url": "https://signals.boolsai.ai/mcp",
+  "fetched_at": "2026-08-10T02:29:32+00:00",
+  "registry_description": "Quant-research MCP — tradeable signals from public-company website stack changes. 7 tools.",
+  "tools": [
+    {
+      "name": "universe_summary",
+      "description": "Orient the agent: total events, tickers, date range, top event types, top detectors, price coverage, SPY benchmark status. Call this FIRST when starting research. Returns counts that let the agent reason about sample sizes before drilling in.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "find_signals",
+      "description": "Automated pattern discovery — scans event_type × detector × diff_field × severity combinations and returns those with the strongest forward-return characteristics (α vs SPY, % positive, n). Use this when you don't have a specific hypothesis yet. Returns sorted by α at +7D descending. Filter by min_n to set a sample-size floor.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "min_n": {
+            "type": "integer",
+            "description": "Minimum sample size (default 10)",
+            "default": 10
+          },
+          "horizon_days": {
+            "type": "integer",
+            "description": "Forward-return window (default 7)",
+            "default": 7
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "Top K combos to return (default 15)",
+            "default": 15
+          },
+          "group_by": {
+            "type": "string",
+            "enum": [
+              "event_type",
+              "detector",
+              "diff_field",
+              "severity",
+              "co_occurrence"
+            ],
+            "default": "event_type",
+            "description": "What dimension to slice on"
+          }
+        }
+      }
+    },
+    {
+      "name": "test_filter",
+      "description": "Compute α stats for an arbitrary filter expression. Use this to test a specific hypothesis (e.g. 'tier_count_changed on enterprise-SaaS tickers' or 'severity 5 events that happened on Mondays'). Returns n, mean/median raw and α returns at +1/+3/+7d, % positive, and the worst-loss trade.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "description": "e.g. 'TIER_COUNT_CHANGED' (case-insensitive)"
+          },
+          "detector": {
+            "type": "string",
+            "description": "e.g. 'pricing_detector'"
+          },
+          "severity_min": {
+            "type": "integer",
+            "description": "minimum severity (1-5)"
+          },
+          "ticker": {
+            "type": "string",
+            "description": "single ticker to filter to"
+          },
+          "co_occurrence_min": {
+            "type": "integer",
+            "description": "min same-day detector count (4 = 'real redesign')"
+          },
+          "since": {
+            "type": "string",
+            "description": "YYYY-MM-DD lower bound"
+          },
+          "until": {
+            "type": "string",
+            "description": "YYYY-MM-DD upper bound"
+          }
+        }
+      }
+    },
+    {
+      "name": "recent_events",
+      "description": "Live signal feed: events fired in the last N days (default 7). Returns each event with the predicted α range based on its event type's historical performance. Use this to surface 'what should I be looking at right now?'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "integer",
+            "default": 7,
+            "description": "Lookback in calendar days (max 30)"
+          },
+          "min_co_occurrence": {
+            "type": "integer",
+            "description": "Only show events with this many same-day detectors (4 = high-conviction)"
+          }
+        }
+      }
+    },
+    {
+      "name": "event_dossier",
+      "description": "Deep dive on a single event: full diff (added/removed values), surrounding price action (-3D to +14D), predicted vs actual α, links to wayback comparison. Use this to investigate a specific event flagged by find_signals or recent_events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "description": "change_event id"
+          }
+        },
+        "required": [
+          "event_id"
+        ]
+      }
+    },
+    {
+      "name": "scan_at_date",
+      "description": "Scan a URL as it appeared on a historical date via the Wayback Machine. Uses intel.boolsai.ai against the wayback-wrapped URL. Returns the same JSON shape as Boolsai Scan but for a historical snapshot. Use when investigating WHEN a vendor was added/removed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Original URL (e.g. 'https://gymshark.com/')"
+          },
+          "date": {
+            "type": "string",
+            "description": "YYYY-MM-DD — closest wayback snapshot on or before this date will be used"
+          }
+        },
+        "required": [
+          "url",
+          "date"
+        ]
+      }
+    },
+    {
+      "name": "ticker_history",
+      "description": "All events fired on a single ticker, plus price action timeline. Use this to investigate one company's pattern (e.g. 'show me everything we caught on NFLX').",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "e.g. 'NFLX'"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50
+          }
+        },
+        "required": [
+          "ticker"
+        ]
+      }
+    },
+    {
+      "name": "wayback_backtest",
+      "description": "Run an SPY-benchmarked backtest on the WAYBACK historical event dataset (2+ years, 13K events) instead of the recent live event dataset (2 months, 1.7K events). Much bigger samples for statistical confidence. Group by change_type / key_path / domain.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "group_by": {
+            "type": "string",
+            "enum": [
+              "change_type",
+              "key_path",
+              "key_name",
+              "parent_path",
+              "domain"
+            ],
+            "default": "key_path",
+            "description": "Dimension to slice on"
+          },
+          "min_n": {
+            "type": "integer",
+            "default": 20,
+            "description": "Minimum sample size"
+          },
+          "horizon_days": {
+            "type": "integer",
+            "default": 7,
+            "description": "Forward-return window"
+          },
+          "top_k": {
+            "type": "integer",
+            "default": 15
+          },
+          "since": {
+            "type": "string",
+            "description": "YYYY-MM-DD lower bound on event date (default: when prices start)"
+          },
+          "exclude_noise": {
+            "type": "boolean",
+            "default": true,
+            "description": "Filter out is_meta_noise=1 events"
+          }
+        }
+      }
+    },
+    {
+      "name": "domain_timeline",
+      "description": "Week-by-week wayback diff timeline for one domain. Returns every detected stack change (additions / removals) with week date. Use this to see when a vendor was added/removed historically, e.g. 'when did adobe.com add Segment?'",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "e.g. 'adobe.com'"
+          },
+          "change_type": {
+            "type": "string",
+            "enum": [
+              "added",
+              "removed",
+              "changed",
+              "any"
+            ],
+            "default": "any"
+          },
+          "contains": {
+            "type": "string",
+            "description": "Filter to events whose key_path or key_name contains this string (e.g. 'segment')"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "signal_landscape",
+      "description": "ONE-SHOT cross-signal sweep. Computes α-vs-SPY stats simultaneously across event_type, detector, diff_field, severity, AND co_occurrence dimensions — returns the full landscape in a single response. Use this FIRST when you want to see where signal lives without having to call find_signals N times. Stateless, pure D1, no rate-limit risk, ~1s response. Cached per arg set for sub-100ms repeated queries.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "live",
+              "wayback",
+              "both"
+            ],
+            "default": "both",
+            "description": "Which event dataset to scan. 'live' = 1.7K recent. 'wayback' = 13K over 2 years. 'both' = run both and return side-by-side."
+          },
+          "horizon_days": {
+            "type": "integer",
+            "default": 7,
+            "description": "Forward-return window (default 7)"
+          },
+          "min_n": {
+            "type": "integer",
+            "default": 20,
+            "description": "Sample-size floor per group"
+          },
+          "top_k_per_dim": {
+            "type": "integer",
+            "default": 8,
+            "description": "Top K results per dimension (default 8)"
+          },
+          "since": {
+            "type": "string",
+            "description": "Optional YYYY-MM-DD lower bound on event date"
+          }
+        }
+      }
+    },
+    {
+      "name": "signal_diff",
+      "description": "Compare two signal patterns side-by-side. e.g. 'how does PRICING_TIERS_ADDED compare to VENDORS_DETECTED_CHANGED on the live dataset?' Returns α, %pos, sample size, worst/best trades for each, plus delta. Pure D1, fast.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "signal_a": {
+            "type": "object",
+            "description": "First filter (same shape as test_filter args)"
+          },
+          "signal_b": {
+            "type": "object",
+            "description": "Second filter"
+          },
+          "horizon_days": {
+            "type": "integer",
+            "default": 7
+          }
+        },
+        "required": [
+          "signal_a",
+          "signal_b"
+        ]
+      }
+    },
+    {
+      "name": "farm_domain",
+      "description": "Bulk-farm a domain's historical wayback snapshots into our index. Use this when you need backtest history on a domain we haven't already farmed (i.e. wayback_backtest / domain_timeline return no data for it). Hits CDX → samples weekly → parallel-scans up to 50 snapshots via intel.boolsai.ai → inserts into wayback_intel_profiles. After farming completes you can call wayback_backtest or domain_timeline on the domain immediately. Cost: ~30-60s wall time, ~50 intel scans.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Bare domain, e.g. 'sweetgreen.com'"
+          },
+          "weeks": {
+            "type": "integer",
+            "default": 26,
+            "description": "How many weeks of history to farm (default 26 = ~6 months; max 100)"
+          },
+          "max_snapshots": {
+            "type": "integer",
+            "default": 50,
+            "description": "Hard cap on snapshots to fetch (default 50; max 200)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    }
+  ]
+}

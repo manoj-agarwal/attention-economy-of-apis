@@ -1,0 +1,204 @@
+{
+  "name": "ai.auralogs/auralogs",
+  "source_url": "https://mcp.auralogs.ai/mcp",
+  "fetched_at": "2026-08-10T02:29:07+00:00",
+  "registry_description": "Read-only access to Auralogs production logs: search logs, inspect errors, review AI analyses.",
+  "tools": [
+    {
+      "name": "list_projects",
+      "description": "List projects accessible to the current read key (one project for v1).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "get_project",
+      "description": "Get a project by id. Must match the read key's scoped project.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "list_logs",
+      "description": "List logs for the scoped project, optionally filtered by level/since/until.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": [
+              "debug",
+              "info",
+              "warn",
+              "error",
+              "fatal"
+            ]
+          },
+          "since": {
+            "type": "string"
+          },
+          "until": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "project_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "search_logs",
+      "description": "Full-text search log messages for the scoped project.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "project_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "q",
+          "project_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "get_log",
+      "description": "Get a single log row by id, with full context (stack, metadata).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "log_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "log_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "list_analyses",
+      "description": "List active analyses for the scoped project. Archived analyses (triaged from the dashboard) are excluded by default; pass include_archived=true to see them. Optional filters: severity (low/medium/high/critical), type (reactive/scheduled).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "reactive",
+              "scheduled"
+            ]
+          },
+          "include_archived": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "true",
+                  "false",
+                  "1",
+                  "0"
+                ]
+              }
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "project_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "get_analysis",
+      "description": "Get a single analysis by id (diagnosis, suggested fix, PR link if any).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "analysis_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "analysis_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    }
+  ]
+}

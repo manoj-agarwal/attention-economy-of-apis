@@ -1,0 +1,592 @@
+{
+  "name": "ai.dataecho/mcp",
+  "source_url": "https://dataecho.ai/mcp",
+  "fetched_at": "2026-08-10T02:30:55+00:00",
+  "registry_description": "Deploy files, sites, and Dockerfile apps to live URLs + private drives for agent memory.",
+  "tools": [
+    {
+      "name": "platform_info",
+      "description": "DataEcho platform overview: what it can host, auth state of this connection, docs links. Call this first if unsure.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "request_login_code",
+      "description": "Start sign-in: email a one-time code to the user. Follow with verify_login_code.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "The user's email address"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "verify_login_code",
+      "description": "Complete sign-in with the emailed code. Returns the apiKey ONCE — configure it as the `Authorization: Bearer <key>` header of this MCP connection (and/or save to ~/.artifact/credentials for the CLI scripts). Never echo it into chat.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Same email as request_login_code"
+          },
+          "code": {
+            "type": "string",
+            "description": "The one-time code from the email"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "publish_site",
+      "description": "Deploy files to a live URL. No slug → create a NEW site (works without auth; anonymous sites expire in 24h — always show the user the claimUrl). With slug → UPDATE that site (complete snapshot: send ALL files). A Dockerfile in the files makes it a server-side app (auth required; listen on process.env.PORT; persist under /data; poll app_status). Total payload ≤ 8 MB — for bigger sites use the dataecho skill scripts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "description": "Files to publish. Each file: { path, content (utf-8 text) OR contentBase64 (binary), contentType? }. The publish is a COMPLETE snapshot — omitted files are removed on update.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Site-relative path, e.g. index.html or assets/app.js"
+                },
+                "content": {
+                  "type": "string",
+                  "description": "UTF-8 text content (use for html/css/js/json/text)"
+                },
+                "contentBase64": {
+                  "type": "string",
+                  "description": "Base64 content (use for binary files)"
+                },
+                "contentType": {
+                  "type": "string",
+                  "description": "Optional MIME type; guessed from the extension if omitted"
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "slug": {
+            "type": "string",
+            "description": "Existing site slug to update (omit to create a new site)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Viewer page title (used when there's no index.html)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Viewer page description"
+          },
+          "spa": {
+            "type": "boolean",
+            "description": "Enable SPA fallback routing (serve index.html for unknown paths)"
+          },
+          "ttlSeconds": {
+            "type": "number",
+            "description": "Expiry for authenticated sites, in seconds"
+          },
+          "claimToken": {
+            "type": "string",
+            "description": "Claim token — required to update an anonymous site without auth"
+          }
+        },
+        "required": [
+          "files"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "claim_site",
+      "description": "Make a previously-anonymous site permanent under the authenticated account (requires auth + the claimToken from publish_site).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Site slug"
+          },
+          "claimToken": {
+            "type": "string",
+            "description": "Claim token returned by the anonymous publish"
+          }
+        },
+        "required": [
+          "slug",
+          "claimToken"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_sites",
+      "description": "List all sites owned by the authenticated account.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "search_sites",
+      "description": "Full-text search across the authenticated account's sites (names, metadata, and text content).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Max results (optional)"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_site",
+      "description": "Full details + current file manifest of an owned site.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Site slug"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "update_site_metadata",
+      "description": "Patch site settings without redeploying: viewer title/description, SPA mode, TTL, password (string sets, null removes).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Site slug"
+          },
+          "title": {
+            "type": "string",
+            "description": "Viewer title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Viewer description"
+          },
+          "spaMode": {
+            "type": "boolean",
+            "description": "SPA fallback routing"
+          },
+          "ttlSeconds": {
+            "type": "number",
+            "description": "Expiry in seconds (null-like 0 not allowed; omit to keep)"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password-gate the site; pass an empty string to REMOVE the password"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "delete_site",
+      "description": "Permanently delete an owned site. Irreversible — confirm with the user first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Site slug"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "app_status",
+      "description": "Build/run status of a container app deployed via publish_site with a Dockerfile. Poll until status is `live` or `failed`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Site slug"
+          },
+          "logs": {
+            "type": "boolean",
+            "description": "Include build logs"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_drives",
+      "description": "List the authenticated account's private cloud drives.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "create_drive",
+      "description": "Create a new private drive.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Drive name"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_list_files",
+      "description": "List files in a drive (by drive name or drv_… id), optionally under a path prefix.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Path prefix filter"
+          }
+        },
+        "required": [
+          "drive"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_read_file",
+      "description": "Read a file from a drive. Text comes back as utf-8 `content`; binary as `contentBase64`. Files over 1 MB are refused (use the skill scripts).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          },
+          "path": {
+            "type": "string",
+            "description": "File path in the drive"
+          }
+        },
+        "required": [
+          "drive",
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_write_file",
+      "description": "Write/overwrite one file in a drive (ETag-safe: pass ifMatch to assert the version you read, otherwise the current version is used automatically).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          },
+          "path": {
+            "type": "string",
+            "description": "Destination path in the drive"
+          },
+          "content": {
+            "type": "string",
+            "description": "UTF-8 text content"
+          },
+          "contentBase64": {
+            "type": "string",
+            "description": "Base64 content for binary files"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Optional MIME type"
+          },
+          "ifMatch": {
+            "type": "string",
+            "description": "Optional ETag precondition"
+          }
+        },
+        "required": [
+          "drive",
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_delete_file",
+      "description": "Delete one file from a drive.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          },
+          "path": {
+            "type": "string",
+            "description": "File path"
+          }
+        },
+        "required": [
+          "drive",
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_move_file",
+      "description": "Move/rename a file inside a drive.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          },
+          "from": {
+            "type": "string",
+            "description": "Current path"
+          },
+          "to": {
+            "type": "string",
+            "description": "New path"
+          }
+        },
+        "required": [
+          "drive",
+          "from",
+          "to"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_share",
+      "description": "Mint a scoped drive access token for another agent (perms read|write, optional path prefix + TTL like `7d`). The secret is returned ONCE.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          },
+          "perms": {
+            "type": "string",
+            "description": "read (default) or write"
+          },
+          "pathPrefix": {
+            "type": "string",
+            "description": "Restrict the token to this path prefix"
+          },
+          "ttl": {
+            "type": "string",
+            "description": "Lifetime, e.g. 1h, 7d (omit for no expiry)"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human label for the token"
+          }
+        },
+        "required": [
+          "drive"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_tokens",
+      "description": "List active share tokens of a drive (secrets are never shown again).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          }
+        },
+        "required": [
+          "drive"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_revoke_token",
+      "description": "Revoke a drive share token.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          },
+          "tokenId": {
+            "type": "string",
+            "description": "dtok_… id from drive_tokens"
+          }
+        },
+        "required": [
+          "drive",
+          "tokenId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_history",
+      "description": "Version timeline of a drive (every write is a restorable version).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          }
+        },
+        "required": [
+          "drive"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drive_restore",
+      "description": "Restore a drive to a prior version (commits a new version; nothing is lost).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "drive": {
+            "type": "string",
+            "description": "Drive name or drv_… id"
+          },
+          "versionId": {
+            "type": "string",
+            "description": "dv_… id from drive_history"
+          }
+        },
+        "required": [
+          "drive",
+          "versionId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_variables",
+      "description": "List account variable NAMES (values are write-only — they are injected into proxy calls and container apps, never read back).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "set_variable",
+      "description": "Create/update a write-only account secret (uppercase name). Injected as env vars into container apps and as ${VAR} into proxy calls. Optionally pin which upstream hosts may receive it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "UPPER_SNAKE_CASE variable name"
+          },
+          "value": {
+            "type": "string",
+            "description": "Secret value (never readable back)"
+          },
+          "allowedUpstreams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional allow-list of upstream hosts"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "delete_variable",
+      "description": "Delete an account variable.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Variable name"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

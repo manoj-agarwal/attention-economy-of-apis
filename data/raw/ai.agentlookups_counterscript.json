@@ -1,0 +1,24 @@
+{
+  "name": "ai.agentlookups/counterscript",
+  "source_url": "https://rx.agentlookups.ai/mcp",
+  "fetched_at": "2026-08-10T02:28:40+00:00",
+  "registry_description": "What pharmacies actually pay for prescriptions (CMS NADAC) plus fair-cash-price estimates.",
+  "tools": [
+    {
+      "description": "Look up what US pharmacies actually pay to acquire a drug (CMS NADAC benchmark), a fair cash-price estimate range, FDA generic equivalents, and Medicare negotiated prices where applicable. Returns match, candidates (disambiguate and call again), or no_match.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Drug name with optional strength/form, e.g. \"atorvastatin 20 mg\" or \"eliquis 5 mg tablet\". Generic (ingredient) names match best.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "name": "drug_price"
+    }
+  ]
+}

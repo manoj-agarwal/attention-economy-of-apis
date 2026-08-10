@@ -1,0 +1,2329 @@
+{
+  "name": "ai.certscore/mcp-light",
+  "source_url": "https://mcp.certscore.ai/mcp/light",
+  "fetched_at": "2026-08-10T02:30:23+00:00",
+  "registry_description": "No-account public website privacy risk scans with 20 new scans/day and free recent-result reuse.",
+  "tools": [
+    {
+      "name": "scan_site",
+      "title": "Scan site",
+      "description": "First call. Starts or reuses a public-web scan and waits up to 45 seconds by default. If status is queued, running, or finalizing, retain scanId and poll get_scan_status using only that scanId. Stop polling at completed, completed_limited, failed, expired, or rate_limited. For usable completion, call get_scan_bundle. No-go and limited coverage are observations, never proof of compliance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Public URL or domain to scan."
+          },
+          "freshness": {
+            "type": "string",
+            "enum": [
+              "latest",
+              "refresh"
+            ],
+            "description": "Use latest to reuse recent scans or refresh to request a new scan when eligible."
+          },
+          "scanFrom": {
+            "type": "string",
+            "enum": [
+              "eu_de",
+              "eu_ie",
+              "california"
+            ],
+            "description": "Optional scan execution context for newly queued scans."
+          },
+          "waitForCompletion": {
+            "type": "boolean",
+            "description": "Wait for a completed scan resource in this tool call. Defaults to true. Set false only for an explicitly asynchronous workflow."
+          },
+          "maxWaitSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 45,
+            "description": "Maximum time to wait before returning the still-running job. Defaults to 45 seconds; never turns an active scan into an error."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "certscore_scan",
+              "certscore_scan_job",
+              "certscore_tool_error"
+            ]
+          },
+          "scanId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "domain": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "running",
+                  "finalizing",
+                  "completed",
+                  "completed_limited",
+                  "failed",
+                  "expired",
+                  "rate_limited"
+                ]
+              },
+              {
+                "type": "string",
+                "const": "invalid_arguments"
+              }
+            ]
+          },
+          "resultDisposition": {
+            "type": "string",
+            "enum": [
+              "no_go"
+            ]
+          },
+          "noGo": {
+            "type": "object",
+            "properties": {
+              "reasonCode": {
+                "type": "string",
+                "enum": [
+                  "blank_or_unusable_page",
+                  "loading_or_stalled",
+                  "not_found_404",
+                  "parked_or_placeholder",
+                  "site_not_ready",
+                  "captcha_or_challenge",
+                  "access_denied_or_forbidden_page",
+                  "rate_limited_429",
+                  "server_error_5xx",
+                  "configuration_error",
+                  "maintenance_or_unavailable",
+                  "tls_or_certificate_error",
+                  "unsupported_region",
+                  "target_unreachable_or_unsuitable",
+                  "navigation_transport_failure",
+                  "visual_capture_failed_or_placeholder",
+                  "retained_visual_error_shell",
+                  "unknown"
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "explanation": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "limitationKind": {
+                "type": "string",
+                "enum": [
+                  "target_site_state",
+                  "scanner_access_limitation",
+                  "scanner_capture_limitation"
+                ]
+              },
+              "recommendedNextAction": {
+                "type": "string"
+              },
+              "retryLikelyToHelp": {
+                "type": "boolean"
+              },
+              "evidenceExcerpt": {
+                "type": "string",
+                "maxLength": 360
+              }
+            },
+            "required": [
+              "reasonCode",
+              "title",
+              "explanation",
+              "summary",
+              "limitationKind",
+              "recommendedNextAction",
+              "retryLikelyToHelp"
+            ],
+            "additionalProperties": false
+          },
+          "scanFrom": {
+            "type": "string",
+            "enum": [
+              "eu_de",
+              "eu_ie",
+              "california"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scanTimeSeconds": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scoreStatus": {
+            "type": "string",
+            "enum": [
+              "provisional",
+              "final"
+            ]
+          },
+          "scoreVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scoreUpdatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "riskLevel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "not": {}
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string"
+                      },
+                      "limitations": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "additionalProperties": true
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "retryAfterSeconds": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "recommendedNextAction": {
+                    "type": "string"
+                  },
+                  "field": {
+                    "type": "string"
+                  },
+                  "mcpCode": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "integer"
+                  },
+                  "responseBody": {}
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable",
+                  "retryAfterSeconds",
+                  "recommendedNextAction"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommendedNextTool": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "get_scan_status",
+                  "get_scan_bundle"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommendedNextAction": {
+            "type": "string"
+          },
+          "observationOnlyDisclaimer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "status",
+          "error",
+          "recommendedNextTool",
+          "recommendedNextAction",
+          "observationOnlyDisclaimer"
+        ],
+        "additionalProperties": true,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "get_scan_status",
+      "title": "Get scan status",
+      "description": "Poll with only the stable scanId returned by scan_site. Active responses include phase, heartbeat, estimated progress, stalled state, and retry delay. Terminal responses include the canonical score, risk, coverage, timestamps, report URL, and an explicit next action. Stop polling at any terminal status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scanId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable CertScore scan ID returned by scan_site."
+          }
+        },
+        "required": [
+          "scanId"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "certscore_scan_job",
+              "certscore_pulse_status"
+            ]
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "scanId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scan_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "domain": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "finalizing",
+              "completed",
+              "completed_limited",
+              "failed",
+              "expired",
+              "rate_limited"
+            ]
+          },
+          "resultDisposition": {
+            "type": "string",
+            "enum": [
+              "no_go"
+            ]
+          },
+          "noGo": {
+            "type": "object",
+            "properties": {
+              "reasonCode": {
+                "type": "string",
+                "enum": [
+                  "blank_or_unusable_page",
+                  "loading_or_stalled",
+                  "not_found_404",
+                  "parked_or_placeholder",
+                  "site_not_ready",
+                  "captcha_or_challenge",
+                  "access_denied_or_forbidden_page",
+                  "rate_limited_429",
+                  "server_error_5xx",
+                  "configuration_error",
+                  "maintenance_or_unavailable",
+                  "tls_or_certificate_error",
+                  "unsupported_region",
+                  "target_unreachable_or_unsuitable",
+                  "navigation_transport_failure",
+                  "visual_capture_failed_or_placeholder",
+                  "retained_visual_error_shell",
+                  "unknown"
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "explanation": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "limitationKind": {
+                "type": "string",
+                "enum": [
+                  "target_site_state",
+                  "scanner_access_limitation",
+                  "scanner_capture_limitation"
+                ]
+              },
+              "recommendedNextAction": {
+                "type": "string"
+              },
+              "retryLikelyToHelp": {
+                "type": "boolean"
+              },
+              "evidenceExcerpt": {
+                "type": "string",
+                "maxLength": 360
+              }
+            },
+            "required": [
+              "reasonCode",
+              "title",
+              "explanation",
+              "summary",
+              "limitationKind",
+              "recommendedNextAction",
+              "retryLikelyToHelp"
+            ],
+            "additionalProperties": false
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scanTimeSeconds": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scoreStatus": {
+            "type": "string",
+            "enum": [
+              "provisional",
+              "final"
+            ]
+          },
+          "scoreVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scoreUpdatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "riskLevel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "not": {}
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string"
+                      },
+                      "limitations": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "additionalProperties": true
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phase": {
+            "type": "string"
+          },
+          "phaseStartedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastUpdatedAt": {
+            "type": "string"
+          },
+          "lastHeartbeatAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "progressPercent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "progressIsEstimate": {
+            "type": "boolean"
+          },
+          "estimatedRemainingSeconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stalled": {
+            "type": "boolean"
+          },
+          "retryAfterSeconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "retryAfterSeconds": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "recommendedNextAction": {
+                    "type": "string"
+                  },
+                  "field": {
+                    "type": "string"
+                  },
+                  "mcpCode": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "integer"
+                  },
+                  "responseBody": {}
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable",
+                  "retryAfterSeconds",
+                  "recommendedNextAction"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reportUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "links": {
+            "type": "object",
+            "properties": {
+              "self": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "findings": {
+                "type": "string"
+              },
+              "pulse": {
+                "type": "string"
+              },
+              "report": {
+                "type": "string"
+              },
+              "latestDomainScan": {
+                "type": "string"
+              },
+              "docs": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "recommendedNextTool": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "get_scan_status",
+                  "get_scan_bundle"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommendedNextAction": {
+            "type": "string"
+          },
+          "observationOnlyDisclaimer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "recommendedNextTool",
+          "recommendedNextAction",
+          "observationOnlyDisclaimer"
+        ],
+        "additionalProperties": true,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "get_scan_bundle",
+      "title": "Get scan bundle",
+      "description": "Call after completed or completed_limited status. summary returns the canonical overview without finding bodies; findings reserves space for compact findings; evidence reserves findings plus bounded evidence digests and references; full adds all available bounded sections. Every response declares detail and byte-budget metadata, omittedSections, retrieval URLs, and nextRecommendedMaxBytes when truncated. Never interpret no-go, not-observed, or limited coverage as proof of compliance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scanId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable CertScore scan ID."
+          },
+          "detail": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "findings",
+              "evidence",
+              "full"
+            ],
+            "description": "Response detail. Defaults to summary; evidence and full opt into heavier retained context."
+          },
+          "maxBytes": {
+            "type": "integer",
+            "minimum": 5000,
+            "maximum": 200000,
+            "description": "Maximum serialized structured response size in bytes. Defaults to 50000."
+          },
+          "maxFindings": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Maximum compact findings to return. Defaults to 5 for summary and 20 otherwise."
+          },
+          "maxPreConsentRows": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Maximum pre-consent inventory rows when evidence is requested. Defaults to 20."
+          }
+        },
+        "required": [
+          "scanId"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "certscore_scan_bundle"
+          },
+          "detail": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "findings",
+              "evidence",
+              "full"
+            ]
+          },
+          "scanId": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "finalizing",
+              "completed",
+              "completed_limited",
+              "failed",
+              "expired",
+              "rate_limited"
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scoreStatus": {
+            "type": "string",
+            "enum": [
+              "provisional",
+              "final"
+            ]
+          },
+          "scoreVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scoreUpdatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "riskLevel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resultDisposition": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "no_go"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "noGo": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "reasonCode": {
+                    "type": "string",
+                    "enum": [
+                      "blank_or_unusable_page",
+                      "loading_or_stalled",
+                      "not_found_404",
+                      "parked_or_placeholder",
+                      "site_not_ready",
+                      "captcha_or_challenge",
+                      "access_denied_or_forbidden_page",
+                      "rate_limited_429",
+                      "server_error_5xx",
+                      "configuration_error",
+                      "maintenance_or_unavailable",
+                      "tls_or_certificate_error",
+                      "unsupported_region",
+                      "target_unreachable_or_unsuitable",
+                      "navigation_transport_failure",
+                      "visual_capture_failed_or_placeholder",
+                      "retained_visual_error_shell",
+                      "unknown"
+                    ]
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "explanation": {
+                    "type": "string"
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "limitationKind": {
+                    "type": "string",
+                    "enum": [
+                      "target_site_state",
+                      "scanner_access_limitation",
+                      "scanner_capture_limitation"
+                    ]
+                  },
+                  "recommendedNextAction": {
+                    "type": "string"
+                  },
+                  "retryLikelyToHelp": {
+                    "type": "boolean"
+                  },
+                  "evidenceExcerpt": {
+                    "type": "string",
+                    "maxLength": 360
+                  }
+                },
+                "required": [
+                  "reasonCode",
+                  "title",
+                  "explanation",
+                  "summary",
+                  "limitationKind",
+                  "recommendedNextAction",
+                  "retryLikelyToHelp"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "not": {}
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string"
+                      },
+                      "limitations": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "additionalProperties": true
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scanTimeSeconds": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "timing": {
+            "type": "object",
+            "properties": {
+              "createdAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "startedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "completedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "scanTimeSeconds": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "createdAt",
+              "startedAt",
+              "completedAt",
+              "scanTimeSeconds"
+            ],
+            "additionalProperties": false
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "headline": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "executiveSummary": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "completionSummary": {
+                        "type": "string"
+                      },
+                      "domain": {
+                        "type": "string"
+                      },
+                      "score": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "scoreLabel": {
+                        "type": "string"
+                      },
+                      "scoreMetadata": {
+                        "type": "object",
+                        "properties": {
+                          "coverageConfidence": {
+                            "type": "string"
+                          },
+                          "coverageRatio": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string"
+                          },
+                          "metricLabel": {
+                            "type": "string"
+                          },
+                          "source": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "withholdingReason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "riskLevel": {
+                        "type": "string"
+                      },
+                      "actionLabel": {
+                        "type": "string"
+                      },
+                      "issuesToReview": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "scanTimeSeconds": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      }
+                    },
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "counts": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": [
+                        "number",
+                        "boolean",
+                        "null"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "agentInterpretation": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "responseClass": {
+                        "type": "string",
+                        "enum": [
+                          "completed_pulse",
+                          "pending_pulse",
+                          "api_error",
+                          "rate_limited"
+                        ]
+                      },
+                      "safeSummaryUse": {
+                        "type": "boolean"
+                      },
+                      "requiresHumanReview": {
+                        "type": "boolean",
+                        "const": true
+                      },
+                      "doNotCallThis": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "legal_advice",
+                            "certification",
+                            "compliance_determination"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "responseClass",
+                      "safeSummaryUse",
+                      "requiresHumanReview",
+                      "doNotCallThis"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "headline",
+              "executiveSummary",
+              "counts",
+              "agentInterpretation"
+            ],
+            "additionalProperties": false
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "certscore_finding"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "scanId": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "criticality": {
+                  "type": "string",
+                  "enum": [
+                    "critical",
+                    "high",
+                    "medium",
+                    "low",
+                    "info",
+                    "unknown"
+                  ]
+                },
+                "confidence": {
+                  "type": "string",
+                  "enum": [
+                    "strong",
+                    "good",
+                    "moderate",
+                    "weak",
+                    "unknown"
+                  ]
+                },
+                "plainEnglish": {
+                  "type": "string"
+                },
+                "resultDisposition": {
+                  "$ref": "#/properties/resultDisposition/anyOf/0"
+                },
+                "noGo": {
+                  "$ref": "#/properties/noGo/anyOf/0"
+                },
+                "reviewLenses": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "evidence": {
+                  "type": "object",
+                  "properties": {
+                    "basis": {
+                      "type": "string",
+                      "enum": [
+                        "runtime_observation",
+                        "policy_surface_detection",
+                        "accessibility_check",
+                        "public_report_projection"
+                      ]
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "phase": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "exampleCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "examplesShown": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "examplesAvailable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "authRequiredForExamples": {
+                      "type": "boolean"
+                    },
+                    "examples": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "request",
+                              "page",
+                              "accessibility_check",
+                              "policy_surface"
+                            ]
+                          },
+                          "vendor": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "urlHost": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "registrableDomain": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "observedAtMs": {
+                            "anyOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "phase": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "documentUrl": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 2048
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "pageContextId": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 120
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "requestUrl": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 2048
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "rawObservedVendor": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 160
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "rawObservedVendorCategory": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 120
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "resolvedEndpointVendor": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 160
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "resolvedEndpointVendorCategory": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 120
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "vendorAttributionBasis": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 120
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "relatedOrInitiatingVendor": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 160
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "resourceType": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 80
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "scannedPageUrl": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 2048
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "frameUrl": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 2048
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "finalUrl": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 2048
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "initiatorHost": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 253
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "initiatorType": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 80
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "initiatorUrl": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 2048
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "redirectChain": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "maxLength": 2048
+                            },
+                            "maxItems": 10
+                          },
+                          "projectionWarnings": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "maxLength": 120
+                            },
+                            "maxItems": 12
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 5
+                    },
+                    "projectionWarnings": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "maxItems": 20
+                    },
+                    "excerpt": {
+                      "type": "object",
+                      "properties": {
+                        "excerpt": {
+                          "type": "string"
+                        },
+                        "isTruncated": {
+                          "type": "boolean"
+                        },
+                        "truncationMarker": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "sourceUrl": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 2048
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "evidenceUrl": {
+                          "type": "string",
+                          "maxLength": 2048
+                        }
+                      },
+                      "required": [
+                        "excerpt",
+                        "isTruncated",
+                        "truncationMarker",
+                        "sourceUrl",
+                        "evidenceUrl"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "hasTimingAnchor": {
+                      "type": "boolean"
+                    },
+                    "hasVendorAnchor": {
+                      "type": "boolean"
+                    },
+                    "hasConsentContext": {
+                      "type": "boolean"
+                    },
+                    "hasPolicyAnchor": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "basis",
+                    "summary",
+                    "exampleCount",
+                    "examplesShown"
+                  ],
+                  "additionalProperties": false
+                },
+                "nextStep": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "self": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "findings": {
+                      "type": "string"
+                    },
+                    "pulse": {
+                      "type": "string"
+                    },
+                    "report": {
+                      "type": "string"
+                    },
+                    "latestDomainScan": {
+                      "type": "string"
+                    },
+                    "docs": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "disclaimer": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "object",
+                  "properties": {
+                    "caveats": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "recommendedReviewerQuestions": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "type",
+                "id",
+                "scanId",
+                "label",
+                "criticality",
+                "confidence",
+                "plainEnglish",
+                "evidence"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "findingsMetadata": {
+            "type": "object",
+            "properties": {
+              "shown": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "shown",
+              "total",
+              "truncated"
+            ],
+            "additionalProperties": false
+          },
+          "evidenceSummary": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "fullReport": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "certscore_pulse",
+                  "certscore_pulse_summary",
+                  "certscore_pulse_evidence"
+                ]
+              },
+              "meta": {
+                "type": "object",
+                "properties": {
+                  "apiVersion": {
+                    "type": "string"
+                  },
+                  "schemaVersion": {
+                    "type": "string"
+                  },
+                  "pulseVersion": {
+                    "type": "string"
+                  },
+                  "projectionVersion": {
+                    "type": "string"
+                  },
+                  "generatedAt": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "json",
+                      "markdown"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "enum": [
+                      "tiny",
+                      "standard",
+                      "full",
+                      "summary",
+                      "evidence"
+                    ]
+                  }
+                },
+                "additionalProperties": true
+              },
+              "request": {
+                "type": "object",
+                "additionalProperties": {}
+              },
+              "domain": {
+                "type": "string"
+              },
+              "scanId": {
+                "type": "string"
+              },
+              "scan_id": {
+                "type": "string"
+              },
+              "scanStatus": {
+                "type": "string"
+              },
+              "resultDisposition": {
+                "$ref": "#/properties/resultDisposition/anyOf/0"
+              },
+              "noGo": {
+                "$ref": "#/properties/noGo/anyOf/0"
+              },
+              "summary": {
+                "type": "object",
+                "properties": {
+                  "headline": {
+                    "type": "string"
+                  },
+                  "score": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "riskLevel": {
+                    "type": "string"
+                  },
+                  "benchmark": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "humanSummary": {
+                    "type": "string"
+                  },
+                  "machineSummary": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  },
+                  "coverageNote": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": true
+              },
+              "topFindings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "criticality": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "string"
+                    },
+                    "plainEnglish": {
+                      "type": "string"
+                    },
+                    "evidenceDigest": {
+                      "type": "object",
+                      "properties": {
+                        "basis": {
+                          "type": "string"
+                        },
+                        "phase": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "exampleCount": {
+                          "type": "integer"
+                        },
+                        "examplesShown": {
+                          "type": "integer"
+                        },
+                        "examplesAvailable": {
+                          "type": "integer"
+                        },
+                        "authRequiredForExamples": {
+                          "type": "boolean"
+                        },
+                        "hasTimingAnchor": {
+                          "type": "boolean"
+                        },
+                        "hasVendorAnchor": {
+                          "type": "boolean"
+                        },
+                        "hasConsentContext": {
+                          "type": "boolean"
+                        },
+                        "hasPolicyAnchor": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": true
+                    },
+                    "reviewLenses": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "anchorUrl": {
+                      "type": "string"
+                    },
+                    "nextStep": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "coverage": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  },
+                  "homepageObserved": {
+                    "type": "boolean"
+                  },
+                  "interruptionCount": {
+                    "type": "integer"
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "limitations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "interruptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "reviewTitle": {
+                          "type": "string"
+                        },
+                        "reviewReason": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "reason"
+                      ],
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "additionalProperties": true
+              },
+              "links": {
+                "type": "object",
+                "properties": {
+                  "canonicalPulseUrl": {
+                    "type": "string"
+                  },
+                  "jsonUrl": {
+                    "type": "string"
+                  },
+                  "markdownUrl": {
+                    "type": "string"
+                  },
+                  "summaryJsonUrl": {
+                    "type": "string"
+                  },
+                  "evidenceJsonUrl": {
+                    "type": "string"
+                  },
+                  "fullJsonUrl": {
+                    "type": "string"
+                  },
+                  "scanJsonUrl": {
+                    "type": "string"
+                  },
+                  "immutableJsonUrl": {
+                    "type": "string"
+                  },
+                  "immutableMarkdownUrl": {
+                    "type": "string"
+                  },
+                  "immutableFullJsonUrl": {
+                    "type": "string"
+                  },
+                  "fullReportUrl": {
+                    "type": "string"
+                  },
+                  "docsUrl": {
+                    "type": "string"
+                  },
+                  "findingsReferenceUrl": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": true
+              },
+              "feedback": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "feedbackUrl": {
+                    "type": "string"
+                  },
+                  "positiveUrl": {
+                    "type": "string"
+                  },
+                  "negativeUrl": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": true
+              },
+              "capabilities": {
+                "type": "object",
+                "properties": {
+                  "method": {
+                    "type": "string",
+                    "const": "automated_runtime_analysis"
+                  },
+                  "observes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "pre_consent_tracking",
+                        "cmp_load_order",
+                        "third_party_requests",
+                        "consent_enforcement_gaps",
+                        "cookie_activity",
+                        "accessibility_signals",
+                        "disclosure_inconsistencies"
+                      ]
+                    }
+                  },
+                  "doesNotProvide": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "legal_advice",
+                        "certification",
+                        "compliance_determination"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "method",
+                  "observes",
+                  "doesNotProvide"
+                ],
+                "additionalProperties": false
+              },
+              "agentInterpretation": {
+                "$ref": "#/properties/summary/properties/agentInterpretation/anyOf/0"
+              },
+              "disclaimer": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": true
+          },
+          "preConsentCookiesTrackers": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "links": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "reportUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recommendedNextTool": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "get_scan_status",
+                  "get_scan_bundle"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommendedNextAction": {
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "retryAfterSeconds": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "recommendedNextAction": {
+                    "type": "string"
+                  },
+                  "field": {
+                    "type": "string"
+                  },
+                  "mcpCode": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "integer"
+                  },
+                  "responseBody": {}
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable",
+                  "retryAfterSeconds",
+                  "recommendedNextAction"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mcpMetadata": {
+            "type": "object",
+            "properties": {
+              "detail": {
+                "type": "string",
+                "enum": [
+                  "summary",
+                  "findings",
+                  "evidence",
+                  "full"
+                ]
+              },
+              "heavyEvidenceIncluded": {
+                "type": "boolean"
+              },
+              "findingsTruncated": {
+                "type": "boolean"
+              },
+              "requestedMaxBytes": {
+                "type": "integer",
+                "minimum": 5000
+              },
+              "actualBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "truncationReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "omittedSections": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "nextRecommendedMaxBytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 5000,
+                    "maximum": 200000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "omittedContentAvailableViaUrl": {
+                "type": "boolean"
+              },
+              "contentUrls": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "detail",
+              "heavyEvidenceIncluded",
+              "findingsTruncated",
+              "requestedMaxBytes",
+              "actualBytes",
+              "truncated",
+              "truncationReason",
+              "omittedSections",
+              "nextRecommendedMaxBytes",
+              "omittedContentAvailableViaUrl",
+              "contentUrls"
+            ],
+            "additionalProperties": false
+          },
+          "observationOnlyDisclaimer": {
+            "type": "string"
+          },
+          "disclaimer": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "detail",
+          "scanId",
+          "domain",
+          "url",
+          "status",
+          "score",
+          "scoreStatus",
+          "scoreVersion",
+          "scoreUpdatedAt",
+          "riskLevel",
+          "createdAt",
+          "startedAt",
+          "completedAt",
+          "scanTimeSeconds",
+          "timing",
+          "summary",
+          "findings",
+          "findingsMetadata",
+          "reportUrl",
+          "recommendedNextTool",
+          "recommendedNextAction",
+          "error",
+          "mcpMetadata",
+          "observationOnlyDisclaimer",
+          "disclaimer"
+        ],
+        "additionalProperties": true,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    }
+  ]
+}

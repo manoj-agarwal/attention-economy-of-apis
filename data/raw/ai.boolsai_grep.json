@@ -1,0 +1,136 @@
+{
+  "name": "ai.boolsai/grep",
+  "source_url": "https://grep.boolsai.ai/mcp",
+  "fetched_at": "2026-08-10T02:29:31+00:00",
+  "registry_description": "Parallel regex across all Boolsai scans — discover new vendor patterns, niche signals. 4 tools.",
+  "tools": [
+    {
+      "name": "grep_pattern",
+      "description": "Run a JavaScript regex across every scan we've ever taken. Returns matching site URLs (and optional snippets). Best for ad-hoc discovery of patterns NOT already extracted into id_index. Pass narrowing filters (vendor, tld, since) to keep scan volume manageable. Default returns URLs only — set with_snippets=true if you also want the matched JSON context.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "JavaScript regex (case-insensitive by default)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max matching sites to return (default 200, max 2000)",
+            "default": 200
+          },
+          "max_scan": {
+            "type": "integer",
+            "description": "Max R2 objects to read for this query (default 10000, max 200000)",
+            "default": 10000
+          },
+          "tld": {
+            "type": "string",
+            "description": "Restrict to this TLD, e.g. 'com.au' or 'co.uk'"
+          },
+          "since": {
+            "type": "string",
+            "description": "Only scans >= this date, format YYYY-MM-DD"
+          },
+          "vendor": {
+            "type": "string",
+            "description": "Pre-narrow via id_index to sites known to use this vendor (e.g. 'shopify')"
+          },
+          "domain_like": {
+            "type": "string",
+            "description": "Substring to match in domain, e.g. 'patagonia'"
+          },
+          "case_sensitive": {
+            "type": "boolean",
+            "description": "Default false",
+            "default": false
+          },
+          "with_snippets": {
+            "type": "boolean",
+            "description": "Include matched JSON context. Default false (URLs only).",
+            "default": false
+          },
+          "max_shards": {
+            "type": "integer",
+            "description": "Cap how many shards to query (newest-first). Default 100, raise to scan deeper history. Each shard ≈ 800 scans.",
+            "default": 100
+          },
+          "all": {
+            "type": "boolean",
+            "description": "Scan ALL shards — entire corpus. May exceed Worker CPU budget for complex regex; use only when you've narrowed via vendor/tld.",
+            "default": false
+          }
+        },
+        "required": [
+          "pattern"
+        ]
+      }
+    },
+    {
+      "name": "count_pattern",
+      "description": "Same as grep_pattern but returns only the count of matching sites. Faster — no per-match serialization. Useful for sizing 'how many sites use X' before doing a full grep.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string"
+          },
+          "max_scan": {
+            "type": "integer",
+            "default": 10000
+          },
+          "tld": {
+            "type": "string"
+          },
+          "since": {
+            "type": "string"
+          },
+          "vendor": {
+            "type": "string"
+          },
+          "domain_like": {
+            "type": "string"
+          },
+          "case_sensitive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "pattern"
+        ]
+      }
+    },
+    {
+      "name": "sites_with_signal",
+      "description": "Return sites that have a known signal_type=signal_value pair in id_index. MUCH faster than grep_pattern — uses pre-indexed D1 lookup. Use this whenever the signal_type is in the list (see instructions). Examples: sites_with_signal(signal_type='vendor', signal_value='mparticle_workspace') ← won't work, that's an ID type, use sites_with_signal(signal_type='mparticle_workspace') WITHOUT signal_value to list all values + their domains.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string",
+            "description": "One of the known signal_type values (see instructions)"
+          },
+          "signal_value": {
+            "type": "string",
+            "description": "Optional exact value to filter to. If omitted, returns all domains for any value of this signal_type."
+          },
+          "limit": {
+            "type": "integer",
+            "default": 200
+          }
+        },
+        "required": [
+          "signal_type"
+        ]
+      }
+    },
+    {
+      "name": "list_signal_types",
+      "description": "Returns the full catalog of signal_types currently present in id_index, with counts of unique values and unique domains for each.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

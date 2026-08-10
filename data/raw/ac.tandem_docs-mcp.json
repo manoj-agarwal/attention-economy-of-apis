@@ -1,7 +1,7 @@
 {
   "name": "ac.tandem/docs-mcp",
   "source_url": "https://tandem.ac/mcp",
-  "fetched_at": "2026-08-10T02:24:00+00:00",
+  "fetched_at": "2026-08-10T02:28:20+00:00",
   "registry_description": "Remote MCP server for Tandem docs, install guides, SDKs, workflows, and agent setup help.",
   "tools": [
     {

@@ -1,0 +1,418 @@
+{
+  "name": "ai.boolsai/directory",
+  "source_url": "https://directory.boolsai.ai/mcp",
+  "fetched_at": "2026-08-10T02:29:31+00:00",
+  "registry_description": "Indexed ecommerce site directory — vendor lookups, brands by city/market/founder. 10 tools.",
+  "tools": [
+    {
+      "name": "summary",
+      "description": "Global stats for the Boolsai directory: how many sites are indexed, signal types covered, top vendors, most-changed companies. Use at the start of a session to ground what's available.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "site_dossier",
+      "description": "Full intel dossier for a single domain: detected vendors grouped by category, account IDs (GTM, GA4, Klaviyo company_id, Shopify shop_id, Meta pixel, Sentry org, Tealium tenant, Stripe pk_live, etc.), brand identity (name, founder, city, employees, social handles), international markets, external host list, and likely operator-cluster siblings. Use for any 'what's running on X.com?' query.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Domain or URL, e.g. 'gymshark.com' or 'https://gymshark.com/'"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "sites_using_vendor",
+      "description": "List indexed sites detected using a specific vendor (e.g. 'klaviyo', 'yotpo', 'elevar', 'gorgias', 'rebuy'). Vendor slug is lowercase, underscore-separated. Returns domain list with brand names where known.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "vendor": {
+            "type": "string",
+            "description": "Vendor slug, e.g. 'klaviyo', 'shopify', 'webflow', 'onetrust'."
+          }
+        },
+        "required": [
+          "vendor"
+        ]
+      }
+    },
+    {
+      "name": "lookup_id",
+      "description": "Cross-reference any tenant-unique account ID across the index. Useful for 'who else shares this GTM container / Klaviyo company / Sentry org / Meta pixel ID?'. Signal types: gtm_container, ga4_measurement, ga_ua, klaviyo_company_id, meta_pixel_id, shopify_shopid, myshopify_slug, hotjar_id, intercom_app_id, hubspot_portal, klaviyo_subscriber, tiktok_pixel, stripe_pk_live, sentry_dsn_org, tealium_tenant, optimizely_project, mparticle_workspace, segment_writekey, abtasty_account, fullstory_org, pendo_account, intellimize_acct, webflow_site_id, dynamic_yield, wunderkind_site, elevar_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string",
+            "description": "e.g. 'gtm_container', 'klaviyo_company_id', 'sentry_dsn_org'"
+          },
+          "signal_value": {
+            "type": "string",
+            "description": "the actual ID/value, e.g. 'GTM-XYZABC', 'H2zzaR'"
+          }
+        },
+        "required": [
+          "signal_type",
+          "signal_value"
+        ]
+      }
+    },
+    {
+      "name": "brands_in_city",
+      "description": "List indexed brands that publish a physical address in a given city. Sourced from Schema.org Organization JSON-LD.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "City name, e.g. 'Los Angeles', 'New York', 'Berlin'"
+          }
+        },
+        "required": [
+          "city"
+        ]
+      }
+    },
+    {
+      "name": "brands_in_market",
+      "description": "List indexed brands explicitly serving a country market (via hreflang). Country is a 2-letter ISO code, lowercase.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "description": "2-letter country code, e.g. 'us', 'gb', 'de', 'fr'"
+          }
+        },
+        "required": [
+          "country"
+        ]
+      }
+    },
+    {
+      "name": "stack_archetype",
+      "description": "List brands matching a stack archetype. Valid slugs: headless-shopify, classic-shopify-dtc, server-side-tagged, personalisation-heavy, pixel-stacked, multi-region, woocommerce-stores, magento-stores, bnpl-enabled, headless-cms.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "archetype": {
+            "type": "string",
+            "description": "Archetype slug"
+          }
+        },
+        "required": [
+          "archetype"
+        ]
+      }
+    },
+    {
+      "name": "compare_sites",
+      "description": "Side-by-side stack comparison of 2-5 domains. Returns each site's vendors, account IDs, brand info, markets — and which signals are shared / unique per site. Good for 'compare X.com vs Y.com' or competitive teardowns.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "2-5 domain/URL strings"
+          }
+        },
+        "required": [
+          "urls"
+        ]
+      }
+    },
+    {
+      "name": "similar_sites",
+      "description": "Find brands with similar stack archetypes to the given domain. Returns 'sites running similar tech' — useful for benchmarking, prospecting, competitor lookups.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Domain to find similar sites for"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "brands_by_founder",
+      "description": "List brands attributed to a founder (from Schema.org Organization markup). Useful for tracking serial DTC founders.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "founder": {
+            "type": "string",
+            "description": "Founder name (case-insensitive)"
+          }
+        },
+        "required": [
+          "founder"
+        ]
+      }
+    },
+    {
+      "name": "bulk_export",
+      "description": "Paginated bulk export of indexed sites matching a filter. Returns up to 1000 rows per page in CSV or JSONL format with a cursor for continued pages. Use this when an agency needs an outbound prospect list (e.g. all sites using Klaviyo in the US) for CRM import. The full row count is also returned so you can size the export.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string",
+            "description": "Required. e.g. 'vendor', 'klaviyo_company_id', 'shopify_shopid', 'market_country', 'org_country'. Use list_signal_types via Boolsai Grep to discover."
+          },
+          "signal_value": {
+            "type": "string",
+            "description": "Optional exact value to filter. If omitted returns ANY value of this signal_type."
+          },
+          "market_country": {
+            "type": "string",
+            "description": "Optional ISO-2 country code (e.g. 'us', 'au') to intersect with hreflang market data"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "jsonl",
+              "json"
+            ],
+            "default": "csv",
+            "description": "Output format. CSV is best for CRM import."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Opaque cursor from previous page; pass to get next 1000 rows"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 1000,
+            "description": "Max rows per page (default 1000, max 5000)"
+          }
+        },
+        "required": [
+          "signal_type"
+        ]
+      }
+    },
+    {
+      "name": "compare_scans",
+      "description": "Compare two historical scans of the same URL to surface stack changes. Returns added/removed/changed vendors, account IDs, and inline-script signals between scan A and scan B. Use this for competitor watch — 'what did patagonia.com just deploy?'. If t1/t2 are omitted, compares oldest vs newest available scan.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Domain or full URL to compare"
+          },
+          "t1": {
+            "type": "string",
+            "description": "Optional ISO timestamp of first scan (oldest if omitted)"
+          },
+          "t2": {
+            "type": "string",
+            "description": "Optional ISO timestamp of second scan (newest if omitted)"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "domain_intel",
+      "description": "Free DNS/WHOIS enrichment for a single domain. Returns: email host (Google Workspace / Microsoft 365 / etc. — derived from MX records), DNS provider (Cloudflare / Route 53 / GoDaddy / etc.), CDN provider, registrar, domain age (registered/expires). High-signal outbound data — 'they use Google Workspace + Cloudflare DNS + registered with GoDaddy' tells you a lot about org size + sophistication. Results cached 24h. Free — uses Cloudflare DoH + public RDAP.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain to enrich (apex or any subdomain)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "find_similar_by_stack",
+      "description": "Find sites with the most-similar vendor stack to a given domain using Jaccard similarity over the full vendor set (not just archetype labels). Returns the top N matches with similarity scores. Use this when stack_archetype labels are too coarse and you want 'show me 20 brands running an almost-identical stack to liquiddeath.com'. More accurate than similar_sites for niche stacks.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Reference domain"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20,
+            "description": "max similar sites (1-100)"
+          },
+          "min_shared": {
+            "type": "integer",
+            "default": 3,
+            "description": "Minimum shared distinctive vendors required to be considered (default 3)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    {
+      "name": "bulk_export_url",
+      "description": "Returns a streaming-export URL for the same filter as bulk_export. Useful when the agency wants to pull 50K rows in one shot via curl/HTTP pipe instead of paginating the MCP. The URL is public, no auth, returns NDJSON or CSV with HTTP chunked-transfer streaming. Use bulk_export when N<1000; use this for bigger exports.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string",
+            "description": "Required signal_type"
+          },
+          "signal_value": {
+            "type": "string",
+            "description": "Optional exact value"
+          },
+          "market_country": {
+            "type": "string",
+            "description": "Optional ISO-2 country"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "ndjson",
+              "csv"
+            ],
+            "default": "ndjson"
+          }
+        },
+        "required": [
+          "signal_type"
+        ]
+      }
+    },
+    {
+      "name": "operator_cluster",
+      "description": "Find every domain sharing a tenant-unique ID — the most powerful single signal in Boolsai. Given a Stripe pk_live key, Sentry DSN org, Klaviyo company_id, mParticle workspace, GTM container, GA4 measurement, Shopify shop_id, or other tenant ID, returns every domain we've seen using the SAME ID. This surfaces multi-brand operators, holding-company portfolios, sister brands sharing infrastructure, agency-managed clusters. No competitor (BuiltWith, Wappalyzer, etc.) can do this — they only see external hostnames, not the tenant-unique IDs leaked client-side. Use this when you want to discover the actual operator behind a brand, or expand a single brand into its full portfolio.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The tenant ID itself (e.g. 'pk_live_abc...', 'GTM-M8TQZPX', 'o307020' for Sentry, '12345678' for Shopify shop_id). signal_type is auto-detected."
+          },
+          "signal_type": {
+            "type": "string",
+            "description": "Optional explicit signal_type if auto-detect could be ambiguous (e.g. 'stripe_pk_live', 'sentry_dsn_org')."
+          },
+          "domain": {
+            "type": "string",
+            "description": "Alternative: pass a domain and we'll return every cluster this domain belongs to (all tenant IDs and their fellow domains)."
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100,
+            "description": "max sites per cluster (1-500)"
+          }
+        }
+      }
+    },
+    {
+      "name": "subdomain_map",
+      "description": "Every subdomain of a given root domain we've ever scanned. Reveals storefront topology — where the checkout actually lives, regional storefronts, B2B portals, internal admin domains, asset CDNs. Output groups subdomains by their primary vendor where known. Use this to (a) find the right path to scan for an audit (sometimes the checkout is on us.checkout.brand.com not brand.com), (b) spot enterprise topology (multi-region Plus stores), (c) discover sister surfaces (community, ambassador, careers, etc).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "root": {
+            "type": "string",
+            "description": "Root domain (e.g. 'gymshark.com'). Pass just the apex; we'll find subdomains automatically."
+          },
+          "limit": {
+            "type": "integer",
+            "default": 200,
+            "description": "max subdomains returned (1-1000)"
+          }
+        },
+        "required": [
+          "root"
+        ]
+      }
+    },
+    {
+      "name": "prospect_brief",
+      "description": "ONE-CALL PROSPECT BRIEF for agency outbound — runs four sub-queries against the live indexed data: (1) full dossier of the prospect's stack, (2) sister brands sharing tenant IDs (operator cluster), (3) 3-5 similar-stack competitors, (4) structured 'pitch angles' calling out concrete gaps an agency could pitch on (missing consent, no SST, outdated vendors, broken Schema.org, multiple GTM installs). Saves a strategist 20 min of manual cross-referencing per prospect. Use this whenever the user asks 'tell me about prospect.com'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Domain or URL of the prospect"
+          },
+          "angle": {
+            "type": "string",
+            "description": "Optional agency pitch angle to tune the brief: 'cro', 'analytics', 'consent', 'sst' (server-side tagging), 'headless', 'consolidation'. If omitted, returns all angles found."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "directory_query",
+      "description": "Unified query against the Boolsai Directory. One tool to rule the other lookups. Pass any combination of: signal_type+signal_value, domain, market_country, archetype, founder, city. Returns matching sites + their key signals. Prefer this over the granular tools when you have multiple filter conditions to AND together.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string",
+            "description": "e.g. 'vendor', 'shopify_shopid'"
+          },
+          "signal_value": {
+            "type": "string",
+            "description": "exact signal value"
+          },
+          "domain": {
+            "type": "string",
+            "description": "exact domain match (e.g. 'gymshark.com')"
+          },
+          "market_country": {
+            "type": "string",
+            "description": "ISO-2 (e.g. 'us')"
+          },
+          "archetype": {
+            "type": "string",
+            "description": "e.g. 'headless-shopify', 'woocommerce-stores'"
+          },
+          "founder": {
+            "type": "string",
+            "description": "case-insensitive substring"
+          },
+          "city": {
+            "type": "string",
+            "description": "case-insensitive city name"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50,
+            "description": "max rows (1-500)"
+          }
+        }
+      }
+    }
+  ]
+}

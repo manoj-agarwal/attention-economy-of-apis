@@ -1,0 +1,47 @@
+{
+  "name": "ai.boolsai/scan",
+  "source_url": "https://boolsai.ai/mcp",
+  "fetched_at": "2026-08-10T02:29:32+00:00",
+  "registry_description": "Live tech-stack scan of any public site — vendors, account IDs, scripts, JSON-LD. 2 tools.",
+  "tools": [
+    {
+      "name": "boolsai_scan",
+      "description": "Scan a public website. Returns its full tech stack — every external host the page talks to, every fetch/xhr/beacon endpoint, every inline-script signal, parsed JSON-LD, and the internal DOM/route trie — as structured JSON. Hostnames are returned raw; recognise vendors from them using your own knowledge.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL or bare domain, e.g. \"gymshark.com\" or \"https://allbirds.com/products/legacy-tee\"."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "boolsai_scan_paths",
+      "description": "Scan multiple paths on the same site in parallel and merge the external-host lists. Returns per-path host lists, a unified merged set, and a homepage_missed list (hosts that appeared ONLY on non-home paths). Use when the homepage understates the stack — common on Shopify Plus and consent-gated sites where pixels lazy-load on PDP / cart / checkout. Recommended for ecom audits: paths = [\"/\", \"/products/<any>\", \"/cart\", \"/checkout\"]. Max 5 paths per call.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Base URL or bare domain (e.g. \"gymshark.com\")."
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Path strings to scan, relative to the base (e.g. [\"/\", \"/products/legacy-tee\", \"/cart\"]). Max 5. If omitted, scans just \"/\"."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    }
+  ]
+}

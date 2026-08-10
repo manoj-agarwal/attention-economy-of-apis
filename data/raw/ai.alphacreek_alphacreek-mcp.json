@@ -1,0 +1,241 @@
+{
+  "name": "ai.alphacreek/alphacreek-mcp",
+  "source_url": "https://mcp.alphacreek.ai/mcp",
+  "fetched_at": "2026-08-10T02:28:52+00:00",
+  "registry_description": "Access SEC filings efficiently, save time and tokens, and get cited answers.",
+  "tools": [
+    {
+      "name": "get_latest_filing",
+      "description": "Return latest filing metadata for a company or ticker. Result includes Filing metadata object. Includes `document_type` (Canonical document type. SEC: 10-K, 10-Q, 20-F, 6-K, 8-K. FCA: annual, half-year, press.) and, for FCA press rows, `announcement_type` (FCA press subtype when document_type is press; null for annual and half-year. Values: 1st Quarter Results, 2nd Quarter Results, 3rd Quarter Results, 4th Quarter Results, Final Results, Preliminary Results, Share Buyback, Trading Update.).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "filing_registry": {
+            "type": "string",
+            "enum": [
+              "sec_edgar",
+              "fca_nsm"
+            ],
+            "default": "sec_edgar",
+            "description": "Filing source registry. sec_edgar — US SEC EDGAR filings. fca_nsm — UK FCA National Storage Mechanism. Omit to search both registries."
+          },
+          "document_type": {
+            "description": "Optional document type filter (canonical values only). See Field reference for allowed values per registry.",
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "10-K",
+                  "10-Q",
+                  "20-F",
+                  "6-K",
+                  "8-K",
+                  "annual",
+                  "half-year",
+                  "press"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "10-K",
+                    "10-Q",
+                    "20-F",
+                    "6-K",
+                    "8-K",
+                    "annual",
+                    "half-year",
+                    "press"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get latest filing",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "list_filings",
+      "description": "List available filings for a ticker (newest first) with artifact_document_id and dates. Use filing_registry=fca_nsm for UK FCA NSM reports. Use this first when you need a specific reporting period. Each row includes Filing metadata object. Includes `document_type` (Canonical document type. SEC: 10-K, 10-Q, 20-F, 6-K, 8-K. FCA: annual, half-year, press.) and, for FCA press rows, `announcement_type` (FCA press subtype when document_type is press; null for annual and half-year. Values: 1st Quarter Results, 2nd Quarter Results, 3rd Quarter Results, 4th Quarter Results, Final Results, Preliminary Results, Share Buyback, Trading Update.).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "filing_registry": {
+            "type": "string",
+            "enum": [
+              "sec_edgar",
+              "fca_nsm"
+            ],
+            "default": "sec_edgar",
+            "description": "Filing source registry. sec_edgar — US SEC EDGAR filings. fca_nsm — UK FCA National Storage Mechanism. Omit to search both registries."
+          },
+          "document_type": {
+            "description": "Optional document type filter (canonical values only). See Field reference for allowed values per registry.",
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "10-K",
+                  "10-Q",
+                  "20-F",
+                  "6-K",
+                  "8-K",
+                  "annual",
+                  "half-year",
+                  "press"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "10-K",
+                    "10-Q",
+                    "20-F",
+                    "6-K",
+                    "8-K",
+                    "annual",
+                    "half-year",
+                    "press"
+                  ]
+                }
+              }
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 25
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "List available filings",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "get_filing_toc",
+      "description": "Return the full filing table of contents for one filing. If artifact_document_id is omitted, resolves the single latest filing for ticker/company (and optional document_type) only. Use list_filings first to discover a specific reporting period. For FCA filings, pass filing_registry=fca_nsm; TOC node ids are HTML page element ids (e.g. pf2a, page12, pageView1) for annual ESEF reports or sec-parser ids (e.g. sp-0000001) for half-year RNS HTML reports.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "artifact_document_id": {
+            "type": "string"
+          },
+          "ticker": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "filing_registry": {
+            "type": "string",
+            "enum": [
+              "sec_edgar",
+              "fca_nsm"
+            ],
+            "default": "sec_edgar",
+            "description": "Filing source registry. sec_edgar — US SEC EDGAR filings. fca_nsm — UK FCA National Storage Mechanism. Omit to search both registries."
+          },
+          "document_type": {
+            "description": "Optional document type filter (canonical values only). See Field reference for allowed values per registry.",
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "10-K",
+                  "10-Q",
+                  "20-F",
+                  "6-K",
+                  "8-K",
+                  "annual",
+                  "half-year",
+                  "press"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "10-K",
+                    "10-Q",
+                    "20-F",
+                    "6-K",
+                    "8-K",
+                    "annual",
+                    "half-year",
+                    "press"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get filing table of contents",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "read_node_content",
+      "description": "Return content for one or more navigation nodes in a filing. Pass one node via node_id or several via node_ids, using the node ids from TOC lines (the same values shown as NODE_ID lines in this tool's output). Returns plain MCP text: an ARTIFACT_DOCUMENT_ID header, then per-node blocks with NODE_ID, TITLE, CITATION_URL, CITATION_MARKDOWN, CONTENT_START … CONTENT_END. Each block's CITATION_URL links to the reader location for that node; CITATION_MARKDOWN is the same link as ready-to-paste markdown [TITLE](CITATION_URL). A requested TOC node may expand into more granular child NODE_ID blocks, each with its own TITLE, CITATION_URL, and CITATION_MARKDOWN. Responses that include citations end with a CITATIONS_IN_THIS_RESPONSE list.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "artifact_document_id": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string",
+            "description": "Single node id from TOC / NODE_ID lines. For FCA filings this is the HTML page id (e.g. pf2a, page12, pageView1)."
+          },
+          "node_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Batch read: multiple node ids for one filing (same identifiers as NODE_ID / TOC)."
+          }
+        },
+        "required": [
+          "artifact_document_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Read node content",
+        "readOnlyHint": true,
+        "destructiveHint": false
+      }
+    }
+  ]
+}

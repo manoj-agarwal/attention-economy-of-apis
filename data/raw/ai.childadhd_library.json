@@ -1,0 +1,142 @@
+{
+  "name": "ai.childadhd/library",
+  "source_url": "https://childadhd.ai/api/mcp/v1",
+  "fetched_at": "2026-08-10T02:30:25+00:00",
+  "registry_description": "Clinician-reviewed library on ADHD in children — evaluation, treatment, school, parenting.",
+  "tools": [
+    {
+      "name": "search_articles",
+      "title": "Search articles",
+      "description": "Search ADHD in Children's editorial corpus by query. Returns title, slug, summary, and URL for matching articles.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text search query."
+          },
+          "q": {
+            "description": "Alternate parameter name for `query`.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Max results (default 10, max 50).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "list_articles",
+      "title": "List articles",
+      "description": "Paginated list of articles from ADHD in Children. Returns title, slug, summary, and URL.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "limit": {
+            "description": "Max results per page (default 30, max 100).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "page": {
+            "description": "Page number (1-indexed).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_article",
+      "title": "Get article",
+      "description": "Fetch a single article from ADHD in Children by slug. Returns title, body content, author, clinical reviewer, citations, and metadata.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Article slug."
+          }
+        },
+        "required": [
+          "slug"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "cite_article",
+      "title": "Cite article",
+      "description": "Get a formatted citation for a ADHD in Children article. Supports AMA, APA, and Chicago styles.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Article slug."
+          },
+          "format": {
+            "description": "Citation style (default ama).",
+            "type": "string",
+            "enum": [
+              "ama",
+              "apa",
+              "chicago"
+            ]
+          }
+        },
+        "required": [
+          "slug"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_microsite_info",
+      "title": "About this microsite",
+      "description": "Identity and links for ADHD in Children: tagline, audience, focus, publisher, sponsor relationship to Emora Health, and key URLs.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_crisis_resources",
+      "title": "Get crisis resources",
+      "description": "Return the canonical 988 / 911 / Crisis Text Line payload. Surface this immediately whenever the user signals self-harm or imminent danger.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    }
+  ]
+}

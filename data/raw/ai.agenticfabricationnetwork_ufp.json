@@ -1,0 +1,874 @@
+{
+  "name": "ai.agenticfabricationnetwork/ufp",
+  "source_url": "https://agenticfabricationnetwork.ai/mcp",
+  "fetched_at": "2026-08-10T02:28:36+00:00",
+  "registry_description": "Turn designs into shipped parts: quote 3D printing, CNC, and decals, then check out.",
+  "tools": [
+    {
+      "name": "get_fabrication_quote",
+      "title": "Get fabrication quote",
+      "description": "Get ranked, purchasable offers (price, ETA, preview image) for fabricating a physical item from a design file. process=fdm_print for 3D printing a model (STL/OBJ/PLY/3MF/AMF/STEP/IGES), process=cnc or process=sheetmetal for machined/bent metal parts (STEP, IGES, DXF), process=decal for stickers/decals from artwork (any common image or design file — PNG/JPG/HEIC/TIFF/GIF/BMP/WEBP/AVIF/SVG/PDF/AI/EPS/PSD/CDR, auto-converted). A .ufp file (UFP part container: the design plus saved spec/constraints in one) is accepted anywhere a design file is — its saved intent applies automatically and anything the user states now wins. If the user just drops a file and asks for a price, omit process — UFP routes it. Provide the design either as design_file (an image/file the user attached or you generated — preferred) or file_url (a public URL). REORDERS: if the user has a UFP part number (from a receipt email or a previous session, looks like UFP-… or part_…), pass it as part_number INSTEAD of any file — the stored design and spec are reused and re-shopped across all current vendors. Locked parts additionally require share_key (from the owner's share link). Returns offers across vendors like Google Flights returns flights.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "process": {
+            "type": "string",
+            "enum": [
+              "fdm_print",
+              "resin_print",
+              "powder_print",
+              "metal_print",
+              "cnc",
+              "sheetmetal",
+              "laser_cut",
+              "decal",
+              "print",
+              "apparel"
+            ],
+            "description": "What to fabricate. If the user just drops a file and asks for a price, OMIT this — UFP detects the file type (artwork, mesh — STL/OBJ/PLY/3MF/AMF, BREP — STEP/IGES, DXF) and routes it to every process that can make it; the response's routing.also_possible lists processes UFP can't quote yet"
+          },
+          "part_number": {
+            "type": "string",
+            "description": "UFP part number from a previous paid order (UFP-… or part_…). Reorders: replaces design_file/file_url entirely; any other fields provided override the stored spec"
+          },
+          "share_key": {
+            "type": "string",
+            "description": "Share key for a LOCKED part — the k=… value from the owner's share link (…/part/UFP-…?k=KEY). Required with part_number when the part is locked; omit otherwise"
+          },
+          "design_file": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "file_id": {
+                    "type": "string"
+                  },
+                  "download_url": {
+                    "type": "string"
+                  },
+                  "mime_type": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file_id",
+                  "download_url"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "The design file itself (user-attached or generated image/STL). ChatGPT supplies the file reference automatically when the user attached a file — just bind the attachment here. Other clients may pass a data: URL (base64) or a public https URL string. Preferred over file_url."
+          },
+          "file_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Public URL of the design file — only when the design lives at a URL"
+          },
+          "attachment_urls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "maxItems": 10,
+            "description": "Additional files for the SAME part — the PDF drawing next to the STEP, spec sheets, BOMs. Pass everything the user gave you; UFP works out which file is the part and which are supporting documents."
+          },
+          "ship_to_zip": {
+            "type": "string",
+            "pattern": "^\\d{5}(-\\d{4})?$",
+            "description": "Destination US ZIP code, exactly as the user stated it. OMIT if the user has not given one — NEVER guess or invent a ZIP. Without it, prices come back all-in with shipping to an assumed central-US destination, flagged on routing.ship_to"
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "maxItems": 5,
+            "description": "Quantities the user actually wants — pass [1] or [2] if that's the ask. Vendors with a higher minimum quote AT their minimum and the offer notes it (requested_quantity). Default: 25 for decals, 1 for prints; a part_number reorder defaults to the quantity last purchased"
+          },
+          "material": {
+            "type": "string",
+            "description": "fdm_print: pla|petg|asa (free-form — \"abs\", \"polycarbonate\" asks resolve to the closest stocked filament with a substitution note); resin_print: standard|tough|high_temp|high_detail resin (free-form asks resolve to the closest supported resin); powder_print: Powder-bed nylon: nylon_12|nylon_12_smooth|nylon_11|nylon_12_gf|nylon_12_esd|tpu (free-form — \"PA12\", \"glass filled\" resolve to the closest stocked powder); cnc: aluminum_6061|aluminum_7075|stainless_304|titanium|brass|acetal|delrin|abs|nylon_pa6|peek|acrylic (free-form asks resolve to the closest supported stock); sheetmetal: mild_steel|aluminum_5052|stainless_304 (free-form — \"steel\", \"5052\", \"stainless\" resolve; unknown asks get closest-match offers). Omit to compare the defaults; laser_cut: acrylic|plywood|mdf|delrin|uhmw|hdpe|g10|carbon_fiber|mild_steel|aluminum_5052|stainless_304 (free-form — \"plexiglass\", \"birch\" resolve; unknown asks get closest-match offers); decal: vinyl|holographic|transparent|glitter (free-form — \"chrome\" etc. gets closest matches)"
+          },
+          "color": {
+            "type": "string",
+            "description": "fdm_print: Filament color for fdm_print (e.g. black, red); resin_print: Resin color for resin_print (e.g. gray, white, black); powder_print: Powder part color: raw gray/white, or a dye (\"black\", \"dark blue\") — vendor-resolved; print: Print color ask (\"full color\", \"black and white\"). Vendors that only price full color note the substitution; apparel: Garment color for apparel (\"black\", \"heather gray\") — vendor-resolved"
+          },
+          "powder_technology": {
+            "type": "string",
+            "description": "Powder process: mjf (HP Multi Jet Fusion) | sls (laser sintering). Omit to let the vendor pick its default lane for the material"
+          },
+          "powder_finish": {
+            "type": "string",
+            "description": "Powder post-processing: as_printed (raw powder surface) | vapor_polished | polished"
+          },
+          "metal_alloy": {
+            "type": "string",
+            "description": "Metal AM alloy: stainless_316l|stainless_17_4ph|titanium_ti64|aluminum_alsi10mg|inconel_718|cobalt_chrome|tool_steel_h13|copper (free-form asks like \"Ti-6Al-4V\" resolve to the closest stocked powder)"
+          },
+          "metal_technology": {
+            "type": "string",
+            "description": "Metal AM process: laser_powder_bed (SLM/DMLS/LPBF)|binder_jet|ebm. Omit to let the vendor pick its default for the alloy"
+          },
+          "metal_finish": {
+            "type": "string",
+            "description": "Metal AM post-processing: as_printed|bead_blast|machined_critical|polished|heat_treated (as_printed keeps support witness marks)"
+          },
+          "finish": {
+            "type": "string",
+            "description": "cnc: CNC surface finish: standard|anodized|polished|bead_blasted (default standard); sheetmetal: as_cut (default) | deburred | powder_coat — powder coat protects mild steel for outdoor use"
+          },
+          "thickness_in": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "sheetmetal: Sheet thickness in inches (e.g. 0.063 = 14 ga aluminum). Quoted at the nearest stocked thickness; omit for ~16 ga default; laser_cut: Nominal thickness in inches; quoted at the vendor's nearest stocked thickness. Omit for the material's common stock"
+          },
+          "bend_count": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Number of bends in the design (bend lines must be in the file). Prices CNC bending; omit for flat parts"
+          },
+          "units": {
+            "type": "string",
+            "description": "sheetmetal: DXF drawing units: \"mm\" (default) or \"in\". STEP files carry their own units; laser_cut: DXF drawing units: \"mm\" (default) or \"in\""
+          },
+          "width_in": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Decal width in inches (default 3)"
+          },
+          "height_in": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Decal height in inches (default 3)"
+          },
+          "cut": {
+            "type": "string",
+            "description": "Decal cut style — pass the user's words verbatim (\"triangle\", \"die cut\", \"circle\"). Known: contour|square|oval|kiss_cut; anything else gets closest-match offers with a substitution note. Omit to compare the main options"
+          },
+          "product": {
+            "type": "string",
+            "description": "print: Print product kind: business_cards|flyers|posters. Omit to quote every kind the artwork fits; apparel: apparel: t_shirt|hoodie|long_sleeve|tank_top (free-form — \"tee\", \"crewneck\" resolve to the closest product)"
+          },
+          "size": {
+            "type": "string",
+            "description": "Print size — pass the user's words verbatim (\"letter\", \"24x36\", \"half letter\"). Cards are 3.5x2; flyers 8.5x5.5|8.5x11|11x17; posters 12x18 through 36x48. Unknown sizes get closest-match offers"
+          },
+          "paper": {
+            "type": "string",
+            "description": "Paper stock — free-form (\"matte\", \"glossy\", \"recycled\", \"14pt\"). Resolved to the closest stock the vendor runs"
+          },
+          "sides": {
+            "type": "string",
+            "description": "single|double sided printing (defaults: cards double, flyers/posters single)"
+          },
+          "placement": {
+            "type": "string",
+            "description": "Print placement for apparel: front (default) | back | front_back"
+          },
+          "processes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 8,
+            "description": "Only quote these fabrication processes — a constraint that narrows the auto-routing fan. Friendly terms accepted (\"sheet metal\", \"3d printing\", \"cnc\", \"laser\"); unmappable terms are reported, never an error. Usually OMIT: auto-routing quotes every process that can make the file. Pass it only when the user explicitly limits the process"
+          },
+          "ships_from": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 8,
+            "description": "Only vendors that ship from these countries/regions (\"only US vendors\", \"keep it domestic\") — an INCLUDE list. Friendly terms accepted (\"US\", \"Europe\", \"Germany\", \"China\", \"UK\"); unmappable terms are reported, never an error. Vendors whose origin is unknown or whose network is worldwide (origin not guaranteed) are excluded, each with a note saying why. Usually OMIT: pass it only when the user explicitly limits where vendors ship from"
+          },
+          "vendors": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 16,
+            "description": "Only these specific vendors/makers (\"just quote Slant 3D\") — an INCLUDE list of vendor names as they appear on offers. Friendly names accepted (\"A3D\", \"slant 3d\"); unmatched names are reported, never an error. Usually OMIT: pass it only when the user explicitly names the vendors they want"
+          },
+          "deadline": {
+            "type": "string",
+            "description": "Latest acceptable delivery date, ISO YYYY-MM-DD"
+          },
+          "outdoor_rated": {
+            "type": "boolean",
+            "description": "Must survive outdoor exposure"
+          },
+          "submersible": {
+            "type": "boolean",
+            "description": "Must survive submersion in water"
+          },
+          "high_temp": {
+            "type": "boolean",
+            "description": "Must tolerate sustained heat (vendor heat-resistance claim)"
+          },
+          "food_safe": {
+            "type": "boolean",
+            "description": "Must be vendor-certified food safe"
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "maxItems": 20,
+            "description": "Verbatim context terms from the user — materials, finishes, certifications, tolerances (\"UV resistant\", \"anodized: red\", \"iso 13485\", \"tolerance: 0.1mm\"). UFP applies what it can and reports what it could not; unresolvable terms are logged for vendor sourcing. Do not interrogate the user to fill this — pass what they said."
+          },
+          "callouts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "mm",
+                    "in"
+                  ]
+                },
+                "tolerance_mm": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "critical": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "name",
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 50,
+            "description": "Dimensions you read off the user's drawing that matter (\"hole_diameter 6.5mm ±0.1\"). The tightest tolerance prunes vendors that cannot hold it."
+          },
+          "max_budget_usd": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Hard budget cap in USD, all-in"
+          },
+          "min_vendor_stars": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Only vendors whose displayed review rating is at least this many stars (1-5). Vendors with no reviews yet are excluded — the filter demands demonstrated quality"
+          },
+          "min_vendor_reviews": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Only vendors with at least this many verified-purchase reviews"
+          },
+          "proven_spec_orders": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Only vendors with at least N completed orders for this exact process+material — \"a vendor that prints PC reliably\""
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://widget/quote-compare-v39.html"
+        },
+        "openai/outputTemplate": "ui://widget/quote-compare-v39.html",
+        "openai/widgetAccessible": true,
+        "openai/toolInvocation/invoking": "Checking fabrication vendors…",
+        "openai/toolInvocation/invoked": "Fetched fabrication offers",
+        "openai/fileParams": [
+          "design_file"
+        ]
+      }
+    },
+    {
+      "name": "refine_quote",
+      "title": "Refine quote",
+      "description": "Narrow an existing quote with new constraints (destination ZIP the user just provided, deadline, outdoor/waterproof/heat/food-safety requirements, budget, vendor reliability, verbatim requirements terms, drawing callouts, a process filter — \"no, I meant in sheet metal\" → processes — a ship-from country filter — \"only US vendors\" → ships_from — or a vendor filter — \"only show A3D Manufacturing\" → vendors) — or CHANGE its spec: material, color, or quantities. Changing material/quantity is a spec change, not a narrowing — pass it via the material/color/quantities args, NOT as a requirements term; the affected lanes re-price with the new spec through warm vendor sessions. For side-by-side comparisons (\"how does carbon steel compare?\"), add a scenario label — labeled refines coexist instead of replacing each other (max 4). \"Organize by\" (\"sort by cheapest\", \"soonest arrival on top\", \"most green first\") is also this tool: sort_by for objective orders, sort_order + sort_label for orders you judged yourself from the previews — presentation only, instant, nothing re-prices. Call with ONLY quote_id to re-read the quote (e.g. to pick up preview images that finished rendering).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "quote_id": {
+            "type": "string"
+          },
+          "scenario": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "description": "Comparison lane label. A labeled refine sits SIDE BY SIDE with the quote's other offers instead of replacing them: refines with the same label replace that scenario, different labels coexist (max 4 per quote), and a refine WITHOUT a scenario resets the baseline and supersedes every lane. \"How does X compare to Y?\" = one labeled refine per scenario (e.g. scenario \"carbon steel\" + material \"carbon steel\", then scenario \"aluminum\" + material \"aluminum\"). Keep labels short and human, like \"carbon steel\""
+          },
+          "material": {
+            "type": "string",
+            "description": "New material for this part (\"I need it in PLA\" → \"pla\"). A spec change: lanes requote with this material through warm vendor sessions; an explicit material here replaces the quote's material fan-out. Free-form — unstocked asks resolve to the closest stocked material with a substitution note. Do NOT pass material changes as requirements terms"
+          },
+          "color": {
+            "type": "string",
+            "description": "New color for this part (spec change — lanes requote)"
+          },
+          "finish": {
+            "type": "string",
+            "description": "New surface finish (\"powder coat\", \"anodized\", \"bead blasted\") — a spec change: finish-capable lanes (sheet metal, CNC, metal print) requote WITH it; 3D-print lanes have no coating step, so they ignore the finish but keep the COLOR. A colored finish ask (\"black powder coat\") should set BOTH finish and color, so every lane lands on the buyer's color"
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "maxItems": 5,
+            "description": "New quantities the user wants (spec change — lanes requote at the new quantity). Same rules as on get_fabrication_quote: pass the real ask, never inflate it"
+          },
+          "processes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 8,
+            "description": "Narrow this quote to specific fabrication processes (\"no, I meant in sheet metal\" → [\"sheet metal\"]). A CONSTRAINT, not a new quote: excluded lanes drop while warm vendor sessions survive, and further refines inherit the filter. Friendly terms accepted (\"sheet metal\", \"3d printing\", \"cnc\", \"laser\"); pass [\"any\"] to clear the filter and show every process again. When comparison scenarios are open and the user narrows the process, re-refine EVERY active scenario label with this same arg so all columns prune together"
+          },
+          "ships_from": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 8,
+            "description": "Only vendors that ship from these countries/regions (\"only US vendors\", \"just European shops\", \"keep it domestic\") — an INCLUDE list naming where the user DOES want vendors from. A CONSTRAINT like processes: non-matching vendors drop instantly (nothing re-prices), further refines inherit the filter, and [\"any\"] clears it to show vendors everywhere again. Friendly terms accepted (\"US\", \"Europe\", \"Germany\", \"China\", \"UK\"). Vendors whose origin is unknown or whose network is worldwide (a specific origin cannot be guaranteed) are excluded, each with an honest note. For \"nothing from X\" asks, pass the regions the user does want instead"
+          },
+          "vendors": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 16,
+            "description": "Only these specific vendors/makers (\"only show A3D Manufacturing\", \"just Slant 3D and Fictiv\") — an INCLUDE list of vendor names as they appear on offers. A CONSTRAINT like processes: other vendors' offers drop instantly (nothing re-prices), further refines inherit the filter, and [\"any\"] clears it to show every vendor again. Friendly names accepted (\"A3D\", \"slant 3d\"); unmatched names are reported, never an error. This is THE way to answer \"show me everything vendor X offers\" — the filtered quote lists that vendor's complete lineup"
+          },
+          "ship_to_zip": {
+            "type": "string",
+            "pattern": "^\\d{5}(-\\d{4})?$",
+            "description": "Destination US ZIP code, exactly as the user stated it — use this when the user provides their ZIP after a quote priced to the assumed central-US destination (routing.ship_to); the refined prices become theirs. NEVER guess or invent a ZIP"
+          },
+          "deadline": {
+            "type": "string",
+            "description": "Latest acceptable delivery date, ISO YYYY-MM-DD"
+          },
+          "outdoor_rated": {
+            "type": "boolean"
+          },
+          "submersible": {
+            "type": "boolean"
+          },
+          "high_temp": {
+            "type": "boolean"
+          },
+          "food_safe": {
+            "type": "boolean"
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "maxItems": 20,
+            "description": "Verbatim context terms from the user — materials, finishes, certifications, tolerances (\"UV resistant\", \"anodized: red\", \"iso 13485\", \"tolerance: 0.1mm\"). UFP applies what it can and reports what it could not; unresolvable terms are logged for vendor sourcing. Do not interrogate the user to fill this — pass what they said."
+          },
+          "callouts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "mm",
+                    "in"
+                  ]
+                },
+                "tolerance_mm": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "critical": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "name",
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 50,
+            "description": "Dimensions you read off the user's drawing that matter (\"hole_diameter 6.5mm ±0.1\"). The tightest tolerance prunes vendors that cannot hold it."
+          },
+          "max_budget_usd": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "min_vendor_stars": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Only vendors whose displayed review rating is at least this many stars (1-5); vendors with no reviews yet are excluded"
+          },
+          "min_vendor_reviews": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Only vendors with at least this many verified-purchase reviews"
+          },
+          "proven_spec_orders": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Only vendors with at least N completed orders for this exact process+material — \"a vendor that prints PC reliably\""
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": [
+              "recommended",
+              "price",
+              "unit_price",
+              "total_price",
+              "arrival",
+              "rating"
+            ],
+            "description": "\"Organize by\": re-order the quote's offer cards (\"sort by cheapest\" → \"price\"; \"soonest arrival first\" → \"arrival\"; \"best rated\" → \"rating\"; \"total_price\" = part + cheapest shipping; \"recommended\" restores the default price+speed rank). PURE PRESENTATION — answers instantly on the same quote, never re-prices or drops offers, and the ordering sticks across re-reads, streaming, and later refines until changed"
+          },
+          "sort_direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Flip a sort_by ordering: \"desc\" reverses the key's natural direction (\"most expensive first\" = sort_by \"price\" + \"desc\"). Only meaningful with sort_by"
+          },
+          "sort_order": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 200,
+            "description": "EXPLICIT card order for asks only you can judge (\"sort the most green to the top\"): look at the offers' preview images, decide the order yourself, and pass the offer ids first-on-top. Offers you leave out (including ones that stream in later) land below the listed ones in the default rank. Pass sort_label with it"
+          },
+          "sort_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "Short human wording for a sort_order, displayed on the board (\"most green first\") — required with sort_order, since only you know what your order means"
+          }
+        },
+        "required": [
+          "quote_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://widget/quote-compare-v39.html"
+        },
+        "openai/outputTemplate": "ui://widget/quote-compare-v39.html",
+        "openai/widgetAccessible": true,
+        "openai/toolInvocation/invoking": "Checking fabrication vendors…",
+        "openai/toolInvocation/invoked": "Fetched fabrication offers"
+      }
+    },
+    {
+      "name": "poll_quote",
+      "title": "Poll quote (board internal)",
+      "description": "INTERNAL — the offer board calls this to refresh itself while vendors finish pricing. Never call this yourself. The board you were given is already final for its turn; do not reach for refine_quote to look at it again either, that paints a duplicate board.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "quote_id": {
+            "type": "string",
+            "description": "Quote id the board is watching"
+          }
+        },
+        "required": [
+          "quote_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "visibility": [
+            "model",
+            "app"
+          ]
+        },
+        "openai/widgetAccessible": true,
+        "openai/toolInvocation/invoking": "Refreshing offers…",
+        "openai/toolInvocation/invoked": "Offers refreshed"
+      }
+    },
+    {
+      "name": "finalize_quote",
+      "title": "Finalize quote (wait for remaining vendors)",
+      "description": "ONLY for the case where a quote response came back with an EMPTY board and told you to call this: waits for the vendors to answer (up to ~40s) and returns their offers as a full board. Call with just quote_id, immediately, and say nothing substantive before it. NEVER call it on a response that already listed offers — that board is final, and this would add nothing.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "quote_id": {
+            "type": "string",
+            "description": "Quote id from the still-quoting response"
+          }
+        },
+        "required": [
+          "quote_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://widget/quote-compare-v39.html"
+        },
+        "openai/outputTemplate": "ui://widget/quote-compare-v39.html",
+        "openai/widgetAccessible": true,
+        "openai/toolInvocation/invoking": "Waiting for the remaining vendors…",
+        "openai/toolInvocation/invoked": "All vendors answered"
+      }
+    },
+    {
+      "name": "create_checkout",
+      "title": "Create checkout",
+      "description": "Create the order and get a hosted payment link for a chosen offer. Call this as soon as the user picks an offer + shipping speed — do NOT ask for their address first: the secure payment page collects the shipping address and email. Only pass address fields if the user already volunteered them. Returns checkout_url — give it to the user to pay; UFP places the vendor order automatically after payment.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "offer_id": {
+            "type": "string"
+          },
+          "shipping_option_id": {
+            "type": "string",
+            "description": "One of the offer's shipping option ids"
+          },
+          "name": {
+            "type": "string",
+            "description": "Recipient full name (only if the user provided it)"
+          },
+          "street1": {
+            "type": "string",
+            "description": "Street address (only if the user provided it)"
+          },
+          "street2": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "description": "Two-letter US state"
+          },
+          "zip": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Buyer email (only if the user provided it)"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "billing_name": {
+            "type": "string",
+            "description": "Billing address, only when the buyer answered the billing question (e.g. said it differs from shipping, or a checkout UI's 'same as shipping' checkbox — then send the shipping values verbatim). Never ask for it; omit and the payment page handles billing."
+          },
+          "billing_street1": {
+            "type": "string"
+          },
+          "billing_street2": {
+            "type": "string"
+          },
+          "billing_city": {
+            "type": "string"
+          },
+          "billing_state": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "description": "Two-letter US state"
+          },
+          "billing_zip": {
+            "type": "string"
+          },
+          "return_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Exact URL of the page the user is on right now, IF the client application knows it (a web app embedding this tool passes its own page URL). The post-payment page shows a 'Return to <site>' button pointing here. Omit when unknown — never invent one."
+          }
+        },
+        "required": [
+          "offer_id",
+          "shipping_option_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "visibility": [
+            "model",
+            "app"
+          ]
+        },
+        "openai/widgetAccessible": true,
+        "openai/toolInvocation/invoking": "Creating your checkout…",
+        "openai/toolInvocation/invoked": "Checkout created"
+      }
+    },
+    {
+      "name": "get_order_status",
+      "title": "Get order status",
+      "description": "Check status, ETA and tracking for a UFP order.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "order_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "visibility": [
+            "model",
+            "app"
+          ]
+        },
+        "openai/widgetAccessible": true,
+        "openai/toolInvocation/invoking": "Checking order status…",
+        "openai/toolInvocation/invoked": "Fetched order status"
+      }
+    },
+    {
+      "name": "list_orders",
+      "title": "List recent orders",
+      "description": "List this agent's recent UFP orders (newest first): order id, what was made, vendor, status, total, ETA, created date. Use it to resolve vague references — \"my sticker order\", \"that order from 6 days ago\" — to a concrete order_id before calling get_order_status or leave_review.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "reply_to_maker",
+      "title": "Reply to the maker",
+      "description": "Send the user's answer to a question the maker (vendor) asked about a UFP order — get_order_status surfaces an open question when one is waiting. Confirm the answer with the user before sending. The network relays it: the maker sees plain text from the network account with the user's contact details and links stripped, so never include emails, phone numbers, or URLs the answer depends on.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "description": "The UFP order the maker asked about (ord_…)"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "The user's answer, in their words — it is relayed to the maker"
+          }
+        },
+        "required": [
+          "order_id",
+          "message"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "leave_review",
+      "title": "Leave vendor review",
+      "description": "Record the user's verified-purchase review of how a UFP order turned out. YOUR JOB IS TO STRUCTURE THE FEEDBACK: turn what the user actually said into stars (1-5 overall) and facet scores — \"the cut was sloppy\" -> quality, \"parts arrived 2 days late\" -> timeliness, \"wrong color\" -> accuracy. Keep the optional comment to a short factual summary of their words; never embellish. ALWAYS draft the review (stars, facets, comment) and confirm it with the user BEFORE calling this tool — e.g. \"I'll rate this 2 stars with timeliness 1 because it arrived 2 days late — send it?\". One review per order: submitting again updates the existing review. Use list_orders first if you need to resolve which order they mean.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "description": "The UFP order being reviewed (ord_…) — see list_orders"
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Overall rating the user confirmed, 1-5"
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Short factual summary of the user's feedback, in their spirit — optional"
+          },
+          "facets": {
+            "type": "object",
+            "properties": {
+              "quality": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "Build/print/cut quality"
+              },
+              "timeliness": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "Delivery speed vs the quoted ETA"
+              },
+              "accuracy": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "How well the item matched the ordered spec/design"
+              }
+            },
+            "additionalProperties": false,
+            "description": "Score only the facets the user actually spoke to"
+          },
+          "claims": {
+            "type": "object",
+            "properties": {
+              "received_material": {
+                "type": "string",
+                "maxLength": 80,
+                "description": "Material the user says actually ARRIVED, when they complain it differs from the order (\"they sent aluminum\")"
+              },
+              "received_quantity": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "description": "Count the user says actually arrived, when it differs from the order"
+              },
+              "delivery_claim": {
+                "type": "string",
+                "enum": [
+                  "not_delivered",
+                  "late",
+                  "on_time"
+                ],
+                "description": "The user's delivery claim (\"never showed up\" -> not_delivered)"
+              }
+            },
+            "additionalProperties": false,
+            "description": "CHECKABLE claims from the user's feedback — the network stamps each against its own records (the ordered spec, polled tracking + delivery events) and attaches evidence chips to the review. Only pass what the user actually asserted."
+          }
+        },
+        "required": [
+          "order_id",
+          "stars"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_material_guide",
+      "title": "Get material guide",
+      "description": "Honest, cited material intelligence for material-choice / strength / durability / heat / outdoor questions (\"my PLA part broke, what's stronger?\", \"will this survive outdoors?\"). Returns caveats-FIRST facts: published specs (tensile, heat-deflection, UV/outdoor, chemical) each tagged vendor-cited vs general engineering knowledge, \"stronger/tougher/hotter than X\" ladders (PLA→PETG→ABS/ASA→nylon/PC→metals), and finish/coating options. Call it BEFORE answering such a question, then relay the facts. It supplies FACTS ONLY — comparative specs and vendor-admitted caveats, never a fitness-for-purpose or safety guarantee (that stays your judgment boundary); name express vendor claims \"advertised\", not \"certified\".",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "material": {
+            "type": "string",
+            "description": "A material the user named or you are weighing (\"PLA\", \"6061 aluminum\", \"stainless\") — free-form; a family ask like \"stainless\" returns the whole family"
+          },
+          "process": {
+            "type": "string",
+            "description": "A UFP process to scope to (\"fdm_print\", \"resin_print\", \"cnc\", \"sheetmetal\", \"laser_cut\") — lists the materials that process makes"
+          },
+          "question": {
+            "type": "string",
+            "description": "The user's raw question — mined for intent (stronger/tougher, heat/hot, outdoor/UV) so the right ladder is surfaced"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "visibility": [
+            "model",
+            "app"
+          ]
+        },
+        "openai/widgetAccessible": true,
+        "openai/toolInvocation/invoking": "Looking up material facts…",
+        "openai/toolInvocation/invoked": "Fetched material facts"
+      }
+    }
+  ]
+}

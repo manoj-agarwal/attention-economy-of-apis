@@ -1,0 +1,126 @@
+{
+  "name": "ai.deskcrew/agentic",
+  "source_url": "https://deskcrew.ai/api/mcp",
+  "fetched_at": "2026-08-10T02:31:06+00:00",
+  "registry_description": "Buy a managed AI phone agent for a business, paid keylessly via x402/RLUSD on the XRP Ledger.",
+  "tools": [
+    {
+      "name": "get_catalog",
+      "description": "Get the DeskCrew.ai agentic catalog: what is for sale (a managed AI phone agent for a business), the exact price and payment rails, the spec schema, and why an agent operating for a call-missing business would buy it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "create_purchase_challenge",
+      "description": "Begin a purchase. Provide the setup spec (see get_catalog for the schema; businessName, contactEmail and agentPurpose are required). Returns the x402 payment requirements to sign. No money moves and no order is created at this step.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "businessName": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": "string"
+          },
+          "agentPurpose": {
+            "type": "string"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "greeting": {
+            "type": "string"
+          },
+          "knowledge": {
+            "type": "string"
+          },
+          "transferNumber": {
+            "type": "string"
+          },
+          "hoursOfCover": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "businessName",
+          "contactEmail",
+          "agentPurpose"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "submit_payment",
+      "description": "Complete a purchase. Provide the same spec plus paymentSignature: the base64 PAYMENT-SIGNATURE header you produced by signing one of the payment requirements with your XRPL wallet (the x402-xrpl package does this). Settlement happens on-ledger before any order is created. Returns your orderId, orderKey and the transaction receipt.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "paymentSignature": {
+            "type": "string",
+            "description": "base64 PAYMENT-SIGNATURE header"
+          },
+          "businessName": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": "string"
+          },
+          "agentPurpose": {
+            "type": "string"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "greeting": {
+            "type": "string"
+          },
+          "knowledge": {
+            "type": "string"
+          },
+          "transferNumber": {
+            "type": "string"
+          },
+          "hoursOfCover": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentSignature",
+          "businessName",
+          "contactEmail",
+          "agentPurpose"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_order_status",
+      "description": "Check an order you placed. Provide the orderId and orderKey returned by submit_payment. Returns the fulfilment status: paid, provisioning, live, or cancelled.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "orderKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "orderId",
+          "orderKey"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

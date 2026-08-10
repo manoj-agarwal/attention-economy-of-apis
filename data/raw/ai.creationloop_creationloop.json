@@ -1,0 +1,69 @@
+{
+  "name": "ai.creationloop/creationloop",
+  "source_url": "https://creationloop.ai/api/mcp",
+  "fetched_at": "2026-08-10T02:30:47+00:00",
+  "registry_description": "CreationLoop is your Marketing Agent. Read the overview, offer, and FAQ; apply as a design partner.",
+  "tools": [
+    {
+      "name": "get_company_overview",
+      "description": "What CreationLoop is, how an agent run becomes verified, exactly what the ledger proves, the registry, and the design-partner offer. Served verbatim from the site's canonical copy.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_design_partner_offer",
+      "description": "The current offer, which is the design partnership: what the ledger proves and how to apply. Served verbatim from the site's canonical copy.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_faq",
+      "description": "Frequently asked questions about CreationLoop, with answers served verbatim from the site's canonical copy.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "submit_design_partner_application",
+      "description": "Apply to become a CreationLoop design partner. Records the full application: email, website host, and any name, company, and message provided; our founder reviews every application and follows up by email.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Applicant email address (required)."
+          },
+          "website": {
+            "type": "string",
+            "description": "The brand's website URL (required)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Applicant name (optional)."
+          },
+          "company": {
+            "type": "string",
+            "description": "Company name (optional)."
+          },
+          "message": {
+            "type": "string",
+            "description": "What should we know? Context for the email follow-up (optional)."
+          }
+        },
+        "required": [
+          "email",
+          "website"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}
