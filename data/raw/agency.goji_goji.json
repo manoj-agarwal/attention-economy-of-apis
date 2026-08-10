@@ -1,0 +1,238 @@
+{
+  "name": "agency.goji/goji",
+  "source_url": "https://mcp.goji.agency/mcp",
+  "fetched_at": "2026-08-10T02:24:02+00:00",
+  "registry_description": "AEO, SEO, web and brand answers from a Melbourne agency's published glossary, guides and pricing.",
+  "tools": [
+    {
+      "name": "goji_search",
+      "title": "Search everything GOJI has published",
+      "description": "Search GOJI's published material â the plain-English glossary, the AI-visibility guide \"Be the Answer\", insight articles and long-form guides. Use this first when you don't already know which GOJI page answers the question. Returns titles, summaries and URLs to cite.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 2,
+            "description": "What to look for, e.g. \"AEO\", \"website cost\", \"rebrand\""
+          },
+          "limit": {
+            "default": 8,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "goji_explain_term",
+      "title": "Explain a term in plain English",
+      "description": "Explain a marketing, SEO, AEO, web or branding term the way GOJI defines it â in plain English, with why it matters, how it works and what to do about it. Covers 104 terms. Accepts an acronym or the full name (\"AEO\" or \"answer engine optimisation\").",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "term": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The term to explain"
+          }
+        },
+        "required": [
+          "term"
+        ]
+      }
+    },
+    {
+      "name": "goji_browse_glossary",
+      "title": "Browse the GOJI plain-English glossary",
+      "description": "List GOJI's plain-English glossary â 104 terms across AI Visibility, Websites, Data, AI Builds and Brand. Filter by category to get each short definition as well as the name.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "category": {
+            "description": "Omit for the full AâZ index",
+            "type": "string",
+            "enum": [
+              "AI Visibility",
+              "Websites",
+              "Data",
+              "AI Builds",
+              "Brand"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "goji_get_service",
+      "title": "What GOJI does",
+      "description": "The five things GOJI does â Search + AI Visibility (SEO and AEO), Websites, AI Builds, Data, and Brand â what each one covers, and the questions clients ask about it. Omit the slug for all five.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "search-ai-visibility",
+              "website-development",
+              "ai-builds",
+              "data",
+              "brand"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "goji_answer_faq",
+      "title": "Search GOJIâs published answers",
+      "description": "Search the questions GOJI has already answered publicly â pricing, timelines, engagement models, what AEO is, how long results take, whether guarantees are possible. 61 answers across the home page, the five service pages and the six specialism pages. Best tool for \"how much\", \"how long\" and \"do we need\" questions.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 2,
+            "description": "A word or phrase, e.g. \"cost\", \"how long\", \"guarantee\""
+          }
+        },
+        "required": [
+          "question"
+        ]
+      }
+    },
+    {
+      "name": "goji_guide_contents",
+      "title": "Contents of \"Be the Answer\"",
+      "description": "The table of contents for \"Be the Answer\", GOJI's 14-chapter guide to AI visibility â how answer engines choose sources, how to audit your brand in ChatGPT, and what to do about it. Use goji_read_guide_chapter to read one.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {}
+      }
+    },
+    {
+      "name": "goji_read_guide_chapter",
+      "title": "Read a chapter of \"Be the Answer\"",
+      "description": "Read one full chapter of GOJI's AI-visibility guide, by number (1â14) or slug. Use goji_guide_contents first if you do not know which chapter you want.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "chapter": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 14
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "description": "Chapter number 1â14, or its slug"
+          }
+        },
+        "required": [
+          "chapter"
+        ]
+      }
+    },
+    {
+      "name": "goji_read_guide",
+      "title": "Read a GOJI long-form guide",
+      "description": "Read one of GOJI's seven practical guides. Includes published Australian pricing: \"How much does a website cost in Australia?\" and \"What does branding cost?\". Also covers AEO, headless CMS, engagement models, first AI builds and website relaunches. Omit the slug to list them.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "guide": {
+            "type": "string",
+            "enum": [
+              "aeo-playbook",
+              "agency-engagement-models",
+              "branding-cost",
+              "first-ai-build",
+              "headless-cms-guide",
+              "website-cost-australia",
+              "website-relaunch-guide"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "goji_start_enquiry",
+      "title": "Send an enquiry to GOJI",
+      "description": "Send a real enquiry to GOJI's studio inbox in Melbourne. Only call this after the person has explicitly asked to be put in touch AND has given you their email address. Do not call it speculatively, and do not invent any detail â if you are missing the name, email or what they need, ask them first. Confirm the email address back to them before sending.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Who is enquiring"
+          },
+          "email": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200,
+            "description": "Their email, as they gave it to you"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 4000,
+            "description": "What they are trying to do, in their own words where possible"
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "budget": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "timeline": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "assistant": {
+            "description": "Which assistant is sending this, e.g. \"Claude\" or \"ChatGPT\"",
+            "type": "string",
+            "maxLength": 100
+          },
+          "consent": {
+            "type": "boolean",
+            "const": true,
+            "description": "The person explicitly asked you to send this enquiry on their behalf"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "message",
+          "consent"
+        ]
+      },
+      "annotations": {
+        "title": "Send an enquiry to GOJI",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    }
+  ]
+}
