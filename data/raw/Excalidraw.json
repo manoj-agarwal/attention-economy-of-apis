@@ -1,0 +1,136 @@
+{
+  "name": "Excalidraw",
+  "source_url": "https://mcp.excalidraw.com/mcp",
+  "fetched_at": "2026-08-10T05:46:43+00:00",
+  "description": "Generates hand-drawn style Excalidraw diagrams with streaming animations and interactive editing.",
+  "github_stars": 5072,
+  "tools": [
+    {
+      "name": "read_me",
+      "description": "Returns the Excalidraw element format reference with color palettes, examples, and tips. Call this BEFORE using create_view for the first time.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "create_view",
+      "title": "Draw Diagram",
+      "description": "Renders a hand-drawn diagram using Excalidraw elements.\nElements stream in one by one with draw-on animations.\nCall read_me first to learn the element format.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "elements": {
+            "type": "string",
+            "description": "JSON array string of Excalidraw elements. Must be valid JSON â no comments, no trailing commas. Keep compact. Call read_me first for format reference."
+          }
+        },
+        "required": [
+          "elements"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://excalidraw/mcp-app.html"
+        },
+        "ui/resourceUri": "ui://excalidraw/mcp-app.html"
+      }
+    },
+    {
+      "name": "export_to_excalidraw",
+      "description": "Upload diagram to excalidraw.com and return shareable URL.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "json": {
+            "type": "string",
+            "description": "Serialized Excalidraw JSON"
+          }
+        },
+        "required": [
+          "json"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "visibility": [
+            "app"
+          ]
+        }
+      }
+    },
+    {
+      "name": "save_checkpoint",
+      "description": "Update checkpoint with user-edited state.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "data"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "visibility": [
+            "app"
+          ]
+        }
+      }
+    },
+    {
+      "name": "read_checkpoint",
+      "description": "Read checkpoint state for restore.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "visibility": [
+            "app"
+          ]
+        }
+      }
+    }
+  ]
+}

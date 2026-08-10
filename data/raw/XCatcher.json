@@ -1,0 +1,994 @@
+{
+  "name": "XCatcher",
+  "source_url": "https://xcatcher.top/mcp",
+  "fetched_at": "2026-08-10T05:50:37+00:00",
+  "description": "High-throughput Twitter/X crawling with authenticated XLSX export",
+  "github_stars": 9,
+  "tools": [
+    {
+      "name": "get_service_info",
+      "title": "Get Xcatcher service info",
+      "description": "Read Xcatcher's live capabilities, prices, limits, endpoints, and recommended agent workflow. Call this first when planning a crawl or when cached documentation may be stale. No points are consumed.",
+      "inputSchema": {
+        "properties": {},
+        "title": "get_service_infoArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_service_infoOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Get Xcatcher service info",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "tags": [
+          "discovery",
+          "pricing",
+          "read-only"
+        ]
+      }
+    },
+    {
+      "name": "preflight_crawl",
+      "title": "Preflight an Xcatcher crawl for free",
+      "description": "Normalize and deduplicate X handles, validate the mode, and preview the current modeled points/USDC cost. This free read-only check requires no account, creates no quote or task, and moves no funds. Use it before requesting a live x402 payment challenge.",
+      "inputSchema": {
+        "properties": {
+          "users": {
+            "description": "X handles, @handles, or x.com/twitter.com profile URLs.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Users",
+            "type": "array"
+          },
+          "mode": {
+            "default": "normal",
+            "description": "normal costs 1 point-equivalent per handle; deep costs 10.",
+            "enum": [
+              "normal",
+              "deep"
+            ],
+            "title": "Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "users"
+        ],
+        "title": "preflight_crawlArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "preflight_crawlOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Preflight an Xcatcher crawl for free",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "requires_api_key": false,
+        "moves_funds": false,
+        "creates_quote": false,
+        "tags": [
+          "crawl",
+          "discovery",
+          "free",
+          "pricing",
+          "read-only"
+        ]
+      }
+    },
+    {
+      "name": "get_sample_result",
+      "title": "Inspect a free Xcatcher sample result",
+      "description": "Return a stable synthetic example of Xcatcher's paginated result and coverage metadata. No live X data is fetched, no account is needed, no task or quote is created, and no funds move.",
+      "inputSchema": {
+        "properties": {},
+        "title": "get_sample_resultArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_sample_resultOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Inspect a free Xcatcher sample result",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "requires_api_key": false,
+        "moves_funds": false,
+        "synthetic_data": true,
+        "tags": [
+          "discovery",
+          "free",
+          "read-only",
+          "results",
+          "sample"
+        ]
+      }
+    },
+    {
+      "name": "get_account_balance",
+      "title": "Get Xcatcher balance",
+      "description": "Return the account attached to the current Bearer API key and its points balance. Use before creating a task to estimate whether an x402 top-up will be needed. Read-only.",
+      "inputSchema": {
+        "properties": {},
+        "title": "get_account_balanceArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_account_balanceOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Get Xcatcher balance",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "tags": [
+          "account",
+          "points",
+          "read-only"
+        ]
+      }
+    },
+    {
+      "name": "list_crawl_tasks",
+      "title": "List Xcatcher crawl tasks",
+      "description": "List recent tasks owned by the current Bearer API key, newest first. Use next_before_id for cursor pagination. Read-only and does not consume points.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "default": 20,
+            "description": "Tasks to return (1-100).",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "before_id": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Cursor from next_before_id; omit for the newest tasks.",
+            "title": "Before Id"
+          }
+        },
+        "title": "list_crawl_tasksArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_crawl_tasksOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "List Xcatcher crawl tasks",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "tags": [
+          "list",
+          "read-only",
+          "tasks"
+        ]
+      }
+    },
+    {
+      "name": "get_x402_quote",
+      "title": "Get an x402 top-up quote",
+      "description": "Create a short-lived USDC quote for a requested number of Xcatcher points. Returns the exact live amount and supported Base/Solana payment requirements; it does not move funds. Ask the user before signing or sending any payment.",
+      "inputSchema": {
+        "properties": {
+          "points": {
+            "description": "Number of points to buy (1-200000). Live quote amount is authoritative.",
+            "maximum": 200000,
+            "minimum": 1,
+            "title": "Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "points"
+        ],
+        "title": "get_x402_quoteArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_x402_quoteOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Get an x402 top-up quote",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "_meta": {
+        "side_effects": true,
+        "moves_funds": false,
+        "tags": [
+          "payments",
+          "quote",
+          "x402"
+        ]
+      }
+    },
+    {
+      "name": "get_direct_crawl_payment",
+      "title": "Get accountless crawl payment requirements",
+      "description": "Create a request-bound x402 v2 payment requirement for an accountless crawl. Use this only for the accountless x402 path after preflight_crawl; API-key accounts use create_crawl_task instead. This does not move funds. Return payment_required_b64 unchanged to an x402-compatible wallet/client; the live amount, asset, network, destination, and quoteId are authoritative.",
+      "inputSchema": {
+        "properties": {
+          "users": {
+            "description": "X handles, @handles, or x.com/twitter.com profile URLs.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Users",
+            "type": "array"
+          },
+          "mode": {
+            "default": "normal",
+            "description": "normal costs 1 point-equivalent per handle; deep costs 10.",
+            "enum": [
+              "normal",
+              "deep"
+            ],
+            "title": "Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "users"
+        ],
+        "title": "get_direct_crawl_paymentArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_direct_crawl_paymentOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Get accountless crawl payment requirements",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "_meta": {
+        "side_effects": true,
+        "moves_funds": false,
+        "requires_api_key": false,
+        "tags": [
+          "accountless",
+          "crawl",
+          "quote",
+          "x402"
+        ]
+      }
+    },
+    {
+      "name": "submit_direct_crawl_payment",
+      "title": "Pay for and create an accountless crawl",
+      "description": "Submit an x402 v2 PAYMENT-SIGNATURE for the exact users/mode used by get_direct_crawl_payment. This may settle USDC and create a crawl task. Call only after explicit spending approval. On success, securely save task_token: it grants task-scoped result access for seven days.",
+      "inputSchema": {
+        "properties": {
+          "users": {
+            "description": "The exact handles/profile URLs used for the payment requirement.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Users",
+            "type": "array"
+          },
+          "payment_signature_b64": {
+            "description": "The base64(JSON) PAYMENT-SIGNATURE produced for the accepted x402 v2 requirement.",
+            "title": "Payment Signature B64",
+            "type": "string"
+          },
+          "mode": {
+            "default": "normal",
+            "description": "Must exactly match the quoted mode.",
+            "enum": [
+              "normal",
+              "deep"
+            ],
+            "title": "Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "users",
+          "payment_signature_b64"
+        ],
+        "title": "submit_direct_crawl_paymentArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "submit_direct_crawl_paymentOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Pay for and create an accountless crawl",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "_meta": {
+        "side_effects": true,
+        "moves_funds": true,
+        "requires_api_key": false,
+        "tags": [
+          "accountless",
+          "crawl",
+          "payment",
+          "x402"
+        ]
+      }
+    },
+    {
+      "name": "get_direct_task_status",
+      "title": "Get accountless paid task status",
+      "description": "Read an accountless paid crawl using its task_id and task-scoped token. Use this instead of get_task_status for an accountless x402 task. Poll every 5-10 seconds until task.has_result is true or it reaches failed/cancelled.",
+      "inputSchema": {
+        "properties": {
+          "task_id": {
+            "description": "Task ID returned after x402 settlement.",
+            "minimum": 1,
+            "title": "Task Id",
+            "type": "integer"
+          },
+          "task_token": {
+            "description": "Task-scoped xtask_ token returned after settlement or idempotent recovery.",
+            "title": "Task Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "task_token"
+        ],
+        "title": "get_direct_task_statusArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_direct_task_statusOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Get accountless paid task status",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "requires_api_key": false,
+        "tags": [
+          "accountless",
+          "read-only",
+          "tasks",
+          "x402"
+        ]
+      }
+    },
+    {
+      "name": "get_direct_result_preview",
+      "title": "Preview accountless paid crawl results",
+      "description": "Return structured JSON rows for a completed accountless paid crawl. Use this instead of get_result_preview for an accountless x402 task; API-key accounts use get_result_preview. Use offset for pagination; the task token is required and should be treated as a secret.",
+      "inputSchema": {
+        "properties": {
+          "task_id": {
+            "description": "Completed paid task ID.",
+            "minimum": 1,
+            "title": "Task Id",
+            "type": "integer"
+          },
+          "task_token": {
+            "description": "Task-scoped xtask_ token.",
+            "title": "Task Token",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "description": "Rows to return (1-100).",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "description": "Zero-based row offset.",
+            "minimum": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "task_id",
+          "task_token"
+        ],
+        "title": "get_direct_result_previewArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_direct_result_previewOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Preview accountless paid crawl results",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "requires_api_key": false,
+        "tags": [
+          "accountless",
+          "json",
+          "read-only",
+          "results",
+          "x402"
+        ]
+      }
+    },
+    {
+      "name": "create_crawl_task",
+      "title": "Create an X crawl task",
+      "description": "Create a crawl task for one or more X (Twitter) usernames. Side effects: creates a new task AND consumes points.\n\nIf points are insufficient, upstream returns HTTP 402 with PAYMENT-REQUIRED (quote). This tool surfaces it as error.code=PAYMENT_REQUIRED with payment_required payload so agents can request spending approval, top up, then retry safely.\n\nModes:\n- normal: Fast latest-post snapshot at scale (fresh-feed monitoring). Optimized for high-throughput batch retrieval.\n- deep:   Deeper per-user collection/enrichment (typically slower; higher resource usage). Use when you need more than a quick latest-post snapshot.\n\nPerformance note: Normal mode is optimized for a small latest-post snapshot per handle. Actual completeness and latency depend on X availability, upstream limits, and network conditions.\nBatching: For very large sets, split users into batches. Suggested upper bound per task: 500 users (configurable via MAX_USERS_PER_TASK).\n\nReliability:\n- Use idempotency_key to make retries safe (avoid duplicate charges).\n- After creation, poll get_task_status every 5–10s until has_result=true.\n- Then call get_result_download_url (download still requires the same Bearer token).\n",
+      "inputSchema": {
+        "properties": {
+          "users": {
+            "description": "Array of X usernames (handles). You may include a leading '@'.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Users",
+            "type": "array"
+          },
+          "mode": {
+            "default": "normal",
+            "description": "normal = fast latest-post snapshot at scale; deep = deeper per-user collection (slower).",
+            "enum": [
+              "normal",
+              "deep"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional idempotency key for safe retries (recommended for agents).",
+            "title": "Idempotency Key"
+          }
+        },
+        "required": [
+          "users"
+        ],
+        "title": "create_crawl_taskArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "create_crawl_taskOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Create an X crawl task",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "_meta": {
+        "side_effects": true,
+        "modes": {
+          "normal": "Fast latest-post snapshot at scale (fresh-feed monitoring). Optimized for high-throughput batch retrieval.",
+          "deep": "Deeper per-user collection/enrichment (typically slower; higher resource usage). Use when you need more than a quick latest-post snapshot."
+        },
+        "performance": "Normal mode is optimized for a small latest-post snapshot per handle. Actual completeness and latency depend on X availability, upstream limits, and network conditions.",
+        "batching": "For very large sets, split users into batches. Suggested upper bound per task: 500 users (configurable via MAX_USERS_PER_TASK).",
+        "tags": [
+          "crawl",
+          "tasks",
+          "twitter",
+          "x"
+        ]
+      }
+    },
+    {
+      "name": "x402_topup",
+      "title": "Credit points from an x402 payment",
+      "description": "Top up points for the CURRENT Bearer key using x402 proof.\n\nInputs:\n- quote_id: returned by PAYMENT-REQUIRED (or /api/v1/x402/quote)\n- payment_signature_b64: base64(JSON) that will be passed as HTTP header PAYMENT-SIGNATURE\n\nSide effects: credits points to the same Bearer key (no key rotation).\nOn success returns credited_points and balance_after (shape depends on upstream).\n",
+      "inputSchema": {
+        "properties": {
+          "quote_id": {
+            "description": "Quote ID returned by PAYMENT-REQUIRED (or /x402/quote).",
+            "title": "Quote Id",
+            "type": "string"
+          },
+          "payment_signature_b64": {
+            "description": "Base64(JSON) for header PAYMENT-SIGNATURE.",
+            "title": "Payment Signature B64",
+            "type": "string"
+          }
+        },
+        "required": [
+          "quote_id",
+          "payment_signature_b64"
+        ],
+        "title": "x402_topupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "x402_topupOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Credit points from an x402 payment",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "_meta": {
+        "side_effects": true,
+        "tags": [
+          "payments",
+          "topup",
+          "x402"
+        ]
+      }
+    },
+    {
+      "name": "get_task_status",
+      "title": "Get crawl task status",
+      "description": "Get API-key account task status by task_id (read-only); accountless x402 tasks use get_direct_task_status instead. Recommended polling interval: every 5–10 seconds until has_result=true.\n\nReturns safe structured state, result metadata, and authenticated result URLs; server filesystem paths are never exposed.",
+      "inputSchema": {
+        "properties": {
+          "task_id": {
+            "description": "Task ID returned by create_crawl_task.",
+            "minimum": 1,
+            "title": "Task Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "title": "get_task_statusArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_task_statusOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Get crawl task status",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "tags": [
+          "read-only",
+          "status",
+          "tasks"
+        ]
+      }
+    },
+    {
+      "name": "wait_for_task",
+      "title": "Wait for a crawl task",
+      "description": "Poll a crawl task server-side until it has a result, reaches a terminal failure/cancelled state, or the bounded timeout expires. Read-only and cheaper for agent context than repeated manual polling.",
+      "inputSchema": {
+        "properties": {
+          "task_id": {
+            "description": "Task ID returned by create_crawl_task.",
+            "minimum": 1,
+            "title": "Task Id",
+            "type": "integer"
+          },
+          "timeout_seconds": {
+            "default": 60,
+            "description": "Maximum wait in seconds (5-120).",
+            "maximum": 120,
+            "minimum": 5,
+            "title": "Timeout Seconds",
+            "type": "integer"
+          },
+          "poll_interval_seconds": {
+            "default": 5,
+            "description": "Seconds between status checks (2-15).",
+            "maximum": 15,
+            "minimum": 2,
+            "title": "Poll Interval Seconds",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "title": "wait_for_taskArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "wait_for_taskOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Wait for a crawl task",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "tags": [
+          "poll",
+          "read-only",
+          "status",
+          "tasks"
+        ]
+      }
+    },
+    {
+      "name": "get_result_preview",
+      "title": "Preview crawl results",
+      "description": "Return up to 100 result rows from an API-key account task as native structured JSON for direct agent analysis; accountless x402 tasks use get_direct_result_preview instead. Use offset/next_offset for pagination; this does not download or parse XLSX. Use after has_result=true; use get_result_download_url when the complete XLSX is required. Read-only.",
+      "inputSchema": {
+        "properties": {
+          "task_id": {
+            "description": "Completed task ID owned by the current API key.",
+            "minimum": 1,
+            "title": "Task Id",
+            "type": "integer"
+          },
+          "limit": {
+            "default": 20,
+            "description": "Maximum result rows to return (1-100).",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "description": "Zero-based row offset for pagination.",
+            "minimum": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "title": "get_result_previewArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_result_previewOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Preview crawl results",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "tags": [
+          "json",
+          "preview",
+          "read-only",
+          "results"
+        ]
+      }
+    },
+    {
+      "name": "get_result_download_url",
+      "title": "Get result download URL",
+      "description": "Get an absolute download URL for a task result (read-only). If the task is not finished, returns ok=false with code=RESULT_NOT_READY (HTTP 409). Downloading the URL requires the same Authorization: Bearer token.",
+      "inputSchema": {
+        "properties": {
+          "task_id": {
+            "description": "Task ID. Must be completed (has_result=true).",
+            "minimum": 1,
+            "title": "Task Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "title": "get_result_download_urlArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_result_download_urlOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Get result download URL",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "read_only": true,
+        "tags": [
+          "download",
+          "read-only"
+        ]
+      }
+    },
+    {
+      "name": "cancel_task",
+      "title": "Cancel a queued crawl task",
+      "description": "Cancel a queued task by task_id. Side effects: changes task state. Xcatcher refunds cost_points when a queued task is successfully cancelled.",
+      "inputSchema": {
+        "properties": {
+          "task_id": {
+            "description": "Task ID to cancel.",
+            "minimum": 1,
+            "title": "Task Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "title": "cancel_taskArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "cancel_taskOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Cancel a queued crawl task",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "side_effects": true,
+        "tags": [
+          "cancel",
+          "tasks"
+        ]
+      }
+    }
+  ]
+}

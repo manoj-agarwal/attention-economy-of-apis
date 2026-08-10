@@ -1,0 +1,133 @@
+{
+  "name": "StealThis",
+  "source_url": "https://mcp.stealthis.dev/mcp",
+  "fetched_at": "2026-08-10T05:51:45+00:00",
+  "description": "Exposes the StealThis.dev resource library of reusable web components, animations, and page templates to AI tools for browsing, searching, and retrieving code snippets.",
+  "github_stars": 5,
+  "tools": [
+    {
+      "name": "list_resources",
+      "description": "List all available resources in the StealThis.dev library. Returns metadata for each resource including title, description, category, difficulty, and available code targets.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "web-animations",
+              "web-pages",
+              "ui-components",
+              "patterns",
+              "components",
+              "pages",
+              "prompts",
+              "plugins",
+              "architectures",
+              "boilerplates",
+              "remotion",
+              "database-schemas"
+            ],
+            "description": "Filter by resource category."
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "easy",
+              "med",
+              "hard"
+            ],
+            "description": "Filter by difficulty level."
+          },
+          "tech": {
+            "type": "string",
+            "description": "Filter by technology (e.g. 'gsap', 'css', 'react')."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_resource",
+      "description": "Get full metadata for a specific resource by its slug, including all available code targets and links.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "slug"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Resource slug (e.g. 'scroll-fade', 'glass-card')."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_snippet",
+      "description": "Get the actual code snippet for a resource and a specific target (html/css/js/react/etc.).",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "slug",
+          "target"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Resource slug."
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "html",
+              "css",
+              "js",
+              "react",
+              "next",
+              "vue",
+              "svelte",
+              "astro",
+              "schema-sql",
+              "seed-sql",
+              "queries-sql",
+              "diagram-mmd",
+              "schema-dbml"
+            ],
+            "description": "Code target."
+          }
+        }
+      }
+    },
+    {
+      "name": "search",
+      "description": "Search resources by keyword across titles, descriptions, tags, and tech stack.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query string."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_lab",
+      "description": "Get the full-screen demo URL for a resource in the StealThis Lab.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "slug"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Resource slug."
+          }
+        }
+      }
+    }
+  ]
+}

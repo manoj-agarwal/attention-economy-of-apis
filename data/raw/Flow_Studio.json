@@ -1,0 +1,1069 @@
+{
+  "name": "Flow Studio",
+  "source_url": "https://mcp.flowstudio.app/mcp",
+  "fetched_at": "2026-08-10T05:48:30+00:00",
+  "description": "Debug, build, and manage Microsoft Power Automate cloud flows via AI agents.",
+  "github_stars": 25,
+  "tools": [
+    {
+      "name": "tool_search",
+      "description": "PREFER THIS over guessing tool names when picking from this server. Searches Flow Studio MCP tools by keyword, skill bundle, or explicit selector and returns full JSON schemas for matched tools so they can be called immediately. Call this whenever the user request maps to functionality you are not 100% sure about, OR when you want to load a whole skill bundle (build-flow, debug-flow, monitor-flow, discover, governance) at once. Query forms: (1) \"skill:<name>\" — fetch the full bundle (use list_skills first to see options); (2) \"select:name1,name2\" — fetch exact tools by name; (3) free-text keywords like \"cancel run\" or \"trigger url\" — ranked match against tool name + description. Non-billable.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query. Forms: \"select:name1,name2\", \"skill:<name>\", or free-text keywords."
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Max tools to return for keyword queries (default 5). Ignored for select: and skill: queries.",
+            "default": 5
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "list_skills",
+      "description": "List all skill bundles — named groups of tools the agent typically uses together for a single user intent (build-flow, debug-flow, monitor-flow, discover, governance). Returns each skill's description and member tool names. Call this first when you are unsure which tools apply to a request; then call tool_search with query: \"skill:<name>\" to load the full bundle. Non-billable.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "list_store_flows",
+      "description": "[Requires Pro+ plan] List Power Automate flows from the Power Clarity cache. Optionally filter by governance flags (monitor, notification rules). Returns key fields including trigger URL, state, and run failure rate. Data is from the stored snapshot — not live from the Power Automate API.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "monitor": {
+            "type": "boolean",
+            "description": "If set, only return flows where monitor equals this value."
+          },
+          "rule_notify_onfail": {
+            "type": "boolean",
+            "description": "If set, filter flows by whether on-fail notifications are enabled."
+          },
+          "rule_notify_onmissingdays": {
+            "type": "boolean",
+            "description": "If set, filter flows by whether missing-days notifications are enabled."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_store_flow",
+      "description": "[Requires Pro+ plan] Get full details for a single Power Automate flow from the Power Clarity cache. Includes trigger URL, owners, state, run statistics, and governance metadata. Data is from the stored snapshot — not live from the Power Automate API.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_store_flow_trigger_url",
+      "description": "[Requires Pro+ plan] [DEPRECATED — scheduled for removal] Get the trigger URL and trigger type for an HTTP-triggered flow from the Power Clarity cache. Read directly from the stored flow record — no live Power Automate API call is made. Use get_live_flow_trigger_url for a guaranteed-fresh URL.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_store_flow_runs",
+      "description": "[Requires Pro+ plan] Get cached run history for a flow from the Power Clarity store. Defaults to the last 7 days. Returns startTime, endTime, status, duration (seconds), failedActions, and remediation hint per run. Data is from the stored snapshot — not live from the Power Automate API.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "startTime": {
+            "type": "string",
+            "description": "ISO 8601 start of the time window (default: 7 days ago)."
+          },
+          "endTime": {
+            "type": "string",
+            "description": "ISO 8601 end of the time window."
+          },
+          "status": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Running",
+                "Succeeded",
+                "Failed",
+                "Cancelled"
+              ]
+            },
+            "description": "Filter by status. Only the first value is used in the OData filter."
+          },
+          "top": {
+            "type": "number",
+            "description": "Maximum number of run rows to return (default 5000)."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_store_flow_errors",
+      "description": "[Requires Pro+ plan] [DEPRECATED — scheduled for removal] Get cached failed run history for a flow from the Power Clarity store (convenience wrapper around get_store_flow_runs with status=Failed). Returns failedActions and remediation hint per run to help diagnose issues. Data is from the stored snapshot — not live from the Power Automate API. Use get_live_flow_runs and filter by status=Failed instead.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "startTime": {
+            "type": "string",
+            "description": "ISO 8601 start of the time window (default: 7 days ago)."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_store_flow_summary",
+      "description": "[Requires Pro+ plan] Get aggregated run statistics for a flow from the Power Clarity cache: total runs, success count, failure count, success rate, fail rate, and average/max duration over a time window. Data is from the stored snapshot — not live from the Power Automate API.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "startTime": {
+            "type": "string",
+            "description": "ISO 8601 start of the time window (default: 7 days ago)."
+          },
+          "endTime": {
+            "type": "string",
+            "description": "ISO 8601 end of the time window."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "set_store_flow_state",
+      "description": "[Requires Pro+ plan] [DEPRECATED — scheduled for removal] Start or stop a Power Automate flow via the live Power Automate API, then persists the updated state back to the Power Clarity store. Uses impersonation via a cached service account that is either a flow owner or an environment admin. Returns the updated stored flow record. Use set_live_flow_state instead.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName",
+          "state"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "Started",
+              "Stopped"
+            ],
+            "description": "Desired state for the flow."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "update_store_flow",
+      "description": "[Requires Pro+ plan] Update governance/metadata fields on a flow record in the Power Clarity store (description, business impact, owner team, tags, monitor flag, notification settings, etc.). Only fields provided are updated (merge semantics). Writes to the cache — does not call the Power Automate API.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "description": {
+            "type": "string"
+          },
+          "businessImpact": {
+            "type": "string"
+          },
+          "businessJustification": {
+            "type": "string"
+          },
+          "businessValue": {
+            "type": "string"
+          },
+          "ownerTeam": {
+            "type": "string"
+          },
+          "ownerBusinessUnit": {
+            "type": "string"
+          },
+          "supportGroup": {
+            "type": "string"
+          },
+          "supportEmail": {
+            "type": "string"
+          },
+          "critical": {
+            "type": "boolean"
+          },
+          "monitor": {
+            "type": "boolean",
+            "description": "Enable/disable monitoring for this flow."
+          },
+          "rule_notify_onfail": {
+            "type": "boolean",
+            "description": "Send notification when the flow fails."
+          },
+          "rule_notify_onmissingdays": {
+            "type": "number",
+            "description": "Send notification when flow has not run for this many days (0 = disabled)."
+          },
+          "rule_notify_email": {
+            "type": "string",
+            "description": "Comma-separated email addresses for notifications."
+          },
+          "tags": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string"
+          },
+          "security": {
+            "type": "string"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "list_store_environments",
+      "description": "[Requires Pro+ plan] List all Power Platform environments from the Power Clarity cache.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "list_store_makers",
+      "description": "[Requires Pro+ plan] List all makers (citizen developers / AAD users) from the Power Clarity cache.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_store_maker",
+      "description": "[Requires Pro+ plan] Get details for a single maker from the Power Clarity cache by their key (usually the AAD object ID). Includes flow/app counts and whether the account has been deleted.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "makerKey"
+        ],
+        "properties": {
+          "makerKey": {
+            "type": "string",
+            "description": "Maker RowKey (AAD object ID of the user)."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "list_store_power_apps",
+      "description": "[Requires Pro+ plan] List all Power Apps canvas apps from the Power Clarity cache.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "list_store_connections",
+      "description": "[Requires Pro+ plan] List all Power Platform connections from the Power Clarity cache.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_live_flow_trigger_url",
+      "description": "[DEPRECATED — scheduled for removal] Fetch the live trigger URL and method for an HTTP-triggered flow directly from the Power Automate API. Unlike get_flow_trigger_url this calls the PA listCallbackUrl endpoint so the URL is always current. Returns triggerName, triggerType, triggerKind, triggerMethod (e.g. POST) and triggerUrl. For non-HTTP triggers, triggerMethod and triggerUrl are null.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_live_flow_runs",
+      "description": "Fetch live run history for a flow directly from the Power Automate API using impersonation — not the cached store. Returns run name, status, startTime, endTime, trigger name/code, and any top-level error.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "top": {
+            "type": "number",
+            "description": "Max runs to return. Paginates automatically. Default 30."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_live_flow_run_error",
+      "description": "Fetch error details for a specific flow run from the live Power Automate API. Lists every failed action with its error code and message to help diagnose what went wrong.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName",
+          "runName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "runName": {
+            "type": "string",
+            "description": "Run identifier (name field from get_live_flow_runs)."
+          },
+          "top": {
+            "type": "number",
+            "description": "Max actions to return. Paginates automatically. Omit for all."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_live_flow_run_action_outputs",
+      "description": "Download inputs and outputs for actions in a flow run via SAS blob links from the live Power Automate API. Without actionName: returns top-level actions (optionally filtered by name). With actionName: calls the PA repetitions endpoint to return every execution of that action across all foreach iterations. Each repetition record includes repetitionIndexes (scope name + itemIndex per nesting level), status, error, and the resolved inputs/outputs blobs. Use iterationIndex to pin to a single iteration (matched against the innermost repetitionIndexes[].itemIndex); omit it to return all repetitions.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName",
+          "runName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "runName": {
+            "type": "string",
+            "description": "Run identifier (name field from get_live_flow_runs)."
+          },
+          "actionName": {
+            "type": "string",
+            "description": "Action name. Without iterationIndex: returns all repetitions of this action across every foreach iteration. With iterationIndex: returns the single repetition matching that iteration. Omit entirely for top-level action list."
+          },
+          "iterationIndex": {
+            "type": "number",
+            "description": "Zero-based foreach iteration index. Matched against the innermost repetitionIndexes[].itemIndex in the PA repetition record. Only meaningful when actionName is also set."
+          },
+          "top": {
+            "type": "number",
+            "description": "Max actions or repetitions to return. Paginates automatically. Omit for all."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "trigger_live_flow",
+      "description": "Trigger an HTTP-triggered Power Automate flow by calling its live callback URL. Fetches the current signed trigger URL via the PA API (listCallbackUrl) then POSTs the provided body to it. If the flow trigger requires Azure Active Directory authentication, the impersonated Bearer token is automatically included — no extra configuration needed. Returns the HTTP status, response body, requiresAadAuth flag, and authType. Only works for flows with a Request (HTTP) trigger type.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "body": {
+            "type": "object",
+            "description": "JSON body to POST to the trigger URL. Omit for flows that expect an empty body."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "cancel_live_flow_run",
+      "description": "Cancel a currently running Power Automate flow run via the live PA API. Use after get_live_flow_runs to obtain the run name. Only runs with status \"Running\" can be cancelled.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName",
+          "runName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "runName": {
+            "type": "string",
+            "description": "Run identifier (name field from get_live_flow_runs)."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "resubmit_live_flow_run",
+      "description": "Resubmit a failed or cancelled Power Automate flow run via the live PA API, re-using the original trigger payload. Discovers the trigger name from the flow definition automatically — no trigger name parameter needed.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName",
+          "runName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "runName": {
+            "type": "string",
+            "description": "Run identifier (name field from get_live_flow_runs)."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "set_live_flow_state",
+      "description": "Start or stop a Power Automate flow via the live Power Automate API using an impersonated service account. Does not require a Power Clarity workspace — works for any flow the impersonated account can access. Reads the current flow state first and only issues the start/stop call if a state change is actually needed. Returns the flow name, environment, requested state, and the actual state reported by the PA API after the operation.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName",
+          "state"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "Started",
+              "Stopped"
+            ],
+            "description": "Desired state for the flow."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "get_live_flow",
+      "description": "Fetch the full native Power Automate flow JSON from the PA API, including the complete flow definition (triggers, actions, parameters, outputs). Returns the raw properties object exactly as the PA API returns it. Use this to inspect the full definition before calling update_live_flow with a modified definition.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "update_live_flow",
+      "description": "Update or create a Power Automate flow via the live PA API. If flowName is omitted or blank, a new flow is created (PUT with a generated GUID) using an environment admin account — definition and displayName are required in that case. If flowName is provided, the existing flow is PATCHed: displayName and/or definition and/or connectionReferences are updated. SURGICAL EDIT: instead of resending the whole definition, pass `operations` — an ordered list of set/add/remove/merge ops on array-of-keys paths — to change one action/parameter on a large flow cheaply and safely (fetches the live definition, applies the ops, PATCHes the result). Provide EITHER operations OR definition. Use `dryRun: true` to preview the result without writing. Mirrors displayName changes into the Power Clarity cache (gFlows). To modify a WHOLE definition: call get_live_flow, mutate properties.definition (including its description), pass it here. The flow description lives at definition.description and is required; we append \" #flowstudio-mcp\" to it for usage tracking.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow to update. Omit or leave blank to create a new flow."
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name for the flow. Required when creating."
+          },
+          "definition": {
+            "type": "object",
+            "description": "Full flow definition as a JSON object (triggers + actions + parameters + outputs + description). MUST be a JSON object — strings are rejected. Do not JSON.stringify the definition; pass the parsed object directly. Required when creating. For updates, obtain from get_live_flow (properties.definition), modify it, then pass the modified object here. definition.description is required (a short note about what changed); when updating, if you omit it we reuse the flow's existing description."
+          },
+          "connectionReferences": {
+            "type": "object",
+            "description": "Connection references map — keyed by logical name (e.g. shared_sharepointonline), each value is { connectionName, id }. Goes into properties.connectionReferences on the PA API call."
+          },
+          "operations": {
+            "type": "array",
+            "description": "SURGICAL EDIT of an existing flow (requires flowName; do not combine with definition). An ordered list applied to the LIVE definition. Each item = { op, path, value? }. path is an ARRAY of literal keys, e.g. [\"actions\",\"Send_Email\",\"inputs\",\"parameters\",\"subject\"] (each element is one key; a \"/\" inside an element is literal, so it addresses SharePoint/Dataverse columns like [\"actions\",\"Update_Item\",\"inputs\",\"parameters\",\"item/Title\"]). ops: set (create/overwrite), add (new key — errors if it already exists), remove (delete key — no-op if absent), merge (deep-merge an object value, keeping sibling keys).",
+            "items": {
+              "type": "object",
+              "required": [
+                "op",
+                "path"
+              ],
+              "properties": {
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "set",
+                    "add",
+                    "remove",
+                    "merge"
+                  ],
+                  "description": "Edit verb."
+                },
+                "path": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Array of literal keys, one per level, e.g. [\"actions\",\"Compose\",\"inputs\"]. A \"/\" inside an element is a literal character, so SharePoint/Dataverse column params (flat keys like \"item/Title\") are addressable: [\"actions\",\"Update_Item\",\"inputs\",\"parameters\",\"item/Title\"]. Do NOT pass a slash-delimited string — it cannot distinguish a literal \"/\" from a separator."
+                },
+                "value": {
+                  "description": "New value (required for set/add/merge; merge requires an object)."
+                }
+              }
+            }
+          },
+          "dryRun": {
+            "type": "boolean",
+            "description": "Preview only: apply the change to the live definition and return the result + what changed, WITHOUT writing."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "get_live_flow_http_schema",
+      "description": "[DEPRECATED — scheduled for removal] Inspect the HTTP interface of a Power Automate Request-triggered flow: returns the JSON schema the trigger URL expects as the POST body, any required headers, the HTTP method, and the JSON schema(s) defined on any Response action(s) in the flow. All information is read from the live flow definition via the PA API — no test call is made to the trigger URL. Use this before calling trigger_live_flow to understand what body to send.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "list_live_environments",
+      "description": "List all Power Platform environments directly from the Power Automate API — not the cached store. Returns id, displayName, sku, location, and state for each environment visible to the impersonated service account.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "top": {
+            "type": "number",
+            "description": "Max environments to return. Paginates automatically. Omit for all."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "list_live_flows",
+      "description": "List Power Automate flows in an environment. Returns id, displayName, state, triggerType, and lastModifiedTime for each flow. mode=owner (default): flows owned by AND shared with the impersonated account (personal + team), with full definitions. mode=admin: all flows in the environment (requires an admin account). If search is provided, results are filtered to flows whose displayName contains the search text. For large environments pagination is time-bounded — if nextLink is returned, pass it as continuationUrl to retrieve the next batch.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin"
+            ],
+            "description": "owner (default): user-scoped — owned + shared-with-me flows (personal + team), with full definitions. admin: admin-scoped endpoint, all flows."
+          },
+          "top": {
+            "type": "number",
+            "description": "Max flows to return. Paginates automatically. Omit for all."
+          },
+          "search": {
+            "type": "string",
+            "description": "Optional case-insensitive filter applied to flow displayName."
+          },
+          "continuationUrl": {
+            "type": "string",
+            "description": "nextLink value returned by a previous call. Pass to resume pagination from where the last call stopped. Must match the same mode as the original call."
+          },
+          "timeoutSeconds": {
+            "type": "number",
+            "description": "Stop collecting pages after this many seconds and return a nextLink for the next batch. Default 25. Max 55."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "list_live_connections",
+      "description": "List Power Platform connections in an environment directly from the Power Automate API — not the cached store. Returns id, displayName, connectorName, environment, createdBy (full object), authenticatedUser, statuses, overallStatus, createdTime, expirationTime, and connectionParameters for each connection. Pass search=<term> to narrow the list and receive a paste-ready connectionReferenceTemplate plus action-side hostTemplate per connection — drop these into update_live_flow's connectionReferences and inputs.host without further edits.",
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment. Omit to list connections across all environments."
+          },
+          "top": {
+            "type": "number",
+            "description": "Max connections to return. Paginates automatically. Omit for all."
+          },
+          "search": {
+            "type": "string",
+            "description": "Optional case-insensitive substring filter applied to id, displayName, connectorName, and accountName. Adds connectionReferenceTemplate + hostTemplate to each returned connection."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "describe_live_connector",
+      "description": "Describe a live Power Platform connector/API and its operations. Aligned with Canvas MCP describe_api. Use mode=summary (default) to get a compact operation catalog. Use operationId to describe one operation, including inputs, outputs, dynamic parameter metadata, nextTool hints to call get_live_dynamic_options, and an authored hint + canonical example shape (when one exists) to copy into update_live_flow. Use search without connectorName/apiName to search operations across connectors and get connection-aware suggestions. Use mode=full only when raw OpenAPI connector metadata is required.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "connectorName": {
+            "type": "string",
+            "description": "Connector logical name, for example shared_teams. Either connectorName/apiName is required, unless search is provided for cross-connector operation search."
+          },
+          "apiName": {
+            "type": "string",
+            "description": "Alias for connectorName, matching Canvas MCP describe_api naming."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "full"
+            ],
+            "description": "summary (default): compact operation catalog. full: raw OpenAPI metadata."
+          },
+          "operationId": {
+            "type": "string",
+            "description": "Optional operation ID to describe with expanded inputs and outputs."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Action",
+              "Trigger"
+            ],
+            "description": "Operation usage to include in summary mode. Default Action."
+          },
+          "search": {
+            "type": "string",
+            "description": "Optional operation search text. With connectorName, filters that connector summary. Without connectorName, searches operations across connectors."
+          },
+          "top": {
+            "type": "number",
+            "description": "Max operations to return in connector summary mode, or max top search results to show in cross-connector search. Default 250 for summary, 10 for search display."
+          },
+          "variant": {
+            "type": "string",
+            "description": "When an operation has multiple authored variants (e.g. shared_teams/PostMessageToConversation has channel/groupchat/flowbot_chat), pass a specific variantKey to get that variant's hint and exampleDefinition. Omit to receive a hint listing the available variants."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_live_dynamic_options",
+      "description": "Resolve live dynamic dropdown/list options for a connector operation parameter. Use this when describe_live_connector returns a dynamic parameter with nextTool=get_live_dynamic_options. Works with x-ms-dynamic-list and x-ms-dynamic-values metadata, for example Teams team/channel IDs, SharePoint site/list IDs, or other connector-specific selectable values.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "parameterName",
+          "connectionName",
+          "dynamicMetadata"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "connectorName": {
+            "type": "string",
+            "description": "Connector logical name, for example shared_teams."
+          },
+          "apiName": {
+            "type": "string",
+            "description": "Alias for connectorName."
+          },
+          "operationId": {
+            "type": "string",
+            "description": "Operation ID that owns the dynamic parameter."
+          },
+          "parameterName": {
+            "type": "string",
+            "description": "Dynamic parameter name, for example groupId or channelId."
+          },
+          "connectionName": {
+            "type": "string",
+            "description": "Required connector connection name/id, for example shared-teams-{guid}. Choose the connection that the flow action should run as. Use list_live_connections to find candidates."
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Resolved dependent parameter values, for example { \"groupId\": \"<team id>\" }."
+          },
+          "dynamicMetadata": {
+            "type": "object",
+            "description": "x-ms-dynamic-list or x-ms-dynamic-values metadata from describe_live_connector."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_live_dynamic_properties",
+      "description": "Resolve live dynamic schema/properties for a connector operation parameter. Use this when describe_live_connector returns a dynamicProperties entry with nextTool=get_live_dynamic_properties. Works with x-ms-dynamic-properties and x-ms-dynamic-schema metadata, for example SharePoint item fields after resolving site/list/view parameters.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "parameterName",
+          "connectionName",
+          "dynamicMetadata"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "connectorName": {
+            "type": "string",
+            "description": "Connector logical name, for example shared_sharepointonline."
+          },
+          "apiName": {
+            "type": "string",
+            "description": "Alias for connectorName."
+          },
+          "operationId": {
+            "type": "string",
+            "description": "Operation ID that owns the dynamic parameter."
+          },
+          "parameterName": {
+            "type": "string",
+            "description": "Dynamic properties parameter name, for example item or body."
+          },
+          "connectionName": {
+            "type": "string",
+            "description": "Required connector connection name/id. Use list_live_connections to find candidates."
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Resolved dependent parameter values, for example { \"dataset\": \"<site url>\", \"table\": \"<list id>\" }."
+          },
+          "dynamicMetadata": {
+            "type": "object",
+            "description": "x-ms-dynamic-properties or x-ms-dynamic-schema metadata from describe_live_connector."
+          },
+          "contextParameterAlias": {
+            "type": "string",
+            "description": "Alias for returned property paths. Defaults to the parameter alias from metadata, or parameterName."
+          },
+          "location": {
+            "type": "string",
+            "enum": [
+              "input",
+              "output"
+            ],
+            "description": "Whether to resolve input or output dynamic properties. Default input."
+          },
+          "propertyName": {
+            "type": "string",
+            "description": "Optional property name/title/alias to return just one property. Useful for a progressive follow-up with includeRaw=true after inspecting the compact schema."
+          },
+          "includeRaw": {
+            "type": "boolean",
+            "description": "Include raw schema/property definitions. With propertyName, includes raw only for the matched property. Without propertyName, includes the full raw schema. Default false."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "add_live_flow_to_solution",
+      "description": "Migrate a non-solution Power Automate flow into a solution via the admin migrateFlows API. If the flow is already part of a solution, returns an error message without attempting migration. solutionId is optional — omit to migrate into the default solution.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "environmentName",
+          "flowName"
+        ],
+        "properties": {
+          "environmentName": {
+            "type": "string",
+            "description": "Name of the Power Platform environment."
+          },
+          "flowName": {
+            "type": "string",
+            "description": "Name (ID) of the flow to migrate into the solution."
+          },
+          "solutionId": {
+            "type": "string",
+            "description": "Target solution ID (Dataverse solutionid GUID). Omit for the default solution. Discover IDs via get_live_dynamic_options on shared_commondataserviceforapps/ListRecords with entityName \"solutions\" (value-path solutionid, value-title friendlyname); needs a Dataverse connection in the env."
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,2079 @@
+{
+  "name": "GoldenMatch",
+  "source_url": "https://goldenmatch-mcp-production.up.railway.app/mcp/",
+  "fetched_at": "2026-08-10T05:47:19+00:00",
+  "description": "Entity resolution toolkit for deduplication, record matching, golden records, and PPRL.",
+  "github_stars": 125,
+  "tools": [
+    {
+      "name": "analyze_data",
+      "description": "Profile data, detect domain, recommend ER strategy",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string"
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "auto_configure",
+      "description": "Run AutoConfigController on a CSV; return the committed GoldenMatchConfig (incl. negative_evidence / Path Y when chosen) plus telemetry â stop_reason, health, decision trace, indicator column priors. Programmatic equivalent of `goldenmatch autoconfig`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string"
+          },
+          "constraints": {
+            "type": "object"
+          },
+          "exclude_columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Column names to skip across GoldenMatch + GoldenFlow + auto-config. Optional. Layered with config.exclude_columns when both are set. force_include (env var) rescues from any opt-out path.",
+            "default": []
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "controller_telemetry",
+      "description": "Return the AutoConfigController telemetry from the most recent `auto_configure` or `agent_deduplicate` call in this MCP session. Same JSON shape as the web /api/v1/controller/telemetry endpoint.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "agent_deduplicate",
+      "description": "Run full ER pipeline with confidence gating and reasoning",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string"
+          },
+          "config": {
+            "type": "object"
+          },
+          "exclude_columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Column names to skip across GoldenMatch + GoldenFlow + auto-config. Optional. Layered with config.exclude_columns when both are set. force_include (env var) rescues from any opt-out path.",
+            "default": []
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "agent_match_sources",
+      "description": "Match two files with intelligent strategy selection",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_a": {
+            "type": "string"
+          },
+          "file_b": {
+            "type": "string"
+          },
+          "config": {
+            "type": "object"
+          },
+          "exclude_columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Column names to skip across GoldenMatch + GoldenFlow + auto-config. Optional. Layered with config.exclude_columns when both are set. force_include (env var) rescues from any opt-out path.",
+            "default": []
+          },
+          "file_a_content": {
+            "type": "string",
+            "description": "Alternative to file_a: base64/text bytes"
+          },
+          "file_a_name": {
+            "type": "string"
+          },
+          "file_b_content": {
+            "type": "string",
+            "description": "Alternative to file_b: base64/text bytes"
+          },
+          "file_b_name": {
+            "type": "string"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "agent_explain_pair",
+      "description": "Natural language explanation for a record pair",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record_a": {
+            "type": "object"
+          },
+          "record_b": {
+            "type": "object"
+          },
+          "fuzzy": {
+            "type": "object"
+          },
+          "exact": {
+            "type": "array"
+          }
+        },
+        "required": [
+          "record_a",
+          "record_b"
+        ]
+      }
+    },
+    {
+      "name": "agent_explain_cluster",
+      "description": "Explain why records are in the same cluster",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cluster_id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cluster_id"
+        ]
+      }
+    },
+    {
+      "name": "agent_review_queue",
+      "description": "Get borderline pairs awaiting approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_name"
+        ]
+      }
+    },
+    {
+      "name": "agent_approve_reject",
+      "description": "Approve or reject a review queue pair",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_name": {
+            "type": "string"
+          },
+          "id_a": {
+            "type": "integer"
+          },
+          "id_b": {
+            "type": "integer"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "decided_by": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_name",
+          "id_a",
+          "id_b",
+          "decision",
+          "decided_by"
+        ]
+      }
+    },
+    {
+      "name": "agent_compare_strategies",
+      "description": "Compare ER strategies on your data",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string"
+          },
+          "ground_truth": {
+            "type": "string"
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "ground_truth_content": {
+            "type": "string",
+            "description": "Alternative to ground_truth: base64/text bytes"
+          },
+          "ground_truth_name": {
+            "type": "string"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "suggest_pprl",
+      "description": "Check if data needs privacy-preserving matching",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string"
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "scan_quality",
+      "description": "Run GoldenCheck data quality scan on a CSV file. Returns issues found (encoding errors, Unicode problems, format violations) without applying fixes. Requires goldencheck: pip install goldenmatch[quality]",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to the CSV file to scan"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Optional domain hint (healthcare, finance, ecommerce)"
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "fix_quality",
+      "description": "Run GoldenCheck scan and apply fixes to a CSV file. Returns the fixed data summary and a manifest of all fixes applied. Requires goldencheck: pip install goldenmatch[quality]",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to the CSV file to fix"
+          },
+          "fix_mode": {
+            "type": "string",
+            "enum": [
+              "safe",
+              "moderate"
+            ],
+            "description": "Fix aggressiveness: safe (conservative) or moderate (balanced). Default: safe",
+            "default": "safe"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Optional domain hint (healthcare, finance, ecommerce)"
+          },
+          "output_path": {
+            "type": "string",
+            "description": "Optional path to save the fixed CSV. If omitted, returns summary only."
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "run_transforms",
+      "description": "Run GoldenFlow data transforms on a CSV file. Normalizes phone numbers (E.164), dates (ISO), categorical spelling, and Unicode issues. Returns a manifest of transforms applied. Requires goldenflow: pip install goldenmatch[transform]",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to the CSV file to transform"
+          },
+          "output_path": {
+            "type": "string",
+            "description": "Optional path to save the transformed CSV. If omitted, returns summary only."
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "sensitivity",
+      "description": "Parameter-sensitivity analysis: sweep one or more config parameters across a range and report how stable the clustering is at each value (CCMS unchanged %). Use it to find robust thresholds. Auto-configures the file if no config is given.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "CSV/Parquet to analyze"
+          },
+          "sweep": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Sweep specs as 'field:start:stop:step', e.g. 'threshold:0.70:0.95:0.05'. One or more."
+          },
+          "config": {
+            "type": "string",
+            "description": "Optional config YAML path"
+          },
+          "sample_size": {
+            "type": "integer",
+            "description": "Optional: randomly sample N records before sweeping"
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": [
+          "sweep"
+        ]
+      }
+    },
+    {
+      "name": "incremental",
+      "description": "Match a batch of new records against an existing base dataset (without re-running the whole base). Returns matched (new_row_id, base_row_id, score) pairs plus counts. Auto-configures from the base file if no config is given.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "base_file": {
+            "type": "string",
+            "description": "Existing base dataset path"
+          },
+          "new_records": {
+            "type": "string",
+            "description": "New records file to match in"
+          },
+          "config": {
+            "type": "string",
+            "description": "Optional config YAML path"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Optional threshold override"
+          },
+          "base_file_content": {
+            "type": "string",
+            "description": "Alternative to base_file: base64/text bytes"
+          },
+          "base_file_name": {
+            "type": "string"
+          },
+          "new_records_content": {
+            "type": "string",
+            "description": "Alternative to new_records: base64/text bytes"
+          },
+          "new_records_name": {
+            "type": "string"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "certify_recall",
+      "description": "Estimate match RECALL without ground truth (unsupervised). Treats each auto-configured matchkey/pass as a decorrelated system and uses capture-recapture over their overlaps to estimate how many true matches were missed. Returns a point estimate (a safe lower bound additionally needs a small labelled audit; see `goldenmatch evaluate --certify --audit-out`). Needs >=3 decorrelated systems.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Dataset to dedupe + certify"
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "retrieve_similar",
+      "description": "Semantic retrieval (#1089): return the records in a CSV most similar to a free-text query, ranked by cosine similarity. Embeds the chosen column and the query with the zero-config in-house embedder (no cloud/torch by default) and runs ANN search. The read side of the RAG entity-canonicalization epic -- fetch candidate records by query without running a full dedupe.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "CSV/Parquet corpus to search"
+          },
+          "query": {
+            "type": "string",
+            "description": "Free-text query to search for"
+          },
+          "column": {
+            "type": "string",
+            "description": "Column of the corpus to embed + search"
+          },
+          "k": {
+            "type": "integer",
+            "description": "Max records to return (default 20)"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Minimum cosine similarity in [-1, 1] (default 0.0)"
+          },
+          "model": {
+            "type": "string",
+            "description": "Embedder id (default 'inhouse' -- local, deterministic, no cloud/torch). Also 'all-MiniLM-L6-v2', a Vertex/OpenAI model, etc."
+          },
+          "filters": {
+            "type": "object",
+            "description": "Optional {column: value} equality pre-filter applied before embedding"
+          },
+          "file_content": {
+            "type": "string",
+            "description": "Alternative to file_path: file bytes (base64 default, or raw with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename when using file_content"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": [
+          "query",
+          "column"
+        ]
+      }
+    },
+    {
+      "name": "upload_dataset",
+      "description": "Upload a local file's bytes to the server and get back a server-side path to reuse across other tools (analyze_data, auto_configure, agent_deduplicate, ...). No hosting needed. Send base64 (default) or raw text via `encoding`. Uploaded files are ephemeral scratch, reaped after GOLDENMATCH_MCP_UPLOAD_TTL (default 24h); re-upload if you need a path older than that. Max size GOLDENMATCH_MCP_MAX_UPLOAD_BYTES (default 64MB) -- above it, pass a public http(s) URL as file_path instead.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_content": {
+            "type": "string",
+            "description": "File bytes, base64-encoded (or raw text with encoding='text')"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename (extension preserved for format sniffing)"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of file_content (default base64)"
+          }
+        },
+        "required": [
+          "file_content",
+          "filename"
+        ]
+      }
+    },
+    {
+      "name": "list_corrections",
+      "description": "List stored Learning Memory corrections, optionally filtered by dataset. Returns id_a, id_b, decision, source, trust, reason, matchkey_name, dataset, original_score, created_at.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string",
+            "description": "Optional dataset filter (e.g. file path)."
+          },
+          "path": {
+            "type": "string",
+            "description": "SQLite memory DB path. Default: .goldenmatch/memory.db"
+          }
+        }
+      }
+    },
+    {
+      "name": "add_correction",
+      "description": "Add a Learning Memory correction. Two shapes:\n  - pair-level: decision='approve' or 'reject', requires id_a + id_b\n  - field-level (v1.18.2+): decision='field_correct', requires cluster_id + field_name + corrected_value\nSource is 'agent' with trust=0.5 (lower than human steward 1.0). Pair (id_a, id_b) is canonicalized to (min, max) before storage.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id_a": {
+            "type": "integer",
+            "description": "Pair-level: first row id. Field-level: ignored."
+          },
+          "id_b": {
+            "type": "integer",
+            "description": "Pair-level: second row id. Field-level: ignored."
+          },
+          "cluster_id": {
+            "type": "integer",
+            "description": "Field-level: cluster_id the correction targets."
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "reject",
+              "field_correct"
+            ]
+          },
+          "field_name": {
+            "type": "string",
+            "description": "Field-level: the column being corrected."
+          },
+          "original_value": {
+            "type": "string",
+            "description": "Field-level: the value build_golden_record chose."
+          },
+          "corrected_value": {
+            "type": "string",
+            "description": "Field-level: the value the reviewer changed it to."
+          },
+          "dataset": {
+            "type": "string",
+            "description": "Dataset identifier (e.g. file path). Required, non-empty."
+          },
+          "reason": {
+            "type": "string"
+          },
+          "matchkey_name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "SQLite memory DB path. Default: .goldenmatch/memory.db"
+          }
+        },
+        "required": [
+          "decision",
+          "dataset"
+        ]
+      }
+    },
+    {
+      "name": "list_plugins",
+      "description": "List all registered goldenmatch plugins by category. Includes the 22 v1.18.2 predefined plugins (numeric/format/business/aggregation) plus any user-registered plugins via entry-points or PluginRegistry.register_*(). Each entry includes name, source (builtin or user), category, and the first line of the merge docstring.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "all",
+              "golden_strategy",
+              "scorer",
+              "transform",
+              "connector"
+            ],
+            "default": "all"
+          }
+        }
+      }
+    },
+    {
+      "name": "learn_thresholds",
+      "description": "Force a MemoryLearner pass over accumulated corrections. Returns the list of LearnedAdjustments produced (matchkey_name, threshold, sample_size, learned_at). Requires >= 10 corrections per matchkey before threshold tuning fires; otherwise returns an empty list.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "matchkey_name": {
+            "type": "string",
+            "description": "Optional: learn only for this matchkey."
+          },
+          "path": {
+            "type": "string",
+            "description": "SQLite memory DB path. Default: .goldenmatch/memory.db"
+          }
+        }
+      }
+    },
+    {
+      "name": "memory_stats",
+      "description": "Return Learning Memory status: total correction count, last learn time, and current learned adjustments. Cheap; safe for status checks.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "SQLite memory DB path. Default: .goldenmatch/memory.db"
+          }
+        }
+      }
+    },
+    {
+      "name": "memory_export",
+      "description": "Return all corrections as a list of dicts (CSV-shaped). Caller is responsible for writing the file. Optionally filter by dataset.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "SQLite memory DB path. Default: .goldenmatch/memory.db"
+          }
+        }
+      }
+    },
+    {
+      "name": "memory_import",
+      "description": "Import corrections from a list of dicts (the exact shape memory_export returns). Upserts into the store: higher trust wins, same trust = latest wins. Returns the count imported.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "corrections": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Correction dicts, as returned by memory_export."
+          },
+          "path": {
+            "type": "string",
+            "description": "SQLite memory DB path. Default: .goldenmatch/memory.db"
+          }
+        },
+        "required": [
+          "corrections"
+        ]
+      }
+    },
+    {
+      "name": "identity_resolve",
+      "description": "Resolve a record_id to its durable identity. Returns the full identity view (members, evidence edges, recent events) or null when no identity exists for that record.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "description": "record id in `{source}:{source_pk}` form"
+          },
+          "path": {
+            "type": "string",
+            "description": "Identity DB path"
+          }
+        },
+        "required": [
+          "record_id"
+        ]
+      }
+    },
+    {
+      "name": "identity_list",
+      "description": "List identities, optionally filtered by dataset/status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50
+          },
+          "offset": {
+            "type": "integer",
+            "default": 0
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "identity_history",
+      "description": "Return the temporal event log for an identity.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "entity_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity_id"
+        ]
+      }
+    },
+    {
+      "name": "identity_conflicts",
+      "description": "List evidence edges marked `conflicts_with`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "identity_merge",
+      "description": "Manually merge two identities. All records from `absorb_entity_id` are reassigned to `keep_entity_id`. The merge events are stamped with `actor`/`trust` provenance so the audit log records who merged these and on what authority.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "keep_entity_id": {
+            "type": "string"
+          },
+          "absorb_entity_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string",
+            "description": "Principal making the change, e.g. 'agent:claude' or 'steward:alice'. Defaults to 'agent'."
+          },
+          "trust": {
+            "type": "number",
+            "description": "Trust of the actor in [0,1]. Defaults by actor prefix (steward 1.0, agent 0.5)."
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "keep_entity_id",
+          "absorb_entity_id"
+        ]
+      }
+    },
+    {
+      "name": "identity_split",
+      "description": "Split a subset of records off an identity into a brand-new identity. The original keeps the remaining records. The split events carry `actor`/`trust` provenance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "entity_id": {
+            "type": "string"
+          },
+          "record_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string",
+            "description": "Principal making the change, e.g. 'agent:claude'. Defaults to 'agent'."
+          },
+          "trust": {
+            "type": "number",
+            "description": "Trust of the actor in [0,1]. Default by actor prefix."
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity_id",
+          "record_ids"
+        ]
+      }
+    },
+    {
+      "name": "identity_claim",
+      "description": "Claim a record into an identity, moving it out of any prior entity ('this record belongs to that identity'). Emits a provenance-stamped `claimed` event on both the gaining and losing entities.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "description": "Entity to claim the record into"
+          },
+          "record_id": {
+            "type": "string",
+            "description": "record id in `{source}:{source_pk}` form"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string",
+            "description": "Principal, e.g. 'agent:claude'. Defaults to 'agent'."
+          },
+          "trust": {
+            "type": "number",
+            "description": "Trust in [0,1]. Default by actor prefix."
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity_id",
+          "record_id"
+        ]
+      }
+    },
+    {
+      "name": "identity_resolve_conflict",
+      "description": "Adjudicate a `conflicts_with` pair: 'same' keeps the entity intact, 'distinct' splits the second record out into a new identity, 'defer' only logs. Records a durable mediation verdict + event with actor/trust provenance, and stops the conflict re-surfacing in the open-conflicts queue.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record_a_id": {
+            "type": "string"
+          },
+          "record_b_id": {
+            "type": "string"
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "same",
+              "distinct",
+              "defer"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "dataset": {
+            "type": "string"
+          },
+          "apply": {
+            "type": "boolean",
+            "default": true,
+            "description": "Act on the verdict (split on 'distinct'); false = log only."
+          },
+          "actor": {
+            "type": "string",
+            "description": "Principal, e.g. 'steward:alice'. Defaults to 'agent'."
+          },
+          "trust": {
+            "type": "number",
+            "description": "Trust in [0,1]. Default by actor prefix."
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_a_id",
+          "record_b_id",
+          "resolution"
+        ]
+      }
+    },
+    {
+      "name": "identity_audit",
+      "description": "Export the append-only identity audit log in commit order: every event with actor / trust / timestamp / reason, so a reviewer can reconstruct exactly which actor changed what, when, and why. Optionally filtered by dataset / actor.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 500
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "identity_audit_seal",
+      "description": "Anchor the append-only audit log with a tamper-evidence seal: a chained sha256 root over every event since the last seal. Cheap and idempotent (a no-op when nothing new has been logged). Run it periodically (or after a batch of stewardship actions) so the history becomes provably untampered. Optionally scoped to a dataset. Publish/mirror the returned root_hash to make tampering detectable by an external party.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string",
+            "description": "Principal sealing the log. Defaults to 'agent'."
+          },
+          "path": {
+            "type": "string",
+            "description": "Identity DB path"
+          }
+        }
+      }
+    },
+    {
+      "name": "identity_audit_verify",
+      "description": "Verify the append-only audit log against its seal chain. Replays the per-event content hashes and the seal roots to detect content edits, deletion, reordering, and insertion of any sealed event. Returns {ok, events_checked, seals_checked} plus the ids of any content mismatches / broken seals / missing sealed events. Optionally scoped to a dataset.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "Identity DB path"
+          }
+        }
+      }
+    },
+    {
+      "name": "identity_show",
+      "description": "Fetch the full detail of one identity by entity_id: its member records, evidence edges, and recent event log. Returns {found: false} when no such entity exists.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "entity_id": {
+            "type": "string"
+          },
+          "event_limit": {
+            "type": "integer",
+            "default": 100
+          },
+          "path": {
+            "type": "string",
+            "description": "Identity DB path"
+          }
+        },
+        "required": [
+          "entity_id"
+        ]
+      }
+    },
+    {
+      "name": "identity_profile",
+      "description": "MDM profile of one entity: record count + per-source breakdown, golden record, confidence, conflict count, canonical version (structural-event count), and first/last activity. Returns {found: false} when no such entity exists.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "entity_id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "Identity DB path"
+          }
+        },
+        "required": [
+          "entity_id"
+        ]
+      }
+    },
+    {
+      "name": "identity_stats",
+      "description": "Graph-level summary / health stats: entities by status, total records, records-per-entity distribution, conflict total, source mix, and the largest entities. Optionally scoped to a dataset.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "Identity DB path"
+          }
+        }
+      }
+    },
+    {
+      "name": "identity_worklist",
+      "description": "Prioritized steward worklist: active entities needing attention (open conflicts and/or confidence below weak_confidence), highest conflict count first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "weak_confidence": {
+            "type": "number",
+            "default": 0.6
+          },
+          "limit": {
+            "type": "integer",
+            "default": 50
+          },
+          "path": {
+            "type": "string",
+            "description": "Identity DB path"
+          }
+        }
+      }
+    },
+    {
+      "name": "plan_routing",
+      "description": "Project per-stage distributed routing (scoring/clustering/golden) for a given data shape + cluster. Pure; no controller run.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "n_rows": {
+            "type": "integer"
+          },
+          "estimated_pair_count": {
+            "type": "integer"
+          },
+          "cluster": {
+            "type": "object",
+            "properties": {
+              "num_nodes": {
+                "type": "integer"
+              },
+              "total_cpus": {
+                "type": "integer"
+              },
+              "cluster_mem_gb": {
+                "type": "number"
+              },
+              "driver_mem_gb": {
+                "type": "number"
+              }
+            }
+          },
+          "driver_mem_gb": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "n_rows",
+          "estimated_pair_count"
+        ]
+      }
+    },
+    {
+      "name": "explain_routing",
+      "description": "Human-readable explanation of why each stage is routed the way it is, with the driver-RAM projection that drove it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "n_rows": {
+            "type": "integer"
+          },
+          "estimated_pair_count": {
+            "type": "integer"
+          },
+          "cluster": {
+            "type": "object",
+            "properties": {
+              "num_nodes": {
+                "type": "integer"
+              },
+              "total_cpus": {
+                "type": "integer"
+              },
+              "cluster_mem_gb": {
+                "type": "number"
+              },
+              "driver_mem_gb": {
+                "type": "number"
+              }
+            }
+          },
+          "driver_mem_gb": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "n_rows",
+          "estimated_pair_count"
+        ]
+      }
+    },
+    {
+      "name": "lint_routing",
+      "description": "Flag config/env overrides that force a slow path (e.g. CLUSTERING_THRESHOLD=0 when the edge set fits driver RAM). ERROR at scale; would_refuse mirrors the runtime guard.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "n_rows": {
+            "type": "integer"
+          },
+          "estimated_pair_count": {
+            "type": "integer"
+          },
+          "cluster": {
+            "type": "object",
+            "properties": {
+              "num_nodes": {
+                "type": "integer"
+              },
+              "total_cpus": {
+                "type": "integer"
+              },
+              "cluster_mem_gb": {
+                "type": "number"
+              },
+              "driver_mem_gb": {
+                "type": "number"
+              }
+            }
+          },
+          "driver_mem_gb": {
+            "type": "number"
+          },
+          "env": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "n_rows",
+          "estimated_pair_count"
+        ]
+      }
+    },
+    {
+      "name": "get_stats",
+      "description": "Get dataset statistics: record count, cluster count, match rate, cluster sizes.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "find_duplicates",
+      "description": "Find duplicate matches for a record. Provide field values to search against the loaded dataset.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record": {
+            "type": "object",
+            "description": "Record fields to match (e.g. {\"name\": \"John Smith\", \"zip\": \"10001\"})"
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "Max results to return (default 5)",
+            "default": 5
+          }
+        },
+        "required": [
+          "record"
+        ]
+      }
+    },
+    {
+      "name": "explain_match",
+      "description": "Explain why two records match or don't match. Shows per-field score breakdown.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record_a": {
+            "type": "object",
+            "description": "First record fields"
+          },
+          "record_b": {
+            "type": "object",
+            "description": "Second record fields"
+          }
+        },
+        "required": [
+          "record_a",
+          "record_b"
+        ]
+      }
+    },
+    {
+      "name": "list_clusters",
+      "description": "List duplicate clusters found in the dataset. Returns cluster IDs, sizes, and member counts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "min_size": {
+            "type": "integer",
+            "description": "Minimum cluster size to include (default 2)",
+            "default": 2
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max clusters to return (default 20)",
+            "default": 20
+          }
+        }
+      }
+    },
+    {
+      "name": "get_cluster",
+      "description": "Get details of a specific cluster: all member records and their field values.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cluster_id": {
+            "type": "integer",
+            "description": "Cluster ID to look up"
+          }
+        },
+        "required": [
+          "cluster_id"
+        ]
+      }
+    },
+    {
+      "name": "get_golden_record",
+      "description": "Get the merged golden (canonical) record for a cluster.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cluster_id": {
+            "type": "integer",
+            "description": "Cluster ID"
+          }
+        },
+        "required": [
+          "cluster_id"
+        ]
+      }
+    },
+    {
+      "name": "match_record",
+      "description": "Match a single record against the loaded dataset in real-time. Paste a record's fields and instantly see if it matches any existing record. Uses the configured matchkeys, scorers, and thresholds. Example: {\"name\": \"John Smith\", \"email\": \"john@test.com\", \"zip\": \"10001\"}",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record": {
+            "type": "object",
+            "description": "Record fields to match against the dataset"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Minimum score to consider a match (default: use config threshold)"
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "Max matches to return (default 5)",
+            "default": 5
+          }
+        },
+        "required": [
+          "record"
+        ]
+      }
+    },
+    {
+      "name": "unmerge_record",
+      "description": "Remove a record from its cluster. The record becomes a singleton. Remaining cluster members are re-clustered using stored pair scores. Use this to fix bad merges.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "integer",
+            "description": "Row ID of the record to unmerge"
+          }
+        },
+        "required": [
+          "record_id"
+        ]
+      }
+    },
+    {
+      "name": "shatter_cluster",
+      "description": "Break an entire cluster into individual records. All members become singletons. Use when a cluster is completely wrong.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cluster_id": {
+            "type": "integer",
+            "description": "Cluster ID to shatter"
+          }
+        },
+        "required": [
+          "cluster_id"
+        ]
+      }
+    },
+    {
+      "name": "suggest_config",
+      "description": "Analyze bad merges and suggest config changes. Provide examples of incorrect merges (pairs that should NOT have matched) and GoldenMatch will identify which fields/thresholds to tighten. Example: [{\"record_a\": {...}, \"record_b\": {...}, \"reason\": \"different people\"}]",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bad_merges": {
+            "type": "array",
+            "description": "List of bad merge examples with record_a, record_b, and optional reason",
+            "items": {
+              "type": "object",
+              "properties": {
+                "record_a": {
+                  "type": "object"
+                },
+                "record_b": {
+                  "type": "object"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "record_a",
+                "record_b"
+              ]
+            }
+          }
+        },
+        "required": [
+          "bad_merges"
+        ]
+      }
+    },
+    {
+      "name": "review_config",
+      "description": "Run the config healer over the loaded dataset: analyze the dedupe run and return ranked, self-verified suggestions for improving the matching config (thresholds, scorers, negative evidence, blocking). Each suggestion carries an id, kind, target, rationale, and a machine-applicable patch. Requires the native kernel (pip install goldenmatch[native]); returns an empty list otherwise.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "profile_data",
+      "description": "Get data quality profile: column types, null rates, unique counts, sample values.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "export_results",
+      "description": "Export matching results to a file (CSV or JSON).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "output_path": {
+            "type": "string",
+            "description": "File path to save results"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "json"
+            ],
+            "description": "Output format (default csv)",
+            "default": "csv"
+          }
+        },
+        "required": [
+          "output_path"
+        ]
+      }
+    },
+    {
+      "name": "list_domains",
+      "description": "List available domain extraction rulebooks (built-in + user-defined).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_domain",
+      "description": "Create a custom domain extraction rulebook. Define patterns for a specific data domain (medical devices, automotive parts, real estate, etc.).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Domain name (e.g. 'medical_devices', 'automotive_parts')"
+          },
+          "signals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Column name keywords that trigger this domain (e.g. ['ndc', 'fda', 'implant'])"
+          },
+          "identifier_patterns": {
+            "type": "object",
+            "description": "Named regex patterns for domain identifiers (e.g. {'ndc': '\\\\b(\\\\d{5}-\\\\d{4}-\\\\d{2})\\\\b'})"
+          },
+          "brand_patterns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Brand/manufacturer names to extract (e.g. ['Medtronic', 'Abbott'])"
+          },
+          "attribute_patterns": {
+            "type": "object",
+            "description": "Named regex patterns for domain attributes (e.g. {'size': '\\\\b(\\\\d+mm)\\\\b'})"
+          },
+          "stop_words": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Words to strip during name normalization"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "local",
+              "global"
+            ],
+            "description": "Save locally (.goldenmatch/domains/) or globally (~/.goldenmatch/domains/). Default: local.",
+            "default": "local"
+          }
+        },
+        "required": [
+          "name",
+          "signals"
+        ]
+      }
+    },
+    {
+      "name": "test_domain",
+      "description": "Test a domain extraction rulebook against sample records. Shows what features would be extracted from the loaded data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain_name": {
+            "type": "string",
+            "description": "Name of the domain rulebook to test"
+          },
+          "sample_size": {
+            "type": "integer",
+            "description": "Number of records to test (default 10)",
+            "default": 10
+          }
+        },
+        "required": [
+          "domain_name"
+        ]
+      }
+    },
+    {
+      "name": "pprl_auto_config",
+      "description": "Analyze the loaded dataset and recommend optimal PPRL (privacy-preserving record linkage) configuration. Returns recommended fields, bloom filter parameters, threshold, and explanation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "security_level": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "high",
+              "paranoid"
+            ],
+            "description": "Security level (default: high)",
+            "default": "high"
+          },
+          "use_llm": {
+            "type": "boolean",
+            "description": "Use LLM for enhanced recommendations (requires API key)",
+            "default": false
+          }
+        }
+      }
+    },
+    {
+      "name": "pprl_link",
+      "description": "Run privacy-preserving record linkage between two parties' data. Computes bloom filters, matches records without sharing raw data. Specify fields, threshold, and security level.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_a": {
+            "type": "string",
+            "description": "Path to party A's CSV file"
+          },
+          "file_b": {
+            "type": "string",
+            "description": "Path to party B's CSV file"
+          },
+          "file_a_content": {
+            "type": "string",
+            "description": "Alternative to file_a: base64/text bytes"
+          },
+          "file_a_name": {
+            "type": "string"
+          },
+          "file_b_content": {
+            "type": "string",
+            "description": "Alternative to file_b: base64/text bytes"
+          },
+          "file_b_name": {
+            "type": "string"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Field names to match on (e.g. ['first_name', 'last_name', 'zip_code'])"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Match threshold (default: auto-detected)"
+          },
+          "security_level": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "high",
+              "paranoid"
+            ],
+            "default": "high"
+          }
+        },
+        "required": [
+          "fields"
+        ]
+      }
+    },
+    {
+      "name": "evaluate",
+      "description": "Score the loaded run against ground-truth pairs. Loads a ground-truth CSV (id_a,id_b columns) and returns precision, recall, and F1 for the current clustering.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ground_truth_path": {
+            "type": "string",
+            "description": "CSV of true match pairs (columns id_a,id_b or idA,idB)."
+          },
+          "col_a": {
+            "type": "string",
+            "default": "id_a"
+          },
+          "col_b": {
+            "type": "string",
+            "default": "id_b"
+          }
+        },
+        "required": [
+          "ground_truth_path"
+        ]
+      }
+    },
+    {
+      "name": "analyze_blocking",
+      "description": "Diagnose blocking on the loaded dataset: returns ranked blocking key candidates with block counts, max block size, total candidate comparisons, and estimated recall. Use it to explain why matching is slow or produces too many candidate pairs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sample_size": {
+            "type": "integer",
+            "default": 1000
+          },
+          "target_block_size": {
+            "type": "integer",
+            "default": 5000
+          },
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "description": "Top N suggestions"
+          }
+        }
+      }
+    },
+    {
+      "name": "compare_clusters",
+      "description": "Compare two ER clustering outcomes on the same dataset without ground truth (CCMS): classifies each cluster as unchanged / merged / partitioned / overlapping and returns the Talburt-Wang Index. Both inputs are JSON cluster files (as written by export-style output).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "clusters_a_path": {
+            "type": "string",
+            "description": "Baseline clusters JSON"
+          },
+          "clusters_b_path": {
+            "type": "string",
+            "description": "Comparison clusters JSON"
+          },
+          "clusters_a_content": {
+            "type": "string",
+            "description": "Alternative to clusters_a_path: base64/text bytes (JSON, use encoding='text')"
+          },
+          "clusters_a_name": {
+            "type": "string"
+          },
+          "clusters_b_content": {
+            "type": "string",
+            "description": "Alternative to clusters_b_path: base64/text bytes (JSON, use encoding='text')"
+          },
+          "clusters_b_name": {
+            "type": "string"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "schema_match",
+      "description": "Auto-map columns between two files with different schemas. Returns proposed (col_a, col_b) mappings with a confidence score and method (synonym / name_sim / composite). Useful before matching two sources.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_a": {
+            "type": "string"
+          },
+          "file_b": {
+            "type": "string"
+          },
+          "file_a_content": {
+            "type": "string",
+            "description": "Alternative to file_a: base64/text bytes"
+          },
+          "file_a_name": {
+            "type": "string"
+          },
+          "file_b_content": {
+            "type": "string",
+            "description": "Alternative to file_b: base64/text bytes"
+          },
+          "file_b_name": {
+            "type": "string"
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "text"
+            ],
+            "description": "Encoding of *_content (default base64)"
+          },
+          "min_score": {
+            "type": "number",
+            "default": 0.5
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "lineage",
+      "description": "Field-level provenance for the loaded run: for each scored pair, the per-field scores that produced the match, plus cluster id. Optionally write a lineage JSON to a directory.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "max_pairs": {
+            "type": "integer",
+            "default": 100
+          },
+          "natural_language": {
+            "type": "boolean",
+            "default": false
+          },
+          "output_dir": {
+            "type": "string",
+            "description": "If set, write lineage JSON here and return the path instead of inline records."
+          }
+        }
+      }
+    },
+    {
+      "name": "list_runs",
+      "description": "List previous dedupe/match runs (for rollback) from the run log.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "output_dir": {
+            "type": "string",
+            "default": "."
+          }
+        }
+      }
+    },
+    {
+      "name": "rollback",
+      "description": "Undo a previous run by DELETING its output files (looked up by run_id in the run log). Destructive: removes the files that run wrote. Use list_runs first to find the run_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "output_dir": {
+            "type": "string",
+            "default": "."
+          }
+        },
+        "required": [
+          "run_id"
+        ]
+      }
+    },
+    {
+      "name": "config_weaknesses",
+      "description": "Diagnose weaknesses in the loaded run's auto-config: columns admitted that shouldn't be (source/provenance labels, per-row IDs), oversized or shared-value blocks, null sinks, low-signal matchkeys, and over-merging. Returns ranked findings, each with a plain-English explanation + a concrete fix, plus a one-paragraph summary.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "max_findings": {
+            "type": "integer",
+            "description": "Max findings to return, ranked by severity (default 6).",
+            "default": 6
+          },
+          "phrasing": {
+            "type": "string",
+            "enum": [
+              "plain",
+              "technical"
+            ],
+            "description": "Wording style for the findings (default plain).",
+            "default": "plain"
+          }
+        }
+      }
+    },
+    {
+      "name": "dedupe",
+      "description": "Alias for `find_duplicates`. Find duplicate matches for a record. Provide field values to search against the loaded dataset.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record": {
+            "type": "object",
+            "description": "Record fields to match (e.g. {\"name\": \"John Smith\", \"zip\": \"10001\"})"
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "Max results to return (default 5)",
+            "default": 5
+          }
+        },
+        "required": [
+          "record"
+        ]
+      }
+    },
+    {
+      "name": "match",
+      "description": "Alias for `match_record`. Match a single record against the loaded dataset in real-time. Paste a record's fields and instantly see if it matches any existing record. Uses the configured matchkeys, scorers, and thresholds. Example: {\"name\": \"John Smith\", \"email\": \"john@test.com\", \"zip\": \"10001\"}",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record": {
+            "type": "object",
+            "description": "Record fields to match against the dataset"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Minimum score to consider a match (default: use config threshold)"
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "Max matches to return (default 5)",
+            "default": 5
+          }
+        },
+        "required": [
+          "record"
+        ]
+      }
+    },
+    {
+      "name": "explain_pair",
+      "description": "Alias for `explain_match`. Explain why two records match or don't match. Shows per-field score breakdown.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "record_a": {
+            "type": "object",
+            "description": "First record fields"
+          },
+          "record_b": {
+            "type": "object",
+            "description": "Second record fields"
+          }
+        },
+        "required": [
+          "record_a",
+          "record_b"
+        ]
+      }
+    },
+    {
+      "name": "profile",
+      "description": "Alias for `profile_data`. Get data quality profile: column types, null rates, unique counts, sample values.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "explain_cluster",
+      "description": "Alias for `agent_explain_cluster`. Explain why records are in the same cluster",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cluster_id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cluster_id"
+        ]
+      }
+    },
+    {
+      "name": "documents_suggest_schema",
+      "description": "Propose a target extraction schema (JSON) from a sample document image/PDF.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sample_path": {
+            "type": "string"
+          },
+          "backend": {
+            "type": "string",
+            "default": "vlm"
+          },
+          "model": {
+            "type": "string",
+            "default": "gpt-4o"
+          }
+        },
+        "required": [
+          "sample_path"
+        ]
+      }
+    },
+    {
+      "name": "documents_ingest",
+      "description": "Extract records from documents (PDF/image) against a target schema into rows ready for dedupe_df. Returns records + an ingest report.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "schema": {
+            "type": "object",
+            "description": "schema JSON: {'fields':[...]}"
+          },
+          "backend": {
+            "type": "string",
+            "default": "vlm"
+          },
+          "model": {
+            "type": "string",
+            "default": "gpt-4o"
+          },
+          "drop_empty": {
+            "type": "boolean",
+            "default": true
+          },
+          "out_path": {
+            "type": "string",
+            "description": "optional CSV/parquet to also write"
+          }
+        },
+        "required": [
+          "paths",
+          "schema"
+        ]
+      }
+    }
+  ]
+}

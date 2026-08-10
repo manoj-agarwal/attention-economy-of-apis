@@ -27,3 +27,32 @@
 3. **Zero descriptions**: 11 servers (16%) have 0% of parameters described.
 4. **borealhost mega-catalog**: 144 tools / 26,711 tokens — largest tool count
    by far, no descriptions on any parameter.
+
+## 2026-08-09: PulseMCP popularity-based crawl (96 servers)
+
+### Source change
+- Switched from MCP registry to PulseMCP v0beta API (`api.pulsemcp.com`)
+- Sorted ~12k servers by `github_stars` descending, attempted top 250
+- Stars range: 74,683 → 4 for the top 250 with remote endpoints
+- Page size capped at 200 (API rejects larger); 410 responses handled with retry
+
+### Collection
+- Result: 96 collected, 154 failed, 0 skipped
+- Dominant failure: HTTPError (142/154) — popular servers tend to require auth
+- 4 cross-source duplicates removed (Drillr, BuyWhere, Tandem, auteng/docs)
+- 1 file skipped by token counter (FapiaAPI: no tools array)
+
+### Token counting (combined: 162 servers)
+- Method: `tiktoken:o200k_base` (all rows quotable)
+- Median tool count: 7.0
+- Median catalog cost: 1,879 tokens
+- 90th percentile: 13,488 tokens
+
+### New data quality flags
+1. **Metagraphed mega-outlier**: 300,631 tokens for 230 tools (~1,307 tok/tool).
+   Dominates the histogram — 7x the next-largest catalog.
+2. **Agentic Mermaid / OptionsAhoy**: 44k and 34k tokens for 9 and 8 tools
+   respectively (~4,900 and ~4,300 tok/tool). Same pattern as dreamlit —
+   embedding full docs in tool descriptions.
+3. Popular servers (high github_stars) have higher auth-gate rate than the
+   registry sample — 62% failure vs 44% previously.

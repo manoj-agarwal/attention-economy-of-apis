@@ -1,0 +1,631 @@
+{
+  "name": "Agent Utils",
+  "source_url": "https://agent-utils-mcp.onrender.com/mcp",
+  "fetched_at": "2026-08-10T05:51:47+00:00",
+  "description": "Utility toolkit with 18 tools for text processing, encoding, datetime conversion, and data transformation.",
+  "github_stars": 5,
+  "tools": [
+    {
+      "name": "tool_json_validate",
+      "description": "Validate a JSON string. Returns parsed object or detailed error.",
+      "inputSchema": {
+        "properties": {
+          "json_string": {
+            "title": "Json String",
+            "type": "string"
+          }
+        },
+        "required": [
+          "json_string"
+        ],
+        "title": "tool_json_validateArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_json_validateOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_json_format",
+      "description": "Pretty-print or minify a JSON string.",
+      "inputSchema": {
+        "properties": {
+          "json_string": {
+            "title": "Json String",
+            "type": "string"
+          },
+          "minify": {
+            "default": false,
+            "title": "Minify",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "json_string"
+        ],
+        "title": "tool_json_formatArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_json_formatOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_base64_encode",
+      "description": "Encode a string to base64.",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "tool_base64_encodeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_base64_encodeOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_base64_decode",
+      "description": "Decode a base64 string.",
+      "inputSchema": {
+        "properties": {
+          "encoded": {
+            "title": "Encoded",
+            "type": "string"
+          }
+        },
+        "required": [
+          "encoded"
+        ],
+        "title": "tool_base64_decodeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_base64_decodeOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_hash_generate",
+      "description": "Generate hash (md5, sha256, sha512) of input text.",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "algorithm": {
+            "default": "sha256",
+            "title": "Algorithm",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "tool_hash_generateArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_hash_generateOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_uuid_generate",
+      "description": "Generate a UUID (v4 or v7).",
+      "inputSchema": {
+        "properties": {
+          "version": {
+            "default": 4,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "title": "tool_uuid_generateArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_uuid_generateOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_url_parse",
+      "description": "Parse a URL into components (scheme, host, path, params, etc.).",
+      "inputSchema": {
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "tool_url_parseArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_url_parseOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_regex_test",
+      "description": "Test a regex pattern against text and return all matches.",
+      "inputSchema": {
+        "properties": {
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "flags": {
+            "default": "",
+            "title": "Flags",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pattern",
+          "text"
+        ],
+        "title": "tool_regex_testArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_regex_testOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_markdown_to_html",
+      "description": "Convert Markdown to HTML.",
+      "inputSchema": {
+        "properties": {
+          "md_text": {
+            "title": "Md Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "md_text"
+        ],
+        "title": "tool_markdown_to_htmlArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_markdown_to_htmlOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_html_to_markdown",
+      "description": "Convert HTML to Markdown.",
+      "inputSchema": {
+        "properties": {
+          "html_text": {
+            "title": "Html Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "html_text"
+        ],
+        "title": "tool_html_to_markdownArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_html_to_markdownOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_text_stats",
+      "description": "Compute text statistics: word count, char count, sentences, reading time.",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "tool_text_statsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_text_statsOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_slug_generate",
+      "description": "Generate a URL-safe slug from text.",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "separator": {
+            "default": "-",
+            "title": "Separator",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "tool_slug_generateArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_slug_generateOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_datetime_convert",
+      "description": "Convert a datetime between timezones/formats, including Unix timestamps.",
+      "inputSchema": {
+        "properties": {
+          "dt_string": {
+            "title": "Dt String",
+            "type": "string"
+          },
+          "from_tz": {
+            "default": "UTC",
+            "title": "From Tz",
+            "type": "string"
+          },
+          "to_tz": {
+            "default": "UTC",
+            "title": "To Tz",
+            "type": "string"
+          },
+          "from_format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "From Format"
+          },
+          "to_format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "To Format"
+          }
+        },
+        "required": [
+          "dt_string"
+        ],
+        "title": "tool_datetime_convertArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_datetime_convertOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_cron_parse",
+      "description": "Parse a cron expression: human-readable description + next N run times.",
+      "inputSchema": {
+        "properties": {
+          "cron_expression": {
+            "title": "Cron Expression",
+            "type": "string"
+          },
+          "count": {
+            "default": 5,
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cron_expression"
+        ],
+        "title": "tool_cron_parseArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_cron_parseOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_diff_text",
+      "description": "Compute a unified diff between two texts.",
+      "inputSchema": {
+        "properties": {
+          "text1": {
+            "title": "Text1",
+            "type": "string"
+          },
+          "text2": {
+            "title": "Text2",
+            "type": "string"
+          },
+          "context_lines": {
+            "default": 3,
+            "title": "Context Lines",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "text1",
+          "text2"
+        ],
+        "title": "tool_diff_textArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_diff_textOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_csv_to_json",
+      "description": "Convert CSV text to a JSON array of objects.",
+      "inputSchema": {
+        "properties": {
+          "csv_text": {
+            "title": "Csv Text",
+            "type": "string"
+          },
+          "delimiter": {
+            "default": ",",
+            "title": "Delimiter",
+            "type": "string"
+          }
+        },
+        "required": [
+          "csv_text"
+        ],
+        "title": "tool_csv_to_jsonArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_csv_to_jsonOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_json_to_csv",
+      "description": "Convert a JSON array to CSV text.",
+      "inputSchema": {
+        "properties": {
+          "json_data": {
+            "title": "Json Data",
+            "type": "string"
+          },
+          "delimiter": {
+            "default": ",",
+            "title": "Delimiter",
+            "type": "string"
+          }
+        },
+        "required": [
+          "json_data"
+        ],
+        "title": "tool_json_to_csvArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_json_to_csvOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "tool_jwt_decode",
+      "description": "Decode a JWT payload without verification (inspection only).",
+      "inputSchema": {
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "tool_jwt_decodeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "tool_jwt_decodeOutput",
+        "type": "object"
+      }
+    }
+  ]
+}

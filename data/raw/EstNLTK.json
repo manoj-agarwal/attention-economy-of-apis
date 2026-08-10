@@ -1,0 +1,1481 @@
+{
+  "name": "EstNLTK",
+  "source_url": "https://estonian-mcp.fly.dev/mcp",
+  "fetched_at": "2026-08-10T05:49:58+00:00",
+  "description": "Hosted MCP server exposing the EstNLTK Estonian NLP toolkit with 20 tools for morphology, NER, lemmatization, and spell-checking.",
+  "github_stars": 14,
+  "tools": [
+    {
+      "name": "tokenize",
+      "description": "Split Estonian text into sentences and words.\n\nReturns a dict with `sentences` (list of strings) and `words` (list of strings).\nInput is capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to split into sentences and words.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "tokenizeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "sentences": {
+            "default": null,
+            "items": {
+              "type": "string"
+            },
+            "title": "Sentences",
+            "type": "array"
+          },
+          "words": {
+            "default": null,
+            "items": {
+              "type": "string"
+            },
+            "title": "Words",
+            "type": "array"
+          }
+        },
+        "title": "_TokenizeResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Tokenize Estonian text",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "analyze_morphology",
+      "description": "Run full morphological analysis on Estonian text.\n\nFor each word returns lemma(s), part-of-speech, grammatical form, root,\nending, clitic, compound parts, ambiguity info, and a usage note\nflagging archaic / foreign / abbreviation / interjection / proper-noun\ncases. By default returns the first (most likely) analysis per word;\nset `all_analyses=True` to return every ambiguous analysis.\n\nEach word's response includes:\n  - lemma, partofspeech, form, root, ending, clitic, root_tokens\n  - analyses_count: how many alternative analyses Vabamorf produced\n    for this surface form (>1 means the word is morphologically\n    ambiguous)\n  - is_ambiguous: shorthand for analyses_count > 1\n  - usage_note: machine code (None if neutral)\n    — \"archaic\" / \"foreign\" / \"abbreviation\" / \"interjection\" /\n      \"proper-noun\"\n  - usage_note_estonian: human-readable Estonian rendering of the\n    same flag (quote this verbatim in Estonian replies; do NOT\n    translate the English usage_note yourself)\n  - indeclinable: True for words that stay in base form when used\n    attributively (lexical indeclinables like `täis`, and -tud/-nud\n    past participles like `tuntud`) — i.e. they do NOT take the\n    noun's case ending in agreement. Use this before inflecting a\n    noun phrase so you don't wrongly decline an invariant adjective.\n\nInput is capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to analyse morphologically.",
+            "title": "Text",
+            "type": "string"
+          },
+          "all_analyses": {
+            "default": false,
+            "description": "Return every ambiguous analysis per word instead of only the most likely one.",
+            "title": "All Analyses",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "analyze_morphologyArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "analyze_morphologyOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Estonian morphological analysis",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "paradigm",
+      "description": "Generate the full inflection paradigm for an Estonian word.\n\nFor nominals (nouns, adjectives, pronouns, numerals): produces all 14\ncases × 2 numbers = up to 28 forms. For verbs: produces infinitives,\npresent/past/conditional indicative, imperative, and participles\n(~30 forms). Other parts of speech (adverbs, conjunctions,\nparticles) don't inflect — `forms` is empty.\n\nEach form entry has the Vabamorf form code (e.g. `sg p`, `ksin`),\nits Estonian label (e.g. `ainsuse osastav`, `tingiv 1.p ainsus`),\nand the surface form Vabamorf generated. Use `form_estonian` verbatim\nin Estonian replies — don't translate the English `form` code.\n\nPhase-1 scope: covers the most commonly-needed forms per word class,\nnot every theoretical form Vabamorf can produce. Single-word input,\ncapped at 200 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "word": {
+            "description": "A single Estonian word (lemma or inflected form) to generate the full paradigm for.",
+            "title": "Word",
+            "type": "string"
+          }
+        },
+        "required": [
+          "word"
+        ],
+        "title": "paradigmArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "input": {
+            "default": null,
+            "title": "Input",
+            "type": "string"
+          },
+          "lemma": {
+            "default": null,
+            "title": "Lemma",
+            "type": "string"
+          },
+          "partofspeech": {
+            "default": null,
+            "title": "Partofspeech",
+            "type": "string"
+          },
+          "word_class": {
+            "default": null,
+            "title": "Word Class",
+            "type": "string"
+          },
+          "forms": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Forms",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_ParadigmResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Generate Estonian inflection paradigm",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "lemmatize",
+      "description": "Return lemma (dictionary form) for each word in the text.\n\nConcise output: `[{\"word\": ..., \"lemma\": ...}, ...]`. Input is capped at\n100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to reduce to dictionary-form lemmas.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "lemmatizeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "lemmatizeOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Lemmatize Estonian words",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "pos_tag",
+      "description": "Return part-of-speech tag for each word.\n\nPOS tag set: S=noun, V=verb, A=adj, P=pron, D=adv, K=adp, J=conj,\nN=numeral, I=interj, Y=abbrev, X=foreign, Z=punct, etc. Input is capped\nat 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to part-of-speech tag.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "pos_tagArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "pos_tagOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Part-of-speech tagging",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "spell_check",
+      "description": "Check Estonian spelling for each word and optionally return suggestions.\n\nReturns one entry per word with `text`, `spelling` (bool), and\n`suggestions` (list of correction candidates) when `suggestions=True`.\nInput is capped at 100,000 characters.\n\nCAVEAT: Vabamorf accepts ANY morphologically well-formed word,\nincluding compounds you just invented (e.g. `toortõlkeoht`) — it\nsplits them into valid roots and reports `spelling: true`. So passing\nspell_check does NOT mean a word is real, attested Estonian. For a\ncoined or unusual compound, confirm it with `check_compound_familiarity`\nbefore trusting it.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to spell-check.",
+            "title": "Text",
+            "type": "string"
+          },
+          "suggestions": {
+            "default": true,
+            "description": "Include correction suggestions for misspelled words.",
+            "title": "Suggestions",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "spell_checkArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "spell_checkOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Estonian spell check",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "syllabify",
+      "description": "Split a single Estonian word into syllables with quantity and accent.\n\nEach syllable entry: `{\"syllable\": str, \"quantity\": int, \"accent\": int}`.\nInput is capped at 200 characters and must contain no whitespace.\n",
+      "inputSchema": {
+        "properties": {
+          "word": {
+            "description": "A single Estonian word (no whitespace) to split into syllables.",
+            "title": "Word",
+            "type": "string"
+          }
+        },
+        "required": [
+          "word"
+        ],
+        "title": "syllabifyArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "syllabifyOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Syllabify Estonian word",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "named_entities",
+      "description": "Extract named entities (PER/LOC/ORG) using EstNLTK's CRF model.\n\nReturns `[{\"text\": ..., \"type\": ..., \"start\": ..., \"end\": ...}, ...]`.\nInput is capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to extract named entities (people, places, organisations) from.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "named_entitiesArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "named_entitiesOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Estonian named entity recognition",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "find_related_words",
+      "description": "Find Estonian words semantically similar to the input via fastText.\n\nReturns the top-n nearest neighbours by cosine similarity over a\npre-trained Estonian fastText model (Common Crawl + Wikipedia, 2018).\nUseful for breaking repetition, finding alternative phrasings, or\nexpanding vocabulary when WordNet's exact-meaning synonyms aren't\nenough.\n\nDistinct from `synonyms`: that one returns WordNet synsets — words\nwith the same meaning. This one returns words that *pattern* with\nthe input in real Estonian text, which can include near-synonyms,\nrelated concepts, and (sometimes) antonyms.\n\nKnown quirks of the embedding model:\n- **Inflections crowd the top results** for some words. fastText\n  sees `kasutama` and `kasutada` as related because the surface\n  forms share subword n-grams; you may want to lemmatize matches\n  yourself to dedupe.\n- **Antonyms can appear** because antonyms occur in similar\n  contexts (`tark` may surface `loll`). Treat the list as\n  \"semantically nearby\" rather than \"synonymous.\"\n- **Polysemy is not disambiguated.** `lahe` (which means both\n  \"bay\" and the colloquial \"cool\") will return whichever sense\n  dominates the training data.\n\nSingle-word input only, capped at 200 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "word": {
+            "description": "A single Estonian word to find semantically related words for.",
+            "title": "Word",
+            "type": "string"
+          },
+          "n": {
+            "default": 10,
+            "description": "How many nearest-neighbour words to return (1-50).",
+            "title": "N",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "word"
+        ],
+        "title": "find_related_wordsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "word": {
+            "default": null,
+            "title": "Word",
+            "type": "string"
+          },
+          "matches": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Matches",
+            "type": "array"
+          }
+        },
+        "title": "_RelatedWordsResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Find semantically related Estonian words",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "synonyms",
+      "description": "Look up Estonian synonyms via WordNet.\n\nReturns synsets (groups of synonymous lemmas) for the input word, each\nwith its definition and example usages. Useful when you want Claude to\npick a different word with the same meaning, e.g. swap an over-used\nverb in marketing copy. Word-sense ambiguity is preserved: a polysemous\nword returns multiple synsets, one per meaning. Input capped at 200\ncharacters.\n\nWORD-FIT CHECK: when the question is \"is this the right word here?\"\nrather than \"give me an alternative\", READ EACH `definition` and test\nit against the user's actual context — do not just harvest `lemmas`.\nEstonian glosses routinely carry a domain constraint that decides the\nanswer: `korpus` returns the sense \"kirjaliku või suulise teksti\nelektrooniline kogu\", so calling a set of IMAGES a `korpus` is wrong\nhowever natural it sounds in ML jargon; `andmestik` carries no such\nconstraint. A gloss naming a medium, field, or material is a\nconstraint on where the word may be used. Note also that a word can\nbe well-formed, correctly spelled and still the wrong register — for\nthat, check_officialese and classify_register, not this tool.\n",
+      "inputSchema": {
+        "properties": {
+          "word": {
+            "description": "A single Estonian word to look up WordNet synonyms for.",
+            "title": "Word",
+            "type": "string"
+          },
+          "max_synsets": {
+            "default": 5,
+            "description": "Maximum number of word-sense synsets to return.",
+            "title": "Max Synsets",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "word"
+        ],
+        "title": "synonymsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "word": {
+            "default": null,
+            "title": "Word",
+            "type": "string"
+          },
+          "synsets": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Synsets",
+            "type": "array"
+          },
+          "synset_count": {
+            "default": null,
+            "title": "Synset Count",
+            "type": "integer"
+          }
+        },
+        "title": "_SynonymsResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Estonian WordNet synonyms",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_compounds",
+      "description": "Heuristic Estonian compound-word check (liitsõnaõigekiri).\n\nScans for common AI-generated splits of words that should be written\nas a single compound — `kooli maja` (wrong) → `koolimaja` (right),\n`nädala vahetus` (wrong) → `nädalavahetus` (right), etc. Uses a\ncurated bigram lexicon (~30 entries covering the highest-frequency\nAI mistakes); not a full liitsõnaõigekiri solver.\n\nPhase-1 limitations: only catches the bigrams in the lexicon.\nEstonian compounding is highly productive and most valid compounds\naren't enumerated here. Treat hits as high-confidence; absence of\nhits does not prove the compound writing is correct everywhere.\nInput capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to check for wrongly split compound words.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_compoundsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_CheckResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian compound writing (liitsõnaõigekiri)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_punctuation",
+      "description": "Heuristic Estonian punctuation check — comma-before-clause rule.\n\nFlags missing commas before subordinating conjunctions where Estonian\nrules require one: et (that/in order to), kuna (because), sest\n(because), kuigi (although), kuid (but), vaid (rather), nagu (like),\nmistõttu (because of which), millepärast, kuhu.\n\nPhase-1 limitations: only the comma-before-clause-conjunction rule\nis covered. `kui`, `mis`, `kes` are deliberately excluded because\ntheir function is contextual (kui = than/as in comparisons doesn't\nneed a comma). Listing commas, apposition commas, dash and colon\nrules — all out of scope for phase 1. Input capped at 100,000\ncharacters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to check for missing commas before subordinating conjunctions.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_punctuationArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_CheckResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian punctuation (kirjavahemärgid)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_hyphenation",
+      "description": "Return safe line-break positions for an Estonian word (poolitamine).\n\nDifferent from `syllabify` (which is phonological): this returns\ncharacter offsets where a typesetter can legally break the word\nacross lines. Applies the no-orphan-edge rule (don't leave fewer\nthan 2 characters before or after the break point).\n\nPhase-1 limitation: pure syllable-boundary based. Compound-boundary\npreference (Estonian poolitamine prefers `kooli-maja` over\n`koo-limaja`) is not yet applied. Input must be a single word with\nno whitespace, capped at 200 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "word": {
+            "description": "A single Estonian word (no whitespace) to find safe line-break positions for.",
+            "title": "Word",
+            "type": "string"
+          }
+        },
+        "required": [
+          "word"
+        ],
+        "title": "check_hyphenationArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "word": {
+            "default": null,
+            "title": "Word",
+            "type": "string"
+          },
+          "breaks": {
+            "default": null,
+            "items": {
+              "type": "integer"
+            },
+            "title": "Breaks",
+            "type": "array"
+          },
+          "preferred": {
+            "default": null,
+            "title": "Preferred",
+            "type": "string"
+          },
+          "syllable_count": {
+            "default": null,
+            "title": "Syllable Count",
+            "type": "integer"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_HyphenationResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian word hyphenation (poolitamine)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_numbers",
+      "description": "Heuristic Estonian number-writing check.\n\nFlags two clear-cut cases per EKI Reeglid:\n- Decimal separator: Estonian uses a comma (3,14), not a period (3.14).\n- Thousands separator: Estonian uses a space (1 000 000), not a\n  comma (1,000,000).\n\nPhase-1 limitations: spell-out-vs-digits guidance (the\none-to-ten-spelled-out convention) is intentionally not implemented\n— it requires distinguishing measurements, dates, years, and lists\nfrom running prose, and naive flagging produces too many false\npositives. Input capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to check for number-formatting (decimal comma, thousands space).",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_numbersArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_CheckResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian number writing (numbrite õigekirjutus)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_capitalization",
+      "description": "Heuristic Estonian capitalization checker (Algustäheortograafia).\n\nScans Estonian text for the most common AI-generated capitalization\nerrors per EKI's Reeglid:\n\n- Weekday names capitalized mid-sentence (Esmaspäeval → esmaspäeval)\n- Month names capitalized mid-sentence (Jaanuaris → jaanuaris)\n- Nationality names capitalized mid-sentence (Eestlane → eestlane)\n- Country/language adjectives capitalized before a culture or\n  language noun (Eesti keel → eesti keel; Eesti köök → eesti köök).\n  The bare capitalized form on its own (Eesti, Eestis) is left\n  alone because it's a valid country proper-noun usage.\n\nSentence-initial capitalization is always allowed. All-caps\nacronyms are ignored. Returns each issue with rule code, an\nEstonian rule label (`rule_estonian` — quote this verbatim in\nEstonian replies, don't translate the English `rule`), a\nuser-facing explanation, and a suggested correction. Input capped\nat 100,000 characters.\n\nPHASE-1 LIMITATION: this is a lexicon-based heuristic, not a full\nEÕS implementation. Compound-word capitalization, punctuation\nrules, and hyphenation are NOT covered by this tool (separate\ncheck_compounds / check_punctuation / check_hyphenation tools may\nfollow).\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to check for capitalization errors (Algustäheortograafia).",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_capitalizationArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_CheckResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian capitalization (Algustäheortograafia)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_compound_familiarity",
+      "description": "fastText-based diagnostic for compound-noun familiarity in Estonian.\n\nFor each compound noun (root_tokens length >= 2), returns its top\nfastText neighbours, a `top_score` similarity, a `neighbour_quality`\nbreakdown, and `is_suspect: true` + human-readable `reasons` when the\ncompound is out-of-vocab AND its top similarity is below 0.60 OR its\nneighbours are mostly scrape-artifact tokens. This catches both\n`toortõlkeoht` (OOV, top 0.571 — over the old 0.55 gate but a coinage)\nand `mõtteliin` (literal English \"train of thought\"; real Estonian is\n`mõttekäik`).\n\nOutput is diagnostic, not authoritative. Even with the 100K-vocab\nmedium model, some legitimate but rare compounds (e.g.\n`tervisekindlustus`) can still be OOV; the rule favours recall, so a\nflagged real compound just earns a second look. Judge by the included\nneighbours: semantically coherent neighbours (related real words) mean\nthe compound is fine; neighbours that recycle the input's morphemes or\nare junk tokens mean a likely coinage.\n\nInput capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text whose compound nouns are checked for calque / translationese risk.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_compound_familiarityArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "compounds_analysed": {
+            "default": null,
+            "title": "Compounds Analysed",
+            "type": "integer"
+          },
+          "suspect_compounds": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Suspect Compounds",
+            "type": "array"
+          },
+          "all_compounds": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "All Compounds",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_CompoundFamiliarityResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian compound familiarity (calque-risk diagnostic)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_abbreviation_hyphenation",
+      "description": "Heuristic check for the EKI Reeglid rule that case endings on\nLatin-letter / all-caps abbreviations are separated by a hyphen.\n\nCatches the common AI mistake of writing `MCPst`, `APIga`, `OÜle`\ninstead of `MCP-st`, `API-ga`, `OÜ-le`. Uses Vabamorf's POS+form\nanalysis to identify tokens recognised as abbreviations carrying a\ncase ending; only flags those that aren't already hyphenated.\n\nPhase-1 scope: matches what Vabamorf tags as `Y` (abbreviation).\nCustom acronyms Vabamorf doesn't know (your brand acronym, niche\nindustry shorthand) won't be flagged because Vabamorf doesn't see\nthem as abbreviations. Input capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to check for abbreviation case-ending hyphenation (MCPst → MCP-st).",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_abbreviation_hyphenationArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_CheckResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian abbreviation case-ending hyphenation",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_object_case",
+      "description": "Heuristic Estonian object-case-government check.\n\nCatches the single biggest class of confidently-wrong Estonian that\nAI agents produce: direct objects in the wrong case after negation\nor after partitive-governing verbs.\n\nTwo rules in phase 1:\n- **Negation → partitive**: any sentence containing 'ei', 'pole',\n  'ära', 'ärge', 'ärgu', 'ärgem', or 'mitte' must have direct\n  objects in partitive. Flags nominative / genitive nouns.\n- **Partitive-only verbs**: the verbs `armastama`, `vihkama`,\n  `vajama`, `soovima`, `ootama`, `austama`, `kartma`, `puudutama`,\n  `tundma` always take partitive direct objects. Flags any noun\n  in nominative/genitive in the same sentence.\n\nPhase-1 limitation: no syntactic parser, so we can't perfectly\ndistinguish subject from object. Subjects in negation/partitive-verb\nsentences may be flagged as false positives. Treat hits as \"worth a\nsecond look\", not authoritative. Proper nouns are skipped. Input\ncapped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to check for direct-object case errors under negation and partitive-governing verbs.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_object_caseArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_CheckResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian object case (käändeõpetus)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_redundancy",
+      "description": "Heuristic Estonian pleonasm / semantic-doubling check.\n\nFlags phrasing that is grammatically valid but reads redundant to a\nnative speaker — the class of error AI agents produce when they\nstack synonyms. Phase-1 rules, all high-precision:\n\n- **Doubled 'also' particles**: `samuti ka`, `ka samuti`,\n  `ühtlasi ka` — both words mean \"also/too\", so together they're a\n  tautology. (This is the exact `samuti ka suvesärgid` case.)\n- **Double superlative**: `kõige` before an already-absolute\n  adjective (`optimaalne`, `ideaalne`, `maksimaalne`, `täiuslik`,\n  `ainus`, …) — like English \"most optimal\". Lemma-matched, so all\n  inflected forms count.\n- **Fixed pleonasm phrases**: a small curated set (`ajaline\n  periood`, `väike nüanss`, `üldine konsensus`, …).\n\nConservative by design — it catches the obvious, high-confidence\ncases, not every redundancy. Absence of flags is not proof the\nprose is tight. Input capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to check for pleonasm / redundant word pairs.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_redundancyArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_CheckResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian redundancy / pleonasm",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_legalese",
+      "description": "Aid for simplifying Estonian legal text WITHOUT losing legal precision.\n\nReturns two things:\n- `issues`: archaic 'kantseliit' filler with plain equivalents\n  (`käesolev` → `see`, `juhul kui` → `kui`), plus over-long / heavily\n  subordinated sentences worth splitting.\n- `terms_of_art`: specialised legal terms detected in the text that\n  MUST be kept verbatim when rewriting — swapping `hagi` or `vastutus`\n  for a general synonym changes the legal meaning. Use this as a\n  do-not-touch list while you simplify.\n\nHeuristic, precision-first, backed by curated starter lexicons (not\nexhaustive). Input capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian legal text to lint for plain-language simplification while protecting legal terms of art.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_legaleseArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "terms_of_art": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Terms Of Art",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_LegaleseResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Simplify Estonian legalese (keep terms of art)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_defined_terms",
+      "description": "Structural map of a long Estonian legal document.\n\nExtracts every term defined with `(edaspidi «X»)`, counts how often each\nis actually used, lists `§` / `lõige` / `punkt` / `artikkel`\ncross-references, and flags defined-but-unused or doubly-defined terms —\nthe consistency errors that creep into long contracts and statutes.\n\nRegex-based and PII-free (nothing is stored). Input cap is raised to\n500,000 characters so a whole contract fits in one call; the echoed\n`text` is truncated to a 2,000-character preview.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "A long Estonian legal document to map defined terms ('edaspidi «X»') and § / lõige / punkt cross-references.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_defined_termsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "defined_terms": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Defined Terms",
+            "type": "array"
+          },
+          "cross_references": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Cross References",
+            "type": "array"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_DefinedTermsResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Track defined terms & cross-references in a legal document",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "common_legal_usage",
+      "description": "Canonical legal collocations for a term, from an offline corpus index.\n\nAnswers \"what's the standard legal phrasing\" — returns how often the\nterm occurs in Estonian legal text and the words most frequently seen\ndirectly before/after it (`hagi` → `esitama` before it = 'esitama hagi';\n`kohustus` → `täitmine` after it = 'kohustuse täitmine'). Use it so the\nAI picks real, idiomatic legalese instead of inventing collocations.\n\nA frequency signal, not prescriptive; coverage is bounded by the corpus.\nThe bundled index is a proof-of-concept sample; the full-corpus artifact\nis loaded via ESTNLTK_MCP_LEGAL_INDEX. Input is a single word.\n",
+      "inputSchema": {
+        "properties": {
+          "word": {
+            "description": "A single Estonian (legal) word to look up canonical collocations for, e.g. 'hagi', 'kohustus', 'taotlus'.",
+            "title": "Word",
+            "type": "string"
+          }
+        },
+        "required": [
+          "word"
+        ],
+        "title": "common_legal_usageArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "word": {
+            "default": null,
+            "title": "Word",
+            "type": "string"
+          },
+          "lemma": {
+            "default": null,
+            "title": "Lemma",
+            "type": "string"
+          },
+          "found": {
+            "default": null,
+            "title": "Found",
+            "type": "boolean"
+          },
+          "frequency": {
+            "default": null,
+            "title": "Frequency",
+            "type": "integer"
+          },
+          "common_before": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Common Before",
+            "type": "array"
+          },
+          "common_after": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Common After",
+            "type": "array"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_LegalUsageResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Canonical legal usage / collocations for an Estonian term",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_style",
+      "description": "Heuristic Estonian style metrics for newsletter / ad / email copy.\n\nReturns four metrics that flag common writing issues, each with an\nEstonian-language summary line for quoting verbatim:\n\n- repetition: lemma-aware (so 'kasutab' and 'kasutamine' both count\n  under 'kasutama'). Threshold scales with text length so short\n  replies don't fire on natural repeats.\n- passive_voice: ratio of Estonian -takse/-ti/-tud/-tav forms over\n  total verbs. Newsletter copy usually wants <15%.\n- sentence_length: mean, stddev, min, max in content words. Low\n  stddev = monotonous rhythm.\n- hedging: density of hedging words (võib-olla, vist, pigem, ehk,\n  ilmselt, …). >5% reads wishy-washy.\n\nPhase-1 limitation: heuristic only. No detection of cliché phrases,\nweasel-words beyond the curated 15 lemmas, or genre-specific style\ndrift. Input capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to compute style metrics for (repetition, passive voice, sentence length, hedging).",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_styleArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "repetition": {
+            "additionalProperties": true,
+            "default": null,
+            "title": "Repetition",
+            "type": "object"
+          },
+          "passive_voice": {
+            "additionalProperties": true,
+            "default": null,
+            "title": "Passive Voice",
+            "type": "object"
+          },
+          "sentence_length": {
+            "additionalProperties": true,
+            "default": null,
+            "title": "Sentence Length",
+            "type": "object"
+          },
+          "hedging": {
+            "additionalProperties": true,
+            "default": null,
+            "title": "Hedging",
+            "type": "object"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_StyleResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian style (repetition, passive, hedging, rhythm)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_officialese",
+      "description": "Flag Estonian kantseliit in reports, academic and business prose.\n\ncheck_legalese is the legal-text sibling; use THIS one for anything\nthat is not a statute or contract, where check_legalese finds nothing\nbecause its lexicon and length gate are tuned for legislation.\n\nReturns `issues` (each with an Estonian `rule_estonian` label, an\nexplanation and a concrete suggestion) plus `metrics`:\n\n- nominalisation: -mine verbal nouns per 100 words, each paired with\n  the verb to use instead (`hindamine` → `hindama`)\n- noun_verb_ratio: nimisõnastiil density; over ~2.0 reads heavy\n- impersonal_voice: umbisikuline tegumood, correctly counted\n  (negated impersonals included, `ei`/`ära` and attributive -tud\n  participles excluded)\n- clause-stacking: 3+ subordinate-clause openers in one sentence, the\n  'mille käigus … ning …' pile-up that a word count alone misses\n- long-sentence: 25+ content words, calibrated for Estonian\n- officialese filler: `omama` → `olema`, `kujutab endast` → `on`,\n  `viidi läbi` → `tehti`, `X-i poolt tehtud` → `X-i tehtud`\n\nHeuristic and precision-first — no flags does not prove the text is\nplain. Input capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian non-legal text (report, academic, business) to check for kantseliit / bureaucratic density.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_officialeseArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "issues": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "default": null,
+            "title": "Metrics",
+            "type": "object"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_OfficialeseResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian officialese (kantseliit in non-legal prose)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_term_consistency",
+      "description": "Flag a document that calls the same thing several different names.\n\nThe classic long-document defect, and the one a model editing\nparagraph-by-paragraph reliably misses: a dataset that is `andmestik`\non page 1, `teadusandmestik` on page 2 and `korpus` on page 3.\n\nTwo precision-first rules:\n\n- `shared-compound-head`: a bare noun and a compound built on it both\n  occur (`andmestik` + `pildiandmestik`), or 3+ lemmas share one head.\n- `shared-wordnet-synset`: two lemmas sit in one Estonian WordNet\n  synset, i.e. WordNet calls them synonyms.\n\nEach group lists its variants with occurrence counts and the dominant\none, so you can standardise on the most-used term. The tool does not\ndecide which variant is right — some groups are genuinely distinct\nconcepts, so read them before rewriting.\n\nKnown gap: synonyms sharing neither a head nor a synset (korpus /\nandmestik) are not caught. Input capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian document to check for the same thing being named several different ways.",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "check_term_consistencyArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "text": {
+            "default": null,
+            "title": "Text",
+            "type": "string"
+          },
+          "groups": {
+            "default": null,
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "terms_analysed": {
+            "default": null,
+            "title": "Terms Analysed",
+            "type": "integer"
+          },
+          "rules_run": {
+            "additionalProperties": true,
+            "default": null,
+            "title": "Rules Run",
+            "type": "object"
+          },
+          "summary_estonian": {
+            "default": null,
+            "title": "Summary Estonian",
+            "type": "string"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_TermConsistencyResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Check Estonian terminology consistency (one referent, one term)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "classify_register",
+      "description": "Heuristic register classifier for Estonian (formal vs colloquial).\n\nReturns a tier label (English in `tier`, correct Estonian in\n`tier_estonian` — quote that field verbatim when composing an\nEstonian-language reply rather than translating `tier` yourself, to\navoid mistranslations like \"formalne\" instead of the correct\n\"formaalne\"), a normalised score in [-1, 1] (positive = formal,\nnegative = colloquial), and the matched formal/colloquial markers\nfound in the text. Useful for sanity-checking that marketing copy\nhasn't drifted into officialese, or that a contract draft hasn't\nslipped into chat tone.\n\nThe lexicon covers legal-administrative AND academic/report\nvocabulary. `structure` adds two syntactic signals — umbisikuline\ntegumood ratio and noun/verb density — bounded at +0.4, applied only\nfrom 25 words up and only when the lexicon is not net-colloquial.\n\nLIMITATION: still a heuristic, not a trained model. Address forms and\nfiner syntax go uncaught, and most newsletter prose scores 'neutral'.\nUse the result as a directional hint, not a verdict; for a full\nkantseliit breakdown with per-issue suggestions, call\ncheck_officialese. Input capped at 100,000 characters.\n",
+      "inputSchema": {
+        "properties": {
+          "text": {
+            "description": "Estonian text to classify by register (formal vs colloquial).",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "classify_registerArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "tier": {
+            "default": null,
+            "title": "Tier",
+            "type": "string"
+          },
+          "tier_estonian": {
+            "default": null,
+            "title": "Tier Estonian",
+            "type": "string"
+          },
+          "score": {
+            "default": null,
+            "title": "Score",
+            "type": "number"
+          },
+          "formal_markers": {
+            "default": null,
+            "items": {
+              "type": "string"
+            },
+            "title": "Formal Markers",
+            "type": "array"
+          },
+          "colloquial_markers": {
+            "default": null,
+            "items": {
+              "type": "string"
+            },
+            "title": "Colloquial Markers",
+            "type": "array"
+          },
+          "consistency": {
+            "additionalProperties": true,
+            "default": null,
+            "title": "Consistency",
+            "type": "object"
+          },
+          "structure": {
+            "additionalProperties": true,
+            "default": null,
+            "title": "Structure",
+            "type": "object"
+          },
+          "word_count": {
+            "default": null,
+            "title": "Word Count",
+            "type": "integer"
+          },
+          "note": {
+            "default": null,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "_RegisterResult",
+        "type": "object"
+      },
+      "annotations": {
+        "title": "Classify Estonian register (formal vs colloquial)",
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    }
+  ]
+}

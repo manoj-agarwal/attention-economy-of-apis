@@ -1,0 +1,504 @@
+{
+  "name": "Aiden Coffee Brewer",
+  "source_url": "https://aidenmcp.ravenhoward.org/mcp",
+  "fetched_at": "2026-08-10T05:51:53+00:00",
+  "description": "Controls Fellow Aiden smart coffee brewer profiles through natural language, with tools to create, delete, and share brewing recipes.",
+  "github_stars": 5,
+  "tools": [
+    {
+      "name": "list_profiles",
+      "description": "List all brew profiles currently on your Fellow Aiden, grouped by category (custom, stock, shared). The 14-profile cap applies only to user-created custom profiles.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "create_profile",
+      "description": "Create a new brew profile on your Aiden and return a brew.link URL. The profile will appear in the Fellow iOS app immediately. If the device is at its 14-profile cap, you'll get an error — call delete_profile first to free a slot.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "pattern": "^[A-Za-z0-9 _\\-.,'’()&!]+$"
+          },
+          "ratio": {
+            "type": "number",
+            "minimum": 8,
+            "maximum": 20
+          },
+          "bloomEnabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "bloomRatio": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "bloomDuration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "bloomTemperature": {
+            "type": "number",
+            "minimum": 50,
+            "maximum": 99
+          },
+          "ssPulsesEnabled": {
+            "$ref": "#/properties/bloomEnabled",
+            "default": true
+          },
+          "ssPulsesNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "ssPulsesInterval": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 60
+          },
+          "ssPulseTemperatures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/bloomTemperature"
+            }
+          },
+          "batchPulsesEnabled": {
+            "$ref": "#/properties/bloomEnabled",
+            "default": true
+          },
+          "batchPulsesNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "batchPulsesInterval": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 60
+          },
+          "batchPulseTemperatures": {
+            "$ref": "#/properties/ssPulseTemperatures"
+          },
+          "profileType": {
+            "type": "integer",
+            "default": 0
+          }
+        },
+        "required": [
+          "title",
+          "ratio",
+          "bloomRatio",
+          "bloomDuration",
+          "bloomTemperature",
+          "ssPulsesNumber",
+          "ssPulsesInterval",
+          "ssPulseTemperatures",
+          "batchPulsesNumber",
+          "batchPulsesInterval",
+          "batchPulseTemperatures"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "update_profile",
+      "description": "Update an existing brew profile on your Aiden in place. Pass the profile id (or exact title) plus ANY subset of the profile fields you want to change — unspecified fields keep their current values. Useful for dialing in an existing recipe (e.g. nudge ratio, drop a temperature) without delete-and-recreate. The brew.link URL stays the same since the profile id doesn't change.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "idOrTitle": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Profile id (e.g. 'p1') or exact case-sensitive title (e.g. 'Mpemba v3')"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "description": "New title (optional)"
+          },
+          "ratio": {
+            "type": "number",
+            "minimum": 8,
+            "maximum": 20
+          },
+          "bloomEnabled": {
+            "type": "boolean"
+          },
+          "bloomRatio": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "bloomDuration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "bloomTemperature": {
+            "type": "number",
+            "minimum": 50,
+            "maximum": 99
+          },
+          "ssPulsesEnabled": {
+            "type": "boolean"
+          },
+          "ssPulsesNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "ssPulsesInterval": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 60
+          },
+          "ssPulseTemperatures": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 50,
+              "maximum": 99
+            }
+          },
+          "batchPulsesEnabled": {
+            "type": "boolean"
+          },
+          "batchPulsesNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "batchPulsesInterval": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 60
+          },
+          "batchPulseTemperatures": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 50,
+              "maximum": 99
+            }
+          }
+        },
+        "required": [
+          "idOrTitle"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "delete_profile",
+      "description": "Delete a brew profile from your Aiden. Pass either the profile id (e.g. 'p10') or the exact title (e.g. 'Mpemba v2'). Use list_profiles first if you don't know the id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "idOrTitle": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Either the profile id (e.g. 'p10') or the exact case-sensitive title"
+          }
+        },
+        "required": [
+          "idOrTitle"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "share_profile",
+      "description": "Generate a brew.link URL for an existing profile on your Aiden. Use this to re-share a profile you already have. (create_profile already returns a brew.link, so you only need this for profiles created via the Fellow app or another tool.)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "idOrTitle": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Profile id (e.g. 'p10') or exact case-sensitive title"
+          }
+        },
+        "required": [
+          "idOrTitle"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "fetch_coffee_details",
+      "description": "Fetch a coffee from a roaster's product page (Counter Culture, Onyx, Sey, Heart, etc. — any Shopify-based roaster) and return structured details: name, varieties, process, elevation, country, tasting notes, story. Use this when the user pastes a URL and wants you to design a brew profile from it. Does NOT require Aiden auth — works on URLs alone.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Roaster product page URL, e.g. https://counterculturecoffee.com/products/mpemba"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "brewing_guidelines",
+      "description": "Get Aiden-specific brewing guidelines tailored to a coffee's characteristics. Returns brewing principles + a starting-point recipe. Use this AFTER fetching coffee details (or when user provides them directly), then design the actual create_profile call using the returned principles. IMPORTANT: if the user already has a profile made for this exact coffee (Fellow Drops or a roaster-shared profile), do NOT redesign it from these principles — it was dialed by people who tasted this coffee. Adjust it one variable at a time (1–2°C max) toward what the user disliked. Does NOT require Aiden auth.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "process": {
+            "type": "string",
+            "description": "Process: washed, natural, honey, anaerobic, etc."
+          },
+          "roast": {
+            "type": "string",
+            "description": "Roast level from the bag: light, medium-light, medium, medium-dark, dark. The strongest temperature driver in expert profiles — ASK the user if not stated."
+          },
+          "varieties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Varietal names, e.g. ['Bourbon', 'SL28']"
+          },
+          "elevation": {
+            "type": "string",
+            "description": "Elevation, e.g. '1,800–2,000 masl' or '1750m'"
+          },
+          "tasting_notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Notes on the bag, e.g. ['fig', 'strawberry', 'honey']"
+          },
+          "flavor_goal": {
+            "type": "string",
+            "description": "What the user is trying to achieve, e.g. 'more fruit', 'less acidity', 'bolder body'. Drives explicit recipe adjustments."
+          },
+          "user_preference_ratio": {
+            "type": "number",
+            "description": "User's typical ratio (e.g. 15 for 1:15). Defaults to 1:15 washed, 1:16 natural."
+          },
+          "grinder": {
+            "type": "string",
+            "description": "User's grinder, so the grind setting comes back on their dial instead of the Baratza Encore reference scale. Supported: Baratza Encore ESP, Baratza Encore, Baratza Virtuoso+, Fellow Ode + SSP MP burrs, Fellow Ode Gen 2, Fellow Ode Gen 1, Fellow Opus, Comandante C40, 1Zpresso J/JX, Timemore C2/C3, DF64, Niche Zero. ASK the user what grinder they have if they haven't said."
+          },
+          "brew_basket": {
+            "type": "string",
+            "description": "Only for modded brew chambers: 'v60', 'orea', or 'kalita' if the user has swapped the stock flat-bottom basket for a dripper via an adapter. Omit for a stock Aiden. Adjusts grind and pulse pacing for the different drawdown geometry."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "flash_brew",
+      "description": "Plan a flash brew (Japanese iced coffee) on the Aiden: a hot, concentrated brew directly onto ice in the carafe. The default plan is honest: it sets the profile ratio to the true 1:9-1:12 hot-concentrate ratio (Fellow's API accepts ratios below the app's 1:14 minimum), so the machine's displayed dose and bloom sizing are simply correct. Returns the ice/water split, profile ratio to set, dose, grind adjustment, and technique steps. Pass machine_profile_ratio ONLY to brew with an existing 1:14+ profile unchanged — that returns the classic dose-misreport workaround instead. Pure math, no Aiden auth. Use brewing_guidelines first for the coffee's profile temps.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dose_g": {
+            "type": "number",
+            "minimum": 10,
+            "maximum": 120,
+            "description": "Coffee the user wants to use, in grams. Provide this OR target_volume_ml."
+          },
+          "target_volume_ml": {
+            "type": "number",
+            "minimum": 150,
+            "maximum": 2000,
+            "description": "Final drink size in ml (ice melt included). Used to derive the dose if dose_g not given."
+          },
+          "total_ratio": {
+            "type": "number",
+            "minimum": 10,
+            "maximum": 20,
+            "description": "True ratio including ice melt. Default 15 (Counter Culture uses 17, Lance Hedrick 12 — lower = stronger)."
+          },
+          "ice_fraction": {
+            "type": "number",
+            "minimum": 0.1,
+            "maximum": 0.5,
+            "description": "Share of total liquid that is ice in the carafe. Default 0.3; published recipes use 0.25-0.33."
+          },
+          "machine_profile_ratio": {
+            "type": "number",
+            "minimum": 8,
+            "maximum": 20,
+            "description": "Only set this to brew with an existing profile whose ratio stays as-is — the plan becomes the dose-misreport workaround for that ratio. Omit it (default) for the honest plan, where the profile ratio is set to the true hot-concentrate ratio."
+          },
+          "grinder": {
+            "type": "string",
+            "description": "User's grinder, to convert the flash-brew grind setting to their dial."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_schedules",
+      "description": "List all scheduled brews on your Aiden, including the raw JSON. Each schedule has a recurrence pattern (which days of the week), a time of day, a profile to brew, and a water amount. Schedules can be enabled/disabled individually. Raw JSON helps diagnose any non-standard fields the device or iOS app may set (e.g. one-shot markers).",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "create_schedule",
+      "description": "Create a scheduled brew on your Aiden. The Aiden hardware fires the brew at the specified time on the specified days. Time is in DEVICE LOCAL TIME (the timezone configured on the brewer). The schedule is RECURRING — for a one-time 'today at 2pm' brew, set days[] with only today's day enabled, and either delete the schedule after it fires or use toggle_schedule to disable it. Days array indexes: [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]. Find the profileId by calling list_profiles first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "profileId": {
+            "type": "string",
+            "pattern": "^(p|plocal)\\d+$",
+            "description": "Profile id from list_profiles, e.g. 'p1' for Mpemba v3 or 'plocal0' for Light Roast"
+          },
+          "time": {
+            "type": "string",
+            "pattern": "^([01]?\\d|2[0-3]):[0-5]\\d$",
+            "description": "Local time of day in 24-hour HH:MM format, e.g. '07:00' for 7am, '14:00' for 2pm"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "boolean"
+            },
+            "minItems": 7,
+            "maxItems": 7,
+            "description": "7 booleans for [Sun, Mon, Tue, Wed, Thu, Fri, Sat]. e.g. [false,true,true,true,true,true,false] = weekdays only."
+          },
+          "amountOfWater": {
+            "type": "integer",
+            "minimum": 150,
+            "maximum": 1500,
+            "description": "Brew volume in milliliters, 150–1500. A standard cup is ~240mL, full carafe is ~1000mL."
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether the schedule starts active. Default: true."
+          }
+        },
+        "required": [
+          "profileId",
+          "time",
+          "days",
+          "amountOfWater"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "delete_schedule",
+      "description": "Delete a scheduled brew by its id. Use list_schedules first to find the id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scheduleId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Schedule id from list_schedules"
+          }
+        },
+        "required": [
+          "scheduleId"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "toggle_schedule",
+      "description": "Enable or disable an existing scheduled brew without deleting it. Useful for pausing a recurring schedule (e.g. weekday morning brew) during vacation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scheduleId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Schedule id from list_schedules"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "true to activate the schedule, false to pause it"
+          }
+        },
+        "required": [
+          "scheduleId"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_device_info",
+      "description": "Get info about your connected Aiden brewer (name, profile count, slot usage). Lightweight call useful for verifying credentials work before doing heavier operations.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "Ejentum Self-Inspect",
+  "source_url": "https://api.ejentum.com/self-inspect-mcp",
+  "fetched_at": "2026-08-10T05:50:53+00:00",
+  "description": "Reasoning harness for agentic AI — dynamically selects cognitive strategies during task execution to prevent compounding errors in multi-step agent chains.",
+  "github_stars": 7,
+  "tools": [
+    {
+      "name": "self_inspect",
+      "description": "Self-Inspect. Express a thought, or describe the task you are working on, and you always get back ONE metathought: a short abstract question that makes you inspect your own task and assumptions before continuing. Use it whenever you want a self-check: after forming a hypothesis, before committing to an answer, when a long chain feels like it has drifted, when you notice you are agreeing to please, or when you are about to assert something from memory. There is no failure case: it always returns a metathought to question yourself with, selected by a transparent heuristic over an open CSV (no LLM). Keyless and free. DO NOT call for factual lookups or as a substitute for doing the task. Absorb the question and act on it; do not echo it verbatim to the user.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "thought": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A free-text thought or a description of the task you are working on. Express what you are doing or thinking; the more concrete, the sharper the returned question."
+          }
+        },
+        "required": [
+          "thought"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

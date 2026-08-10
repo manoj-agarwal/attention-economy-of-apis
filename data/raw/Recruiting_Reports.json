@@ -1,0 +1,132 @@
+{
+  "name": "Recruiting Reports",
+  "source_url": "https://two026-recruiting-reports.onrender.com/mcp",
+  "fetched_at": "2026-08-10T05:48:34+00:00",
+  "description": "Recruiting benchmark data from 30+ industry reports, covering hiring metrics, time-to-fill, and compensation.",
+  "github_stars": 22,
+  "tools": [
+    {
+      "name": "list_reports",
+      "description": "List all available recruiting industry reports with a summary of what data each covers.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "read_report",
+      "description": "Read the full content of a specific report. Use list_reports first to see available names.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Filename stem, e.g. 'ashby-startup-hiring-2026'"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "search_reports",
+      "description": "Full-text keyword search across all report bodies (and titles/authors/best-for blurbs from frontmatter). Returns matching excerpts with surrounding context. Use for topical questions like 'reports about AI adoption' or specific metrics like 'time-to-fill'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Keyword or short phrase, e.g. 'time-to-fill', 'hires per recruiter', 'ghost job'."
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_stat",
+      "description": "Alias of search_reports phrased as a metric lookup â looks up where a specific benchmark stat appears across all reports. Returns excerpts with context.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "description": "Metric phrase, e.g. 'hires per recruiter', 'candidate NPS', 'offer acceptance rate'."
+          }
+        },
+        "required": [
+          "metric"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "search_quotes",
+      "description": "Find direct quotes from the reports. Optionally filter by a keyword or topic. Returns each quote with its source report and attribution context.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "Optional keyword to narrow results, e.g. 'AI', 'candidate experience'. Omit to return all quotes."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "filter_reports",
+      "description": "Return the LIST of reports matching structured filters (source, year, year_min/year_max). Does NOT return report content â tells you WHICH reports exist for a slice. Then use read_report to read one, or search_reports to query their text. For topical questions ('about AI'), use search_reports instead.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Canonical source name. Case-insensitive substring match (e.g. 'Ashby', 'gem', 'LinkedIn'). See server instructions for the full source list."
+          },
+          "year": {
+            "type": "integer",
+            "description": "Exact publication year, e.g. 2026."
+          },
+          "year_min": {
+            "type": "integer",
+            "description": "Minimum publication year (inclusive)."
+          },
+          "year_max": {
+            "type": "integer",
+            "description": "Maximum publication year (inclusive)."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

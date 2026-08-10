@@ -1,0 +1,388 @@
+{
+  "name": ".FAF Context",
+  "source_url": "https://mcpaas.live/mcp",
+  "fetched_at": "2026-08-10T05:51:44+00:00",
+  "description": "Sync project context once and distribute it to all IDE-specific formats including Cursor, Windsurf, VS Code, and Cline.",
+  "github_stars": 5,
+  "tools": [
+    {
+      "name": "get_soul",
+      "title": "Get Context Soul",
+      "description": "Fetch a context soul by name. Returns structured AI context.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "soul": {
+            "type": "string",
+            "description": "Soul identifier (e.g., \"spacex\", \"wolfe\", \"grok\")"
+          }
+        },
+        "required": [
+          "soul"
+        ]
+      }
+    },
+    {
+      "name": "list_souls",
+      "title": "List Available Souls",
+      "description": "List all available context souls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "delta_check",
+      "title": "Delta Doctrine Check",
+      "description": "Determine if a topic needs FULL, DELTA, or X-DELTA soul.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Topic to check"
+          }
+        },
+        "required": [
+          "topic"
+        ]
+      }
+    },
+    {
+      "name": "list_tags",
+      "title": "List Tags",
+      "description": "List all unique tags used in a soul, with counts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "soul": {
+            "type": "string",
+            "description": "Soul identifier"
+          }
+        },
+        "required": [
+          "soul"
+        ]
+      }
+    },
+    {
+      "name": "search_by_tag",
+      "title": "Search by Tag",
+      "description": "Find all entries in a soul with a specific tag.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "soul": {
+            "type": "string",
+            "description": "Soul identifier"
+          },
+          "tag": {
+            "type": "string",
+            "description": "Tag to search for"
+          }
+        },
+        "required": [
+          "soul",
+          "tag"
+        ]
+      }
+    },
+    {
+      "name": "search_context",
+      "title": "Search Context",
+      "description": "Full-text search across souls. Returns matching lines only (token-efficient).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Text to search for"
+          },
+          "soul": {
+            "type": "string",
+            "description": "Specific soul (optional, searches all if omitted)"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "tag_intel",
+      "title": "Tag Intel",
+      "description": "Discover tag patterns, co-occurrence, candidates, and merge suggestions across all namepoints. Optionally suggest tags for a specific handle.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "Optional: suggest tags for this specific namepoint"
+          }
+        }
+      }
+    },
+    {
+      "name": "generate_faf_from_github",
+      "title": "Generate FAF from GitHub",
+      "description": "Generate a .faf file from any public GitHub repository WITHOUT cloning. Extracts 6 Ws from README, analyzes stack from languages and package.json, and generates Championship-grade AI context. Returns .faf content, quality score, and metadata.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string",
+            "description": "GitHub repository URL or owner/repo format (e.g., \"facebook/react\" or \"https://github.com/facebook/react\")"
+          }
+        },
+        "required": [
+          "repo"
+        ]
+      }
+    },
+    {
+      "name": "faf_score",
+      "title": "Score .faf content",
+      "description": "Score .faf YAML content via the Mk4 Zig-WASM engine. Returns 0-100 (capped). Same engine as xai-faf-rust + xai-faf-zig (parity-tested). Sub-ms at the edge.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Raw .faf YAML content. Souls with a [faf] section have it extracted automatically."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "faf_validate",
+      "title": "Validate .faf content",
+      "description": "Validate .faf YAML content via the Mk4 Zig-WASM engine. Returns true if mission-ready (>= 100).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Raw .faf YAML content to validate."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "faf_get_tier",
+      "title": "Get tier for a score",
+      "description": "Resolve the FAF tier for a given numeric score. Returns the tier symbol (Trophy/Gold/Silver/Bronze/etc.) per the canonical tier-table.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number",
+            "description": "Numeric score 0-100."
+          }
+        },
+        "required": [
+          "score"
+        ]
+      }
+    },
+    {
+      "name": "faf_estimate_tokens",
+      "title": "Estimate tokens",
+      "description": "Estimate token count for arbitrary content via the Zig WASM engine. Sub-millisecond, zero allocations. Useful for context-budget planning.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Content to estimate tokens for."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "faf_analyze",
+      "title": "Full analysis (score + tier + validate)",
+      "description": "One-call composite — returns score, tier-ready, valid, and engine identifier. Two WASM calls, sub-millisecond total.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Raw .faf YAML content to analyze."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "refresh_faf",
+      "title": "Re-ground on .faf content (drift → refresh → re-grounded)",
+      "description": "Re-ground on .faf content — re-score via the Mk4 Zig-WASM Enterprise scorer (33-slot, honors the authored app-type shape), report drift vs an optional baseline score, and return a stamped re-ground. The explicit re-grounding primitive for long sessions: drift → refresh → re-grounded. Built for Grok, by request.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Raw .faf YAML content to re-ground on."
+          },
+          "baseline": {
+            "type": "number",
+            "description": "Optional last-known score (0-100). When provided, the drift delta (current - baseline) is reported."
+          },
+          "verbatim": {
+            "type": "boolean",
+            "description": "When true, return the full .faf content verbatim with the stamp. Default false (stamped delta + summary)."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "faf_orchestrate_recommendation",
+      "title": "Orchestrate Context Recommendation (FAF)",
+      "description": "Takes raw content strings (`.faf`, `.fafm`, and optionally `package.json`/`CHANGELOG.md`/`README.md`) and runs deterministic drift + contradiction signals across the FAF substrate. Returns a structured `Recommendation` (recommend, severity, reason, summary) with `hints` containing the current `effective_policy` and `partial[]` for any stateful signals unavailable on the current surface. Light-lane execution (hosted) is WASM-pure with no filesystem access. Heavy-lane execution (local via bunx/rust-faf-mcp) has full FS + persisted state. Advisory only — never auto-fires.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "faf": {
+            "type": "string",
+            "description": "Raw .faf YAML content (project DNA). Required for any meaningful analysis."
+          },
+          "fafm": {
+            "type": "string",
+            "description": "Raw .fafm YAML content (memory layer). Enables drift detection."
+          },
+          "packageJson": {
+            "type": "string",
+            "description": "Raw package.json content. Enables version cross-stamp checks (.faf vs pkg)."
+          },
+          "changelog": {
+            "type": "string",
+            "description": "Raw CHANGELOG.md content. Enables changelog cross-stamp checks."
+          },
+          "readme": {
+            "type": "string",
+            "description": "Raw README.md content. Enables README arch-tree cross-stamp checks."
+          }
+        }
+      }
+    },
+    {
+      "name": "faf_gate",
+      "title": "FRC quality gate (promote/hold)",
+      "description": "Phase III (FRC) — pre-promotion quality gate. Scores .faf content (edge Mk4) + estimates tokens and returns a deterministic promote/hold verdict BEFORE it goes to a Grok Collection. Promote IFF score >= min_score AND tokens <= max_tokens (defaults 85/8000). Edge parity with the local gate; the hold-hint can't list empty slots at the edge.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Raw .faf YAML content to gate."
+          },
+          "min_score": {
+            "type": "number",
+            "description": "Minimum score to promote (default 85)."
+          },
+          "max_tokens": {
+            "type": "number",
+            "description": "Maximum tokens to promote (default 8000)."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "faf_section",
+      "title": "Structure-aware retrieval",
+      "description": "Phase III (FRC) — returns an EXACT, WHOLE .faf section by dotted path (e.g. \"stack\", \"human_context\"), structure preserved — the deterministic complement to blind chunking. Omit \"section\" to list every path.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Raw .faf YAML content."
+          },
+          "section": {
+            "type": "string",
+            "description": "Dotted path to retrieve (e.g. \"stack.backend\"). Omit to list all paths."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "faf_memory",
+      "title": "Portable structured memory (.fafm)",
+      "description": "Phase III (FRC) — query the durable .fafm model by type/tag/priority/text. Omit filters for a structured summary. .fafm is NOT scored: this SELECTS facts (provenance preserved), never grades them.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Raw .fafm YAML content."
+          },
+          "type": {
+            "type": "string",
+            "description": "Filter by fact type (e.g. \"feedback\")."
+          },
+          "tag": {
+            "type": "string",
+            "description": "Filter by a tag."
+          },
+          "priority": {
+            "type": "string",
+            "description": "Filter by priority (e.g. \"critical\")."
+          },
+          "query": {
+            "type": "string",
+            "description": "Case-insensitive substring match on fact text."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "faf_collections_search",
+      "title": "Search a Grok Collection (edge, KV-cached)",
+      "description": "Phase III (FRC §7b) — semantic search over a Grok Collection at the edge, KV-cached (1h TTL). Returns matched chunks (content, score, file). Requires the XAI_API_KEY secret; composes with faf_section (structural) for hybrid retrieval. Handled env-aware in the MCP handler (needs the key + KV).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The search query."
+          },
+          "collection_id": {
+            "type": "string",
+            "description": "The Grok Collection id to search."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Max chunks to return (default 5)."
+          }
+        },
+        "required": [
+          "query",
+          "collection_id"
+        ]
+      }
+    }
+  ]
+}

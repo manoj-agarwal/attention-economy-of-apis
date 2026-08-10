@@ -1,0 +1,537 @@
+{
+  "name": "Convalytics",
+  "source_url": "https://api.convalytics.dev/mcp",
+  "fetched_at": "2026-08-10T05:51:08+00:00",
+  "description": "Read-only analytics for Convex apps, queryable from Claude, Cursor, and other AI clients.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "name": "list_projects",
+      "description": "List all Convalytics projects on the team this token belongs to. Useful when the agent needs to confirm the project it's querying against. No arguments.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "List projects"
+      }
+    },
+    {
+      "name": "get_usage",
+      "description": "Return the current month's custom-event usage, monthly quota, retention days, and plan name for the team.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Get usage and plan"
+      }
+    },
+    {
+      "name": "top_pages",
+      "description": "Return the top pages for a specific project, ranked by views in a time window. Default window is the last 7 days. Use list_projects first if you don't know the project name. Returns path, views, uniqueVisitors, and percentage of total views for each page. Pass `user` to see pages a specific visitor hit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project name (case-insensitive, e.g. 'slopbench') or project id from list_projects."
+          },
+          "since": {
+            "type": "number",
+            "description": "Start of window as unix milliseconds. Defaults to 7 days ago."
+          },
+          "until": {
+            "type": "number",
+            "description": "End of window as unix milliseconds. Defaults to now."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of pages to return. Default 20, max 50."
+          },
+          "user": {
+            "type": "string",
+            "description": "Optional. Filter to one visitor/user. Accepts userEmail (case-insensitive) or visitorId (exact). For the full per-user snapshot prefer user_activity."
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Top pages"
+      }
+    },
+    {
+      "name": "top_referrers",
+      "description": "Return the top referring hosts for a specific project, ranked by visit count in a time window. Includes '(direct)' for visits with no referrer. Default window is the last 7 days.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project name (case-insensitive, e.g. 'slopbench') or project id from list_projects."
+          },
+          "since": {
+            "type": "number",
+            "description": "Start of window as unix milliseconds. Defaults to 7 days ago."
+          },
+          "until": {
+            "type": "number",
+            "description": "End of window as unix milliseconds. Defaults to now."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of referrers to return. Default 10, max 50."
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Top referrers"
+      }
+    },
+    {
+      "name": "pageviews_count",
+      "description": "Count page views for a specific project in a time window. Page views are the automatic hits captured by the browser script tag (separate from custom events). Use this for web-traffic questions like 'how many pageviews in the last 24 hours'. Default window is the last 7 days. Pass `user` to scope to one visitor.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project name (case-insensitive, e.g. 'slopbench') or project id from list_projects."
+          },
+          "since": {
+            "type": "number",
+            "description": "Start of window as unix milliseconds. Defaults to 7 days ago."
+          },
+          "until": {
+            "type": "number",
+            "description": "End of window as unix milliseconds. Defaults to now."
+          },
+          "user": {
+            "type": "string",
+            "description": "Optional. Filter to one visitor/user. Accepts userEmail (case-insensitive) or visitorId (exact). For the full per-user snapshot prefer user_activity."
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Page views count"
+      }
+    },
+    {
+      "name": "events_count",
+      "description": "Count CUSTOM PRODUCT events for a specific project in a time window, optionally filtered to one event name and/or one user. Custom events are emitted by explicit analytics.track() calls in app code (signup_completed, payment_succeeded, etc.). This does NOT count page views — use pageviews_count or weekly_digest for those. Returns count, unique visitors, and a `truncated` flag if the scan hit the maximum scan size.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project name (case-insensitive, e.g. 'slopbench') or project id from list_projects."
+          },
+          "name": {
+            "type": "string",
+            "description": "Optional event name to filter by (e.g. 'signup_completed'). If omitted, counts all custom events in the window. Do NOT pass 'page_view' here — page views are in a separate table."
+          },
+          "since": {
+            "type": "number",
+            "description": "Start of window as unix milliseconds. Defaults to 7 days ago."
+          },
+          "until": {
+            "type": "number",
+            "description": "End of window as unix milliseconds. Defaults to now."
+          },
+          "user": {
+            "type": "string",
+            "description": "Optional. Filter to one visitor/user. Accepts userEmail (case-insensitive) or visitorId (exact). For the full per-user snapshot prefer user_activity."
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Events count"
+      }
+    },
+    {
+      "name": "recent_events",
+      "description": "Return the most recent custom events for a specific project, optionally filtered to one event name and/or one user. PII (userEmail, userName, props) is redacted by default; pass redact: false to include them.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project name (case-insensitive, e.g. 'slopbench') or project id from list_projects."
+          },
+          "name": {
+            "type": "string",
+            "description": "Optional event name to filter by (e.g. 'signup_completed'). Omit to return events of any name."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of events to return. Default 20, max 100."
+          },
+          "redact": {
+            "type": "boolean",
+            "description": "If true (default), userEmail/userName are null and props is {}. Set to false to include them."
+          },
+          "user": {
+            "type": "string",
+            "description": "Optional. Filter to one visitor/user. Accepts userEmail (case-insensitive) or visitorId (exact). For the full per-user snapshot prefer user_activity."
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Recent events"
+      }
+    },
+    {
+      "name": "user_activity",
+      "description": "Composite snapshot of a specific user's activity on a project. Returns an identity block (visitorId, userEmail, userName, firstSeen, lastSeen), total pageviews, total custom events, session count, top pages this user visited, their most-fired event names, and their 20 most recent events with props. Use this for 'how is dancleary54@gmail.com using my app?' style questions — one call, full picture. For ad-hoc drill-down (just a count, just recent events) pass `user` to the individual tools instead. Default window is the last 7 days.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project name (case-insensitive, e.g. 'slopbench') or project id from list_projects."
+          },
+          "user": {
+            "type": "string",
+            "description": "User identifier. Accepts userEmail (case-insensitive, e.g. 'dan@example.com') or visitorId (the exact string passed as userId on the original track() call)."
+          },
+          "since": {
+            "type": "number",
+            "description": "Start of window as unix milliseconds. Defaults to 7 days ago."
+          },
+          "until": {
+            "type": "number",
+            "description": "End of window as unix milliseconds. Defaults to now."
+          }
+        },
+        "required": [
+          "project",
+          "user"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "User activity"
+      }
+    },
+    {
+      "name": "weekly_digest",
+      "description": "Composite snapshot of a project's web analytics over a lookback window. Returns unique visitors, pageviews, sessions, bounce rate, average session duration, top 5 pages, top 5 referrers, total custom events, and top 5 event names. Includes period-over-period comparison against the prior equal-length window unless compare: false. Prefer this over chaining top_pages + top_referrers + events_count when the agent just wants to report on the week.",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Weekly digest"
+      },
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project name (case-insensitive, e.g. 'slopbench') or project id from list_projects."
+          },
+          "days": {
+            "type": "number",
+            "description": "Lookback window in days, 1 to 90. Default 7."
+          },
+          "compare": {
+            "type": "boolean",
+            "description": "Include period-over-period comparison against the prior equal-length window. Default true. Set false for faster response when only current numbers matter."
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "list_funnels",
+      "description": "List active funnels defined on a project. A funnel is a saved ordered sequence of steps (events or pageview paths) that Convalytics computes step-by-step conversion for. Soft-deleted funnels are excluded.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project name (case-insensitive, e.g. 'slopbench') or project id from list_projects."
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "List funnels"
+      }
+    },
+    {
+      "name": "get_funnel",
+      "description": "Return the full definition of one funnel by id: name, description, ordered steps, and conversion window.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "funnelId": {
+            "type": "string",
+            "description": "Funnel id from list_funnels or create_funnel."
+          }
+        },
+        "required": [
+          "funnelId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Get funnel"
+      }
+    },
+    {
+      "name": "create_funnel",
+      "description": "Create a new funnel on a project. Steps are 2–10 ordered events or pageview paths. conversionWindowMs caps how long a visitor has between consecutive steps (default 7 days); this is the step-to-step limit, without which a funnel is just event co-occurrence. Returns { id } on success.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Project name (case-insensitive, e.g. 'slopbench') or project id from list_projects."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name."
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional longer description."
+          },
+          "steps": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 10,
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "event",
+                    "pageview"
+                  ],
+                  "description": "'event' for a custom analytics.track() event, 'pageview' for a page-path match."
+                },
+                "match": {
+                  "type": "string",
+                  "description": "Event name (for kind='event') or exact pageview path (for kind='pageview')."
+                },
+                "label": {
+                  "type": "string",
+                  "description": "Optional friendly display name."
+                }
+              },
+              "required": [
+                "kind",
+                "match"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Ordered list of 2–10 steps. Visitors must hit them in order."
+          },
+          "conversionWindowMs": {
+            "type": "number",
+            "description": "Max ms between consecutive steps. Default 7 days (604800000). Bounds: 60000 (1 min) to 7776000000 (90 days)."
+          }
+        },
+        "required": [
+          "project",
+          "name",
+          "steps"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "title": "Create funnel"
+      }
+    },
+    {
+      "name": "update_funnel",
+      "description": "Patch an existing funnel. Any subset of name/description/steps/conversionWindowMs. Refuses updates on deleted funnels.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "funnelId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "steps": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 10,
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "event",
+                    "pageview"
+                  ],
+                  "description": "'event' for a custom analytics.track() event, 'pageview' for a page-path match."
+                },
+                "match": {
+                  "type": "string",
+                  "description": "Event name (for kind='event') or exact pageview path (for kind='pageview')."
+                },
+                "label": {
+                  "type": "string",
+                  "description": "Optional friendly display name."
+                }
+              },
+              "required": [
+                "kind",
+                "match"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "conversionWindowMs": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "funnelId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Update funnel"
+      }
+    },
+    {
+      "name": "delete_funnel",
+      "description": "Soft delete a funnel. The row is retained with status='deleted' and excluded from list/get/compute. Idempotent — calling twice is a no-op. Use if the funnel is obsolete; the record is kept for audit and cannot be undone from MCP.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "funnelId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "funnelId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Delete funnel"
+      }
+    },
+    {
+      "name": "compute_funnel",
+      "description": "Run a funnel over a time window and return per-step visitor count, conversion from previous step, conversion from start, and average time to convert between steps. Returns `truncated` flags if the scan cap was hit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "funnelId": {
+            "type": "string"
+          },
+          "since": {
+            "type": "number",
+            "description": "Start of window as unix milliseconds. Defaults to 7 days ago."
+          },
+          "until": {
+            "type": "number",
+            "description": "End of window as unix milliseconds. Defaults to now."
+          }
+        },
+        "required": [
+          "funnelId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "title": "Compute funnel"
+      }
+    }
+  ]
+}

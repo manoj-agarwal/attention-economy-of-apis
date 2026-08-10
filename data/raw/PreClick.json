@@ -1,0 +1,173 @@
+{
+  "name": "PreClick",
+  "source_url": "https://preclick.ai/mcp",
+  "fetched_at": "2026-08-10T05:51:30+00:00",
+  "description": "URL preflight scanning service that analyzes links for security threats and verifies alignment with the agent's intended browsing goal.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "name": "url_scanner_async_scan",
+      "description": "Submit a URL for asynchronous security analysis. Returns immediately with a task_id. Poll with url_scanner_async_task_status to check progress, then url_scanner_async_task_result to get the scan result. Async counterpart of url_scanner_scan for clients without native MCP Tasks support.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Request parameters for url_scanner_async_scan tool.",
+        "properties": {
+          "url": {
+            "description": "The URL to analyze. Must be HTTP or HTTPS. If no scheme provided, https:// is assumed.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "AsyncScanRequest",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "url_scanner_async_scan_with_intent",
+      "description": "Submit a URL with optional user intent for asynchronous security analysis. Returns immediately with a task_id. Poll with url_scanner_async_task_status to check progress, then url_scanner_async_task_result to get the scan result. Async counterpart of url_scanner_scan_with_intent for clients without native MCP Tasks support.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Request parameters for url_scanner_async_scan_with_intent tool.",
+        "properties": {
+          "intent": {
+            "description": "Optional user intent for visiting the URL. Recommended for additional context.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "description": "The URL to analyze. Must be HTTP or HTTPS. If no scheme provided, https:// is assumed.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "AsyncScanWithIntentRequest",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "url_scanner_async_task_result",
+      "description": "Retrieve the result of an asynchronous scan task. If completed, returns the full scan result (risk_score, confidence, agent_access_directive, etc.). If still running, returns status with retry_after_ms — call again after that interval. Non-blocking.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Request parameters for url_scanner_async_task_result tool.",
+        "properties": {
+          "task_id": {
+            "description": "The task ID to retrieve the result for.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "title": "AsyncTaskResultRequest",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "url_scanner_async_task_status",
+      "description": "Check the status of an asynchronous scan task. Returns the current task status using native MCP task semantics (working, completed, failed, cancelled) without blocking. Use url_scanner_async_task_result to retrieve the result once completed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Request parameters for url_scanner_async_task_status tool.",
+        "properties": {
+          "task_id": {
+            "description": "The task ID to check status for.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "title": "AsyncTaskStatusRequest",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "url_scanner_scan",
+      "description": "Analyze a URL for security threats (synchronous, blocks until complete or timeout). Returns risk score, confidence, agent access guidance, and intent_alignment (always not_provided for this tool; use url_scanner_scan_with_intent for intent context). For long-running scans, prefer url_scanner_async_scan which returns immediately with a task_id for polling via url_scanner_async_task_result.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Request parameters for url_scanner_scan tool.\n\nThe URL parameter accepts both encoded and unencoded URLs.\nIf no scheme is provided, https:// is assumed.",
+        "properties": {
+          "url": {
+            "description": "The URL to analyze. Must be HTTP or HTTPS. If no scheme provided, https:// is assumed.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "ScanRequest",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    },
+    {
+      "name": "url_scanner_scan_with_intent",
+      "description": "Analyze a URL for security threats with optional user intent context (synchronous, blocks until complete or timeout). Returns risk score, confidence, agent access guidance, and intent_alignment. For long-running scans, prefer url_scanner_async_scan_with_intent which returns immediately with a task_id for polling via url_scanner_async_task_result.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Request parameters for url_scanner_scan_with_intent tool.\n\nThe URL parameter accepts both encoded and unencoded URLs.\nIf no scheme is provided, https:// is assumed.",
+        "properties": {
+          "intent": {
+            "description": "Optional user intent for visiting the URL. Recommended for additional context.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "description": "The URL to analyze. Must be HTTP or HTTPS. If no scheme provided, https:// is assumed.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "ScanWithIntentRequest",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "optional"
+      }
+    }
+  ]
+}

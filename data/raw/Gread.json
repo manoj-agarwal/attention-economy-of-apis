@@ -1,0 +1,161 @@
+{
+  "name": "Gread",
+  "source_url": "https://api.gread.dev/mcp",
+  "fetched_at": "2026-08-10T05:47:53+00:00",
+  "description": "Gives AI agents access to source code and documentation from any public GitHub repository.",
+  "github_stars": 56,
+  "tools": [
+    {
+      "name": "search_repos",
+      "description": "Search for GitHub repositories by name, description, or topic keywords using the GitHub Search API.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Keyword to search in repository names, descriptions, or topics"
+          }
+        },
+        "required": [
+          "q"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "view_repo",
+      "description": "View repository basic information and its directory structure. Includes corresponding documentation repo if available.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.-]+\\/[a-zA-Z0-9_.-]+$",
+            "description": "Full name of the repository (owner/name)"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_tree",
+      "description": "List the directory tree of a specific path in a repository with customizable depth and traversal limits.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.-]+\\/[a-zA-Z0-9_.-]+$",
+            "description": "Full name of the repository (owner/name)"
+          },
+          "targetDir": {
+            "default": "",
+            "description": "Target directory path to inspect. Leaves empty to search from root.",
+            "type": "string"
+          },
+          "maxDepth": {
+            "default": 3,
+            "description": "Maximum depth into the directory structure to list.",
+            "type": "number"
+          },
+          "maxPerDir": {
+            "default": 40,
+            "description": "Maximum number of items to display per directory level.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "read_code",
+      "description": "Retrieve the raw source code of specified files from within a known repository.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.-]+\\/[a-zA-Z0-9_.-]+$",
+            "description": "Full name of the repository (owner/name)"
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "An array of precise file paths within the repository"
+          }
+        },
+        "required": [
+          "name",
+          "paths"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "search_code",
+      "description": "Perform a fast git grep inside the repository, allowing regex matching by default or substring search.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.-]+\\/[a-zA-Z0-9_.-]+$",
+            "description": "Full name of the repository (owner/name)"
+          },
+          "query": {
+            "type": "string",
+            "description": "Search pattern or query to pass to git grep"
+          },
+          "ignoreCase": {
+            "description": "Ignore case distinctions in both the PATTERN and the input files (-i)",
+            "type": "boolean"
+          },
+          "fixedStrings": {
+            "description": "Use fixed strings for patterns (donât interpret pattern as a regex) (-F)",
+            "type": "boolean"
+          },
+          "extendedRegexp": {
+            "description": "Use extended regular expressions (-E)",
+            "type": "boolean"
+          },
+          "contextLines": {
+            "description": "Print num lines of output context (-C)",
+            "type": "number"
+          },
+          "path": {
+            "description": "Directory or file path to limit the search scope",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "query"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

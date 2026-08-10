@@ -1,0 +1,84 @@
+{
+  "name": "Context Awesome",
+  "source_url": "https://www.context-awesome.com/api/mcp",
+  "fetched_at": "2026-08-10T05:47:51+00:00",
+  "description": "Provides curated awesome list documentation to AI agents via a hosted MCP endpoint.",
+  "github_stars": 57,
+  "tools": [
+    {
+      "name": "find_awesome_section",
+      "description": "Discovers sections/categories across awesome lists matching a search query and returns matching sections from awesome lists.\n\nYou MUST call this function before 'get_awesome_items' to discover available sections UNLESS the user explicitly provides a githubRepo or listId.\n\nSelection Process:\n1. Analyze the query to understand what type of resources the user is looking for\n2. Return the most relevant matches based on:\n   - Name similarity to the query and the awesome lists section\n   - Category/section relevance of the awesome lists \n   - Number of items in the section\n   - Confidence score\n\nResponse Format:\n- Returns matching sections of the awesome lists with metadata\n- Includes repository information, item counts, and confidence score\n- Use the githubRepo or listId with relevant sections from results for get_awesome_items\n\nFor ambiguous queries, multiple relevant sections will be returned for the user to choose from.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search terms for finding sections across awesome lists"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.3,
+            "description": "Minimum confidence score (0-1)"
+          },
+          "limit": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "description": "Maximum sections to return"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_awesome_items",
+      "description": "Retrieves items from a specific awesome list or section with token limiting. You must call 'find_awesome_section' first to discover available sections, UNLESS the user explicitly provides a githubRepo or listId.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "listId": {
+            "type": "string",
+            "description": "UUID of the list (from find_awesome_section results)"
+          },
+          "githubRepo": {
+            "type": "string",
+            "description": "GitHub repo path (e.g., 'sindresorhus/awesome') from find_awesome_section results"
+          },
+          "section": {
+            "type": "string",
+            "description": "Category/section name to filter"
+          },
+          "subcategory": {
+            "type": "string",
+            "description": "Subcategory to filter"
+          },
+          "tokens": {
+            "type": "number",
+            "description": "Maximum number of tokens to return (default: 10000). Higher values provide more items but consume more tokens."
+          },
+          "offset": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0,
+            "description": "Pagination offset for retrieving more items"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

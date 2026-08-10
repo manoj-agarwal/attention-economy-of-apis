@@ -1,0 +1,61 @@
+{
+  "name": "OrchestKit",
+  "source_url": "https://orchestkit.yonyon.ai/api/mcp",
+  "fetched_at": "2026-08-10T05:47:10+00:00",
+  "description": "Read-only MCP server for the OrchestKit documentation: full-text search and Markdown page retrieval.",
+  "github_stars": 212,
+  "tools": [
+    {
+      "name": "orchestkit_docs_search",
+      "description": "Search the OrchestKit documentation. Use this first to find the right page for a question. Input: a query string. Returns a ranked list of pages with titles and URLs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "What to search for."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "title": "orchestkit_docs_search",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://orchestkit/search-results"
+        },
+        "openai/outputTemplate": "ui://orchestkit/search-results"
+      }
+    },
+    {
+      "name": "orchestkit_docs_get",
+      "description": "Fetch one OrchestKit documentation page as Markdown. Use after orchestkit_docs_search to read a page in full. Input: the page path (e.g. '/docs/getting-started/installation'). Returns the page Markdown.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Page path, e.g. /docs/getting-started/installation"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "annotations": {
+        "title": "orchestkit_docs_get",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    }
+  ]
+}

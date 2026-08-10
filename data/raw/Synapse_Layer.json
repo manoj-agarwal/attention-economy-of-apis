@@ -1,0 +1,379 @@
+{
+  "name": "Synapse Layer",
+  "source_url": "https://forge.synapselayer.org/api/mcp",
+  "fetched_at": "2026-08-10T05:50:08+00:00",
+  "description": "Zero-knowledge memory layer for AI agents with differential privacy and AES-256 encryption.",
+  "github_stars": 13,
+  "tools": [
+    {
+      "name": "recall",
+      "description": "Retrieve relevant persisted memory using semantic, temporal, priority, or hybrid routing. Governance: requires reason (10–200 chars). Rate limit: 20/min.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "What to recall — natural language query for memory retrieval."
+          },
+          "reason": {
+            "type": "string",
+            "description": "REQUIRED (10–200 chars). Audit policy: MEMORY_EXPORT_GOVERNANCE_V1. Human-readable justification for retrieving PLAINTEXT memory. Without this parameter the call WILL fail with code -32602. Example: \"User asked me to summarize last week decisions.\""
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "tenant"
+            ],
+            "description": "Explicit memory scope. \"agent\" (default, fail-closed) = limits recall to the given agent_id (or the token agent). \"tenant\" = cross-agent recall within the authenticated tenant. If omitted with agent_id present, \"agent\" is inferred; if both omitted, the token agent is used (verified-token scope)."
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Agent identifier (canonical or alias). Used only when scope=\"agent\" or scope is inferred."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum memories to return (1–50, default: 10)."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "temporal",
+              "semantic",
+              "priority",
+              "hybrid"
+            ],
+            "description": "Recall routing mode. \"temporal\" = pure chronological, \"semantic\" = FTS + TQ ranking, \"priority\" = critical/high-TQ first, \"hybrid\" = weighted blend, \"auto\" = detect from query (default)."
+          }
+        },
+        "required": [
+          "query",
+          "reason"
+        ]
+      }
+    },
+    {
+      "name": "save_to_synapse",
+      "description": "Persist memory with encryption at rest, sanitization, and deduplication controls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "The memory content to store securely."
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Agent identifier for memory isolation. Defaults to \"default\"."
+          },
+          "project": {
+            "type": "string",
+            "description": "Project identifier (e.g., SYNAPSE_LAYER)."
+          },
+          "type": {
+            "type": "string",
+            "description": "Event type: [MILESTONE], [DECISION], [ALERT], [AUTO-STRAT], [AUTO-OP], [AUTO-INSIGHT], [AUTO-DECISION], [AUTO-CONTEXT], [MANUAL]."
+          },
+          "importance": {
+            "type": "number",
+            "description": "Importance level 1–5 (default: 3)."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags for categorization."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "process_text",
+      "description": "Extract candidate memories from free-form text with governance filters and sanitization.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Free-form text to scan for auto-save triggers."
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Agent identifier. Defaults to \"default\"."
+          },
+          "project": {
+            "type": "string",
+            "description": "Force a specific project (e.g., SYNAPSE_LAYER, OFFLY). Auto-detected if omitted."
+          },
+          "source": {
+            "type": "string",
+            "description": "Source identifier (default: mcp)."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    },
+    {
+      "name": "search",
+      "description": "Search persisted memory across agent scopes using full-text matching.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query — natural language or keywords."
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "tenant"
+            ],
+            "description": "Explicit search scope. \"agent\" (default, fail-closed) = limits search to the given agent_id (or the token agent). \"tenant\" = cross-agent search within the authenticated tenant. If omitted with agent_id present, \"agent\" is inferred; if both omitted, the token agent is used (verified-token scope)."
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Agent identifier (canonical or alias). Used only when scope=\"agent\" or scope is inferred."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum results to return (1–50, default: 20)."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "health_check",
+      "description": "Check service availability, engine version, and storage health. Public method.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "initialize_context",
+      "description": "Initialize a persistent memory context for a conversation or agent session.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "save_memory",
+      "description": "Save a memory entry to the persistent store. Alias of save_to_synapse.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "The memory content to store securely."
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Agent identifier for memory isolation."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags for categorization."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "store_memory",
+      "description": "Store structured memory with metadata and trust scoring.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "The memory content to store securely."
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Agent identifier for memory isolation. Defaults to \"default\"."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags for categorization."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "recall_memory",
+      "description": "Recall persisted memory by query. Alias of recall.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "What to recall — natural language query for memory retrieval."
+          },
+          "reason": {
+            "type": "string",
+            "description": "REQUIRED (10–200 chars). Audit policy: MEMORY_EXPORT_GOVERNANCE_V1. Without this the call WILL fail with code -32602. Example: \"Checking user project status.\""
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "tenant"
+            ],
+            "description": "Explicit memory scope. \"agent\" (default, fail-closed) = limits recall to the given agent_id (or the token agent). \"tenant\" = cross-agent recall within the authenticated tenant. If omitted with agent_id present, \"agent\" is inferred; if both omitted, the token agent is used (verified-token scope)."
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Agent identifier (canonical or alias). Used only when scope=\"agent\" or scope is inferred."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum memories to return (1–50, default: 10)."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "temporal",
+              "semantic",
+              "priority",
+              "hybrid"
+            ],
+            "description": "Recall routing mode."
+          }
+        },
+        "required": [
+          "query",
+          "reason"
+        ]
+      }
+    },
+    {
+      "name": "list_memories",
+      "description": "List memory metadata with pagination and governance limits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "tenant"
+            ],
+            "description": "Explicit memory scope. \"agent\" (default, fail-closed) = lists memories for the given agent_id (or the token agent). \"tenant\" = lists memories across all agents of the authenticated tenant."
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "Agent identifier (canonical or alias). Used only when scope=\"agent\" or scope is inferred."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum memory metadata rows to return. Hard-capped: default 5, max 10. Values above 10 are silently reduced to 10."
+          }
+        }
+      }
+    },
+    {
+      "name": "memory_feedback",
+      "description": "Submit feedback to adjust trust scoring for stored memories.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "memoryId": {
+            "type": "string",
+            "description": "ID of the memory to provide feedback on."
+          },
+          "signal": {
+            "type": "string",
+            "enum": [
+              "used",
+              "ignored",
+              "helpful",
+              "irrelevant"
+            ],
+            "description": "Feedback signal: used (auto), helpful (positive), irrelevant (negative), ignored."
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Optional session identifier for tracking."
+          }
+        },
+        "required": [
+          "memoryId",
+          "signal"
+        ]
+      }
+    },
+    {
+      "name": "neural_handover",
+      "description": "Transfer contextual state between agents with continuity controls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The handover token (64 hex chars). Generated by the source agent/user in Forge UI."
+          },
+          "reason": {
+            "type": "string",
+            "description": "REQUIRED (10–200 chars). Human-readable justification for consuming this handover. Example: \"Receiving project context from Claude session.\""
+          },
+          "consuming_agent": {
+            "type": "string",
+            "description": "Agent identifier consuming the handover (defaults to token agent)."
+          }
+        },
+        "required": [
+          "token",
+          "reason"
+        ]
+      }
+    },
+    {
+      "name": "slo_report",
+      "description": "Return uptime and SLO metrics for the MCP service.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "admin_token": {
+            "type": "string",
+            "description": "Admin authentication token. Must match ADMIN_TOKEN environment variable."
+          },
+          "window_hours": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "Time windows in hours for the report. Default: [24, 168] (24h + 7d)."
+          }
+        },
+        "required": [
+          "admin_token"
+        ]
+      }
+    }
+  ]
+}

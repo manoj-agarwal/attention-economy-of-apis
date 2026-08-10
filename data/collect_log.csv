@@ -259,3 +259,364 @@ fetched_at,name,url,status,n_tools,error
 2026-08-10T02:32:01+00:00,ai.edusignal/districts,https://edusignal.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://edusignal.ai/mcp
 2026-08-10T02:32:02+00:00,ai.eevy/mcp,https://mcp.eevy.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.eevy.ai/api/mcp
 2026-08-10T02:32:02+00:00,ai.elfa/mcp,,skipped_no_remote,,
+2026-08-10T02:43:49+00:00,ac.inference.sh/mcp,https://sh.inference.ac,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.inference.sh/mcp
+2026-08-10T02:43:52+00:00,ag.hood/name-service,https://www.hood.ag/api/mcp,error,,HTTPError: 503 Server Error: Service Unavailable for url: https://www.hood.ag/api/mcp
+2026-08-10T02:43:53+00:00,agency.lona/trading,https://mcp.lona.agency/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.lona.agency/mcp
+2026-08-10T02:43:55+00:00,ai.1325/mcp,https://agoclnqfyinwjxdmjnns.supabase.co/functions/v1/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://agoclnqfyinwjxdmjnns.supabase.co/functions/v1/mcp
+2026-08-10T02:43:56+00:00,ai.abmeter/abmeter,https://mcp.abmeter.ai,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.abmeter.ai/
+2026-08-10T02:43:56+00:00,ai.adadvisor/mcp-server,https://api.adadvisor.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.adadvisor.ai/mcp
+2026-08-10T02:43:57+00:00,ai.adplane/google-ads,https://mcp.adplane.ai,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.adplane.ai/
+2026-08-10T02:43:58+00:00,ai.adramp/google-ads,https://mcp.adramp.ai/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.adramp.ai/sse
+2026-08-10T02:43:58+00:00,ai.adside/adside,https://api.adside.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.adside.ai/mcp
+2026-08-10T02:43:59+00:00,ai.adweave/meta-ads-mcp,https://mcp.adweave.ai/meta-ads-mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.adweave.ai/meta-ads-mcp
+2026-08-10T02:43:59+00:00,ai.agentdm/agentdm,https://api.agentdm.ai/api/v1/grid,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.agentdm.ai/api/v1/grid
+2026-08-10T02:44:00+00:00,ai.agentic-news/mcp,https://api.agentic-news.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.agentic-news.ai/mcp
+2026-08-10T02:44:03+00:00,ai.agenticaffiliate/affiliate-networks-mcp,https://mcp.agenticaffiliate.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.agenticaffiliate.ai/mcp
+2026-08-10T02:44:06+00:00,ai.agenticshelf/graffeo,https://api.agenticshelf.ai/m/graffeo/mcp,error,,HTTPError: 503 Server Error: Service Unavailable for url: https://api.agenticshelf.ai/m/graffeo/mcp
+2026-08-10T02:44:09+00:00,ai.agenticshelf/mcp,https://api.agenticshelf.ai/mcp,error,,HTTPError: 503 Server Error: Service Unavailable for url: https://api.agenticshelf.ai/mcp
+2026-08-10T02:44:11+00:00,ai.agenticshelf/puroair,https://api.agenticshelf.ai/m/puroair/mcp,error,,HTTPError: 503 Server Error: Service Unavailable for url: https://api.agenticshelf.ai/m/puroair/mcp
+2026-08-10T02:44:12+00:00,ai.ai-advisors/mcp,https://app.ai-advisors.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://app.ai-advisors.ai/api/mcp
+2026-08-10T02:44:13+00:00,ai.aient/mcp,https://aient.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://aient.ai/mcp
+2026-08-10T02:44:14+00:00,ai.alpic.mcp/alpic-mcp,https://mcp.alpic.ai,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.alpic.ai/
+2026-08-10T02:44:16+00:00,ai.alpic.test/test-mcp-server,https://test.alpic.ai/,error,,"ConnectionError: HTTPSConnectionPool(host='test.alpic.ai', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x108428f80>: Failed to resolve 'test.alpic.ai' ([Errno 8] nodename nor servname provided, or not known)""))"
+2026-08-10T02:44:17+00:00,ai.ambix/ambix,https://mcp.ambix.ai,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.ambix.ai/
+2026-08-10T02:44:18+00:00,ai.anomalyarmor/armor-mcp,https://mcp.anomalyarmor.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.anomalyarmor.ai/mcp
+2026-08-10T02:44:19+00:00,ai.anzenna/anzenna,https://mcp.anzenna.ai/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.anzenna.ai/sse
+2026-08-10T02:44:20+00:00,ai.appdeploy/deploy-app,https://api-v2.appdeploy.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api-v2.appdeploy.ai/mcp
+2026-08-10T02:44:20+00:00,ai.arketo/arketo,https://arketo.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://arketo.ai/api/mcp
+2026-08-10T02:44:22+00:00,ai.arpi/arpi-mcp,https://mcp.arpi.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.arpi.ai/mcp
+2026-08-10T02:44:22+00:00,ai.assetlog/assetlog,https://api.assetlog.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.assetlog.ai/mcp
+2026-08-10T02:44:23+00:00,ai.atdev/supershopping,https://supershopping-mcp.atdev.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T02:44:24+00:00,ai.atlaso/mcp,https://mcp.atlaso.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.atlaso.ai/mcp
+2026-08-10T02:44:25+00:00,ai.atlasverified/atlas-mcp,https://api.atlasverified.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.atlasverified.ai/mcp
+2026-08-10T02:44:25+00:00,ai.augmentev/paseo,https://api.augmentev.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.augmentev.ai/mcp
+2026-08-10T02:44:26+00:00,ai.augworlds/travel-world,https://travel.augworlds.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://travel.augworlds.ai/mcp
+2026-08-10T02:44:26+00:00,ai.authoryze/authoryze,https://authoryze.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://authoryze.ai/api/mcp
+2026-08-10T02:44:27+00:00,ai.autoposting/autoposting,https://app.autoposting.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://app.autoposting.ai/mcp
+2026-08-10T02:44:30+00:00,ai.autorfp/mcp,https://{api_host}/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='%7bapi_host%7d', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x108428e90>: Failed to resolve '%7bapi_host%7d' ([Errno 8] nodename nor servname provided, or not known)""))"
+2026-08-10T02:44:30+00:00,ai.auxen/auxen,https://api.auxen.ai/mcp,error,,HTTPError: 404 Client Error: Not Found for url: https://api.auxen.ai/mcp
+2026-08-10T02:44:31+00:00,ai.axonagentic/neuroautomata,https://mcp.neuroautomata.axonagentic.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.neuroautomata.axonagentic.ai/mcp
+2026-08-10T02:44:33+00:00,ai.backengine/backengine-mcp,https://mcp.backengine.ai/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='mcp.backengine.ai', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x107cf4800>: Failed to resolve 'mcp.backengine.ai' ([Errno 8] nodename nor servname provided, or not known)""))"
+2026-08-10T02:44:34+00:00,ai.bareun/bareun,https://api.bareun.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.bareun.ai/mcp
+2026-08-10T02:44:36+00:00,ai.baselight/baselight,https://api.baselight.app/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='api.baselight.app', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x108428830>: Failed to resolve 'api.baselight.app' ([Errno 8] nodename nor servname provided, or not known)""))"
+2026-08-10T02:44:37+00:00,ai.basethread/basethread,https://mcp.basethread.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.basethread.ai/mcp
+2026-08-10T02:44:38+00:00,ai.bassethound/bassethound,https://mcp.bassethound.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.bassethound.ai/mcp
+2026-08-10T02:44:38+00:00,ai.beatbandit/beatbandit,https://beatbandit.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://beatbandit.ai/api/mcp
+2026-08-10T02:44:39+00:00,ai.beket/audit,https://mcp.beket.ai/registry/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.beket.ai/registry/mcp
+2026-08-10T02:44:39+00:00,ai.biddeed/biddeed-mcp,https://biddeed.ai/api/mcp,error,,HTTPError: 404 Client Error: Not Found for url: https://biddeed.ai/api/mcp
+2026-08-10T02:44:40+00:00,ai.biel/biel-ai,https://mcp.biel.ai/v2/{project_slug}/mcp,error,,HTTPError: 400 Client Error: Bad Request for url: https://app.biel.ai/mcp/%7Bproject_slug%7D
+2026-08-10T02:44:41+00:00,ai.bittlebits/bittlebits,https://bittlebits.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://bittlebits.ai/mcp
+2026-08-10T02:44:41+00:00,ai.bloopo/bloopo,https://mcp.bloopo.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.bloopo.ai/mcp
+2026-08-10T02:44:42+00:00,ai.bluenexus/universal-mcp,https://api.bluenexus.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.bluenexus.ai/mcp
+2026-08-10T02:44:42+00:00,ai.bodenrichtwert/mcp,https://mcp.bodenrichtwert.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.bodenrichtwert.ai/mcp
+2026-08-10T02:44:43+00:00,ai.boundaryai/boundaryai,https://mcp.boundaryai.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.boundaryai.ai/mcp
+2026-08-10T02:45:46+00:00,ai.brainattic/knowledge-base,https://app.brainattic.ai/api/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='app.brainattic.ai', port=443): Max retries exceeded with url: /api/mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x108461010>: Failed to resolve 'app.brainattic.ai' ([Errno 8] nodename nor servname provided, or not known)"
+2026-08-10T02:45:47+00:00,ai.bunzee/bunzee,https://bunzee.ai/mcp-server,error,,HTTPError: 401 Client Error: Unauthorized for url: https://bunzee.ai/mcp-server
+2026-08-10T02:45:49+00:00,ai.buron/buron,https://app.buron.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://app.buron.ai/api/mcp
+2026-08-10T02:45:49+00:00,ai.butlerbrain/mcp,https://api.butlerbrain.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.butlerbrain.ai/mcp
+2026-08-10T02:45:52+00:00,ai.buyersense/buyersense,https://mcp.buyersense.ai/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='mcp.buyersense.ai', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x1084298b0>: Failed to resolve 'mcp.buyersense.ai' ([Errno 8] nodename nor servname provided, or not known)""))"
+2026-08-10T02:45:52+00:00,ai.byteray/byteray-mcp,https://mcp.byteray.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.byteray.ai/mcp
+2026-08-10T02:45:53+00:00,ai.cactal/cactal,https://api.cactal.ai/v1/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.cactal.ai/v1/mcp
+2026-08-10T02:45:53+00:00,ai.calendarmcp/server,https://calendarmcp.ai/api/mcp,error,,HTTPError: 403 Client Error: Forbidden for url: https://calendarmcp.ai/api/mcp
+2026-08-10T02:45:54+00:00,ai.calfeed/calfeed,https://calfeed.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://calfeed.ai/api/mcp
+2026-08-10T02:45:55+00:00,ai.canvora/canvora,https://api.canvora.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.canvora.ai/mcp
+2026-08-10T02:45:56+00:00,ai.caulo/caulo,https://mcp.caulo.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.caulo.ai/mcp
+2026-08-10T02:45:56+00:00,ai.cdbx/mcp-server,https://cdbx.ai/api/mcp/server,error,,HTTPError: 401 Client Error: Unauthorized for url: https://cdbx.ai/api/mcp/server
+2026-08-10T02:45:57+00:00,ai.chatthing/chat-thing,https://app.chatthing.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://app.chatthing.ai/mcp
+2026-08-10T02:45:58+00:00,ai.cirra/salesforce-mcp,https://mcp.cirra.ai/sfdc/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.cirra.ai/sfdc/mcp
+2026-08-10T02:46:00+00:00,ai.clarid/compliance,https://mcp.clarid.ai/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='mcp.clarid.ai', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x108494d40>: Failed to resolve 'mcp.clarid.ai' ([Errno 8] nodename nor servname provided, or not known)""))"
+2026-08-10T02:46:01+00:00,ai.clarid/hmda,https://api.clarid.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.clarid.ai/mcp
+2026-08-10T02:46:02+00:00,ai.clawterminal/markets,https://mcp.clawterminal.ai,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.clawterminal.ai/
+2026-08-10T02:46:02+00:00,ai.cnaps/studio,https://mcp.cnaps.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.cnaps.ai/mcp
+2026-08-10T02:46:05+00:00,ai.cobbles/cobbles,https://api.cobbles.ai/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='api.cobbles.ai', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x108429cd0>: Failed to resolve 'api.cobbles.ai' ([Errno 8] nodename nor servname provided, or not known)""))"
+2026-08-10T02:46:06+00:00,ai.cofoundagent/cofound,https://mcp.cofoundagent.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.cofoundagent.ai/mcp
+2026-08-10T02:46:06+00:00,ai.com.mcp/contabo,https://contabo.run.mcp.com.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T02:46:07+00:00,ai.com.mcp/hapi-mcp,https://{HAPI_FQDN}:{HAPI_PORT}/mcp,error,,InvalidURL: Failed to parse: https://{HAPI_FQDN}:{HAPI_PORT}/mcp
+2026-08-10T02:46:07+00:00,ai.com.mcp/lenny-rachitsky-podcast,https://lenny-rachitsky.run.mcp.com.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T02:46:08+00:00,ai.com.mcp/linkedin,https://linkedin.run.mcp.com.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T02:46:09+00:00,ai.com.mcp/openai-tools,https://openai-tools.run.mcp.com.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T02:46:09+00:00,ai.com.mcp/petstore,https://petstore.run.mcp.com.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T02:46:09+00:00,ai.com.mcp/registry,https://registry.run.mcp.com.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T02:46:12+00:00,ai.com.mcp/skills-search,https://skills-sh.run.mcp.com.ai/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='skills-sh.run.mcp.com.ai', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x107cf48c0>: Failed to resolve 'skills-sh.run.mcp.com.ai' ([Errno 8] nodename nor servname provided, or "
+2026-08-10T02:46:12+00:00,ai.com.mcp/strava,https://strava.run.mcp.com.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T02:46:13+00:00,ai.componecat/componecat,https://app.componecat.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://app.componecat.ai/api/mcp
+2026-08-10T02:46:14+00:00,ai.connectmachine/connectmachine,https://mcp.connectmachine.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.connectmachine.ai/mcp
+2026-08-10T02:46:15+00:00,ai.constellationfinance/constellation-finance-mcp,https://mcp.constellationfinance.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.constellationfinance.ai/mcp
+2026-08-10T02:46:15+00:00,ai.contio/meetingos,https://mcp.contio.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.contio.ai/mcp
+2026-08-10T02:46:16+00:00,ai.conveo/conveo,https://app.conveo.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://app.conveo.ai/api/mcp
+2026-08-10T02:46:17+00:00,ai.cookiy/cookiy,https://s-api.cookiy.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://s-api.cookiy.ai/mcp
+2026-08-10T02:46:18+00:00,ai.cosmonote/notes,https://nebula.cosmonote.ai/mcp,error,,HTTPError: 400 Client Error: Bad Request for url: https://nebula.cosmonote.ai/mcp
+2026-08-10T02:46:18+00:00,ai.craneledger/crane-ledger,https://api.craneledger.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.craneledger.ai/mcp
+2026-08-10T02:46:21+00:00,ai.crestsystems/counterparty-intelligence,https://data.crestsystems.ai/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='data.crestsystems.ai', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x108494da0>: Failed to resolve 'data.crestsystems.ai' ([Errno 8] nodename nor servname provided, or not know"
+2026-08-10T02:46:22+00:00,ai.cueframe/cueframe,https://api.cueframe.ai/v1/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.cueframe.ai/v1/mcp
+2026-08-10T02:46:23+00:00,ai.customdomain/mcp,https://mcp.customdomain.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.customdomain.ai/mcp
+2026-08-10T02:46:23+00:00,ai.d50/d50-platform,https://app.d50.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://app.d50.ai/api/mcp
+2026-08-10T02:46:24+00:00,ai.dataforb2b/dataforb2b,https://mcp.dataforb2b.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.dataforb2b.ai/mcp
+2026-08-10T02:46:25+00:00,ai.dealfilter/mcp,https://dealfilter.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://dealfilter.ai/api/mcp
+2026-08-10T02:46:26+00:00,ai.decisionlog/mcp,https://www.decisionlog.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://www.decisionlog.ai/api/mcp
+2026-08-10T02:46:26+00:00,ai.deepledger/mcp,https://mcp.deepledger.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.deepledger.ai/mcp
+2026-08-10T02:46:27+00:00,ai.deinai/creator-skill,https://deinai.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://deinai.ai/mcp
+2026-08-10T02:46:28+00:00,ai.deinai/creator-skill-v2,https://skill.deinai.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://skill.deinai.ai/mcp
+2026-08-10T02:46:29+00:00,ai.delega/aws-pricing-calculator,https://calculator.delega.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://calculator.delega.ai/mcp
+2026-08-10T02:46:30+00:00,ai.diagramzu/mcp,https://mcp.diagramzu.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.diagramzu.ai/mcp
+2026-08-10T02:46:31+00:00,ai.dimetrics/dimetrics,https://www.dimetrics.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://www.dimetrics.ai/api/mcp
+2026-08-10T02:46:32+00:00,ai.dinglebear/rtailscale,https://ts.dinglebear.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://ts.dinglebear.ai/mcp
+2026-08-10T02:47:15+00:00,ai.djwizard/tvwizard,https://tv.djwizard.ai/mcp/,error,,"ConnectTimeout: HTTPSConnectionPool(host='tv.djwizard.ai', port=443): Max retries exceeded with url: /mcp/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x108497260>, 'Connection to tv.djwizard.ai timed out. (connect timeout=20)'))"
+2026-08-10T02:47:15+00:00,ai.djzs/trust-mcp,https://mcp.djzs.ai/mcp,ok,3,
+2026-08-10T02:47:16+00:00,ai.docuguru/docuguru,https://mcp.docuguru.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.docuguru.ai/mcp
+2026-08-10T02:47:17+00:00,ai.docuwriter/docuwriter,https://app.docuwriter.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://app.docuwriter.ai/mcp
+2026-08-10T02:47:18+00:00,ai.donethat/donethat,https://mcp.donethat.ai/,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.donethat.ai/
+2026-08-10T02:47:19+00:00,ai.dragoneye/mcp,https://nexus.api.dragoneye.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://nexus.api.dragoneye.ai/mcp/
+2026-08-10T02:47:20+00:00,ai.dsght/public,https://www.dsght.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T02:47:21+00:00,ai.edusignal/districts,https://edusignal.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://edusignal.ai/mcp
+2026-08-10T02:47:22+00:00,ai.eevy/mcp,https://mcp.eevy.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.eevy.ai/api/mcp
+2026-08-10T05:46:36+00:00,Labelhead Artist Momentum,https://labelhead-mcp-public-production.up.railway.app/mcp,ok,3,
+2026-08-10T05:46:37+00:00,World Monitor,https://worldmonitor.app/mcp,ok,60,
+2026-08-10T05:46:37+00:00,Puter,https://mcp.puter.com/,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.puter.com/
+2026-08-10T05:46:38+00:00,PostHog,https://mcp.posthog.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.posthog.com/mcp
+2026-08-10T05:46:39+00:00,Oh My Posh,https://ohmyposh.dev/api/mcp,ok,2,
+2026-08-10T05:46:40+00:00,MCP Registry,https://registry.run.mcp.com.ai/mcp,error,,RuntimeError: initialize returned no result
+2026-08-10T05:46:41+00:00,FireCrawl,https://mcp.firecrawl.dev/{FIRECRAWL_API_KEY}/sse,error,,HTTPError: 404 Client Error: Not Found for url: https://mcp.firecrawl.dev/%7BFIRECRAWL_API_KEY%7D/sse
+2026-08-10T05:46:42+00:00,Finance Toolkit,https://financetoolkit.jeroenbouma.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://financetoolkit.jeroenbouma.com/mcp
+2026-08-10T05:46:43+00:00,Excalidraw,https://mcp.excalidraw.com/mcp,ok,5,
+2026-08-10T05:46:43+00:00,Exa Web Search,https://mcp.exa.ai/mcp,ok,2,
+2026-08-10T05:46:44+00:00,Notion,https://mcp.notion.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.notion.com/mcp
+2026-08-10T05:46:44+00:00,Cloudflare AI Gateway,"https://ai-gateway.mcp.cloudflare.com/sse""",error,,HTTPError: 401 Client Error: Unauthorized for url: https://ai-gateway.mcp.cloudflare.com/sse%22
+2026-08-10T05:46:45+00:00,Cloudflare Audit Logs,https://auditlogs.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://auditlogs.mcp.cloudflare.com/sse
+2026-08-10T05:46:45+00:00,Cloudflare AutoRAG,https://autorag.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://autorag.mcp.cloudflare.com/sse
+2026-08-10T05:46:46+00:00,Cloudflare Browser Rendering,https://browser.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://browser.mcp.cloudflare.com/sse
+2026-08-10T05:46:46+00:00,Sandbox Container,https://containers.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://containers.mcp.cloudflare.com/sse
+2026-08-10T05:46:47+00:00,Cloudflare Dex Analysis,https://dex.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://dex.mcp.cloudflare.com/sse
+2026-08-10T05:46:47+00:00,Cloudflare DNS Analytics,https://dns-analytics.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://dns-analytics.mcp.cloudflare.com/sse
+2026-08-10T05:46:48+00:00,Cloudflare Documentation,https://docs.mcp.cloudflare.com/sse,ok,2,
+2026-08-10T05:46:48+00:00,Cloudflare Logpush,https://logs.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://logs.mcp.cloudflare.com/sse
+2026-08-10T05:46:49+00:00,Cloudflare One CASB,https://casb.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://casb.mcp.cloudflare.com/sse
+2026-08-10T05:46:49+00:00,Cloudflare Radar,https://radar.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://radar.mcp.cloudflare.com/sse
+2026-08-10T05:46:50+00:00,Cloudflare Workers (via Bindings),https://bindings.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://bindings.mcp.cloudflare.com/sse
+2026-08-10T05:46:50+00:00,Cloudflare Workers Observability,https://observability.mcp.cloudflare.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://observability.mcp.cloudflare.com/sse
+2026-08-10T05:46:51+00:00,RevoGrid,https://mcp.rv-grid.com,ok,4,
+2026-08-10T05:46:52+00:00,AdsAgent,https://notfair.co/api/mcp/google_ads,error,,HTTPError: 401 Client Error: Unauthorized for url: https://notfair.co/api/mcp/google_ads
+2026-08-10T05:46:53+00:00,Bright Data,https://mcp.brightdata.com/sse?token=YOUR_API_TOKEN,error,,HTTPError: 404 Client Error: Not Found for url: https://mcp.brightdata.com/sse?token=YOUR_API_TOKEN
+2026-08-10T05:46:54+00:00,Financial Datasets,https://mcp.financialdatasets.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.financialdatasets.ai/mcp
+2026-08-10T05:46:55+00:00,pg-aiguide,https://mcp.tigerdata.com/docs,ok,2,
+2026-08-10T05:46:55+00:00,Stripe,https://mcp.stripe.com/,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.stripe.com/
+2026-08-10T05:46:56+00:00,OASDiff,https://api.oasdiff.com/mcp,ok,4,
+2026-08-10T05:46:57+00:00,X API,https://api.x.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.x.com/mcp
+2026-08-10T05:46:57+00:00,Cloudflare,https://mcp.cloudflare.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.cloudflare.com/mcp
+2026-08-10T05:46:58+00:00,Neon,https://mcp.neon.tech/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.neon.tech/sse
+2026-08-10T05:47:00+00:00,bm.md,https://bm.md/mcp,ok,4,
+2026-08-10T05:47:01+00:00,TickDB,https://mcp.tickdb.ai,ok,13,
+2026-08-10T05:47:02+00:00,Todoist,https://ai.todoist.net/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://ai.todoist.net/mcp
+2026-08-10T05:47:02+00:00,Emisar,https://emisar.dev/api/mcp/rpc,error,,HTTPError: 401 Client Error: Unauthorized for url: https://emisar.dev/api/mcp/rpc
+2026-08-10T05:47:03+00:00,Devopness,https://mcp.devopness.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.devopness.com/mcp
+2026-08-10T05:47:03+00:00,Monday.com,https://mcp.monday.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.monday.com/mcp
+2026-08-10T05:47:04+00:00,PageIndex,https://chat.pageindex.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://chat.pageindex.ai/mcp
+2026-08-10T05:47:05+00:00,Packmind,https://app.packmind.ai/mcp,error,,HTTPError: 405 Client Error: Not Allowed for url: https://app.packmind.ai/mcp
+2026-08-10T05:47:06+00:00,Taisly,https://app.taisly.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://app.taisly.com/mcp
+2026-08-10T05:47:07+00:00,Postman,https://mcp.postman.com/minimal,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.postman.com/minimal
+2026-08-10T05:47:07+00:00,Hugging Face,https://huggingface.co/mcp,ok,4,
+2026-08-10T05:47:08+00:00,Pyth Network,https://mcp.pyth.network/mcp,ok,5,
+2026-08-10T05:47:09+00:00,Reddit Research,https://reddit-research-mcp.fastmcp.app/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://reddit-research-mcp.fastmcp.app/mcp
+2026-08-10T05:47:10+00:00,OrchestKit,https://orchestkit.yonyon.ai/api/mcp,ok,2,
+2026-08-10T05:47:11+00:00,PayPal Agent Toolkit,https://mcp.paypal.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.paypal.com/sse
+2026-08-10T05:47:12+00:00,Zomato,https://mcp-server.zomato.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp-server.zomato.com/mcp
+2026-08-10T05:47:13+00:00,FirstData,https://firstdata.deepminer.com.cn/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://firstdata.deepminer.com.cn/mcp
+2026-08-10T05:47:14+00:00,XQuik,https://xquik.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://xquik.com/mcp
+2026-08-10T05:47:15+00:00,Langfuse Prompt Management,https://cloud.langfuse.com/api/public/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://cloud.langfuse.com/api/public/mcp
+2026-08-10T05:47:16+00:00,Svelte Documentation,https://svelte-llm.stanislav.garden/mcp/sse,error,,HTTPError: 405 Client Error: Method Not Allowed for url: https://svelte-llm.stanislav.garden/mcp/sse
+2026-08-10T05:47:17+00:00,Payram Helper,https://mcp.payram.com/mcp,ok,52,
+2026-08-10T05:47:18+00:00,GTM Editor,https://mcp.gtmeditor.com,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.gtmeditor.com/
+2026-08-10T05:47:19+00:00,LangSmith,https://langsmith-mcp-server.onrender.com/mcp,error,,HTTPError: 404 Client Error: Not Found for url: https://langsmith-mcp-server.onrender.com/mcp
+2026-08-10T05:47:19+00:00,GoldenMatch,https://goldenmatch-mcp-production.up.railway.app/mcp/,ok,77,
+2026-08-10T05:47:20+00:00,Apple Developer Documentation (RAG),https://mcp.apple-rag.com,ok,2,
+2026-08-10T05:47:21+00:00,ClawLink,https://claw-link.dev/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://claw-link.dev/api/mcp
+2026-08-10T05:47:21+00:00,AgentPhone,https://mcp.agentphone.to/mcp,error,,HTTPError: 404 Client Error: Not Found for url: https://mcp.agentphone.to/mcp
+2026-08-10T05:47:24+00:00,Tandem,https://tandem.ac/mcp,ok,13,
+2026-08-10T05:47:24+00:00,ClariLayer,https://clarilayer.com/api/mcp/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://clarilayer.com/api/mcp/mcp
+2026-08-10T05:47:25+00:00,Square,https://mcp.squareup.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.squareup.com/sse
+2026-08-10T05:47:26+00:00,Needle,https://mcp.needle-ai.com/sse,error,,HTTPError: 500 Server Error: Internal Server Error for url: https://needle.app:443/not-found
+2026-08-10T05:47:27+00:00,Adspirer,https://mcp.adspirer.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.adspirer.com/mcp
+2026-08-10T05:47:28+00:00,Coach Watts,https://coachwatts.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://coachwatts.com/mcp
+2026-08-10T05:47:29+00:00,Freepik,https://api.freepik.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.freepik.com/mcp
+2026-08-10T05:47:29+00:00,PagerDuty,mcp.pagerduty.com/mcp,error,,MissingSchema: Invalid URL 'mcp.pagerduty.com/mcp': No scheme supplied. Perhaps you meant https://mcp.pagerduty.com/mcp?
+2026-08-10T05:47:30+00:00,Sonatype,https://mcp.guide.sonatype.com/mcp,ok,3,
+2026-08-10T05:47:31+00:00,Transloadit,https://api2.transloadit.com/mcp,ok,7,
+2026-08-10T05:47:34+00:00,OSINT,https://mcp.osintmcp.com,error,,"SSLError: HTTPSConnectionPool(host='mcp.osintmcp.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+2026-08-10T05:47:34+00:00,Alby Bitcoin Payments,https://mcp.getalby.com/sse,error,,HTTPError: 404 Client Error: Not Found for url: https://mcp.getalby.com/sse
+2026-08-10T05:47:50+00:00,WHOIS,https://whois.ddnsip.cn/mcp,ok,2,
+2026-08-10T05:47:51+00:00,Context Awesome,https://www.context-awesome.com/api/mcp,ok,2,
+2026-08-10T05:47:51+00:00,Tapetide Stock Research,https://mcp.tapetide.com/mcp,error,,HTTPError: 400 Client Error: Bad Request for url: https://mcp.tapetide.com/mcp
+2026-08-10T05:47:53+00:00,Gread,https://api.gread.dev/mcp,ok,5,
+2026-08-10T05:47:53+00:00,Trade It,https://mcp.tradeit.app/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.tradeit.app/mcp
+2026-08-10T05:47:54+00:00,Norman Finance,https://mcp.norman.finance/sse,error,,HTTPError: 404 Client Error: Not Found for url: https://mcp.norman.finance/sse
+2026-08-10T05:47:55+00:00,1MCPServer,https://mcp.1mcpserver.com/mcp/,error,,HTTPError: 502 Server Error: Bad Gateway for url: https://mcp.1mcpserver.com/mcp/
+2026-08-10T05:47:55+00:00,Buildkite,https://mcp.buildkite.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.buildkite.com/mcp
+2026-08-10T05:47:56+00:00,Higgsfield,https://mcp.higgsfield.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.higgsfield.ai/mcp
+2026-08-10T05:47:56+00:00,X Intelligence,https://mcp-x-intelligence.fluyeporlaweb.workers.dev/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp-x-intelligence.fluyeporlaweb.workers.dev/mcp
+2026-08-10T05:47:59+00:00,NeuroStack,https://mcp.neurostack.sh/mcp/,error,,"SSLError: HTTPSConnectionPool(host='mcp.neurostack.sh', port=443): Max retries exceeded with url: /mcp/ (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+2026-08-10T05:48:00+00:00,DBTrail,https://api.dbtrail.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.dbtrail.com/mcp
+2026-08-10T05:48:00+00:00,Datadog,https://mcp.datadoghq.com/v1/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.datadoghq.com/v1/mcp
+2026-08-10T05:48:02+00:00,Preloop,https://preloop.ai/mcp/v1,error,,HTTPError: 401 Client Error: Unauthorized for url: https://preloop.ai/mcp/v1
+2026-08-10T05:48:02+00:00,Flashcards,https://mcp.flashcards-open-source-app.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.flashcards-open-source-app.com/mcp
+2026-08-10T05:48:04+00:00,AceDataCloud Suno,https://suno.mcp.acedata.cloud/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://suno.mcp.acedata.cloud/mcp
+2026-08-10T05:48:04+00:00,Bitrise,https://mcp.bitrise.io/,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.bitrise.io/
+2026-08-10T05:48:05+00:00,CometChat Docs,https://mcp.cometchat.com/mcp,ok,3,
+2026-08-10T05:48:06+00:00,Lenny's Podcast,https://lenny-mcp.onrender.com/mcp,ok,3,
+2026-08-10T05:48:07+00:00,InsForge,https://mcp.insforge.dev/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.insforge.dev/mcp
+2026-08-10T05:48:09+00:00,Better Notion,https://better-notion-mcp.n24q02m.com/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='better-notion-mcp.n24q02m.com', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x106775280>: Failed to resolve 'better-notion-mcp.n24q02m.com' ([Errno 8] nodename nor servname pro"
+2026-08-10T05:48:10+00:00,Trayd,https://mcp.trayd.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.trayd.ai/mcp
+2026-08-10T05:48:13+00:00,EOxElements,https://elements.mcp.eox.at/sse,error,,HTTPError: 404 Client Error: Not Found for url: https://elements.mcp.eox.at/sse
+2026-08-10T05:48:14+00:00,Bilig WorkPaper,https://bilig.proompteng.ai/mcp,ok,8,
+2026-08-10T05:48:14+00:00,Shortlist Jobs,https://shortlist.jobs/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://shortlist.jobs/mcp
+2026-08-10T05:48:15+00:00,Plausible Analytics,https://plausible-mcp.sentry.dev/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://plausible-mcp.sentry.dev/mcp
+2026-08-10T05:48:16+00:00,ThoughtSpot,https://agent.thoughtspot.app/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://agent.thoughtspot.app/mcp
+2026-08-10T05:48:17+00:00,Thunder Compute,https://api.thundercompute.com:8443/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.thundercompute.com:8443/mcp
+2026-08-10T05:48:18+00:00,ContrastCyber,https://api.contrastcyber.com/mcp/,ok,55,
+2026-08-10T05:48:20+00:00,deBridge,https://agents.debridge.com/mcp,ok,5,
+2026-08-10T05:48:21+00:00,Prompts.chat,https://prompts.chat/api/mcp,ok,10,
+2026-08-10T05:48:21+00:00,Fortnox,https://fortnox-mcp.vercel.app/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://fortnox-mcp.vercel.app/mcp
+2026-08-10T05:48:22+00:00,Nutrition Tracker,https://nutrition-mcp.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://nutrition-mcp.com/mcp
+2026-08-10T05:48:24+00:00,Klever VM,https://mcp.klever.org/mcp,ok,16,
+2026-08-10T05:48:25+00:00,BioContext Knowledgebase,https://mcp.biocontext.ai/mcp/,error,,HTTPError: 405 Client Error: Method Not Allowed for url: https://biocontext-kb.fastmcp.app/mcp/
+2026-08-10T05:48:25+00:00,Hyades,https://hyades-mcp.apg.workers.dev/mcp,ok,1,
+2026-08-10T05:48:26+00:00,Riksdag & Regering,https://riksdag-regering-ai.onrender.com/mcp,ok,32,
+2026-08-10T05:48:27+00:00,HealthClaw,https://mcp-server-production-5112.up.railway.app/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp-server-production-5112.up.railway.app/mcp
+2026-08-10T05:48:28+00:00,EU Regulations,https://gateway.ansvar.eu/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://gateway.ansvar.eu/mcp
+2026-08-10T05:48:29+00:00,VARRD,https://app.varrd.com/mcp,ok,9,
+2026-08-10T05:48:30+00:00,Flow Studio,https://mcp.flowstudio.app/mcp,ok,33,
+2026-08-10T05:48:31+00:00,SAP Cloudification Repository,https://sap-released-objects-mcp-server-production.up.railway.app/mcp,error,,HTTPError: 404 Client Error: Not Found for url: https://sap-released-objects-mcp-server-production.up.railway.app/mcp
+2026-08-10T05:48:32+00:00,QRcodly,https://mcp.qrcodly.de/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.qrcodly.de/mcp
+2026-08-10T05:48:33+00:00,LaunchDarkly,https://mcp.launchdarkly.com/mcp/launchdarkly,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.launchdarkly.com/mcp/launchdarkly
+2026-08-10T05:48:34+00:00,Recruiting Reports,https://two026-recruiting-reports.onrender.com/mcp,ok,6,
+2026-08-10T05:48:34+00:00,Rails Agent Skills,https://rails-agent-skills-mcp.ismael-marin.workers.dev/mcp,error,,HTTPError: 404 Client Error: Not Found for url: https://rails-agent-skills-mcp.ismael-marin.workers.dev/mcp
+2026-08-10T05:48:36+00:00,Kapruka,https://mcp.kapruka.com/mcp,ok,8,
+2026-08-10T05:48:38+00:00,NsLookup.io,https://mcp.nslookup.io/mcp,ok,23,
+2026-08-10T05:48:40+00:00,Opendata.cat,https://opendata.cat/api/mcp,ok,8,
+2026-08-10T05:48:40+00:00,Zoteus,https://mcp.zoteus.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.zoteus.com/mcp
+2026-08-10T05:48:42+00:00,FapiaAPI,https://mcp.fa-piao.com,ok,0,
+2026-08-10T05:48:43+00:00,Citedy SEO Agent,https://mcp.citedy.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.citedy.com/mcp
+2026-08-10T05:48:44+00:00,CleanSlice,https://mcp.cleanslice.org/mcp,ok,4,
+2026-08-10T05:48:45+00:00,TradeOS,https://ai.tradeos.xyz/api/agent/mcp/mcp-call,error,,HTTPError: 401 Client Error: Unauthorized for url: https://ai.tradeos.xyz/api/agent/mcp/mcp-call
+2026-08-10T05:48:46+00:00,Banco,https://api.mcp.ai/banco,ok,19,
+2026-08-10T05:48:46+00:00,Himalayas Remote Jobs,https://mcp.himalayas.app/sse,error,,HTTPError: 404 Client Error: Not Found for url: https://mcp.himalayas.app/sse
+2026-08-10T05:48:47+00:00,Lawyerd,https://mcp.lawyerd.net/takedown,ok,4,
+2026-08-10T05:48:48+00:00,Fathom,https://fathom-mcp-server.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://fathom-mcp-server.com/mcp
+2026-08-10T05:48:49+00:00,Mnemoverse Memory,https://mcp.mnemoverse.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.mnemoverse.com/mcp
+2026-08-10T05:48:49+00:00,Parallel Task,https://task-mcp.parallel.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://task-mcp.parallel.ai/mcp
+2026-08-10T05:48:51+00:00,Freeport Nostr,https://nostr-mcp.trinh.uk/mcp,ok,6,
+2026-08-10T05:48:52+00:00,AceDataCloud Seedance,https://seedance.mcp.acedata.cloud/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://seedance.mcp.acedata.cloud/mcp
+2026-08-10T05:48:55+00:00,Bitte AI,https://mcp.bitte.ai/sse,error,,"ConnectionError: HTTPSConnectionPool(host='mcp.bitte.ai', port=443): Max retries exceeded with url: /sse (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x106778050>: Failed to resolve 'mcp.bitte.ai' ([Errno 8] nodename nor servname provided, or not known)""))"
+2026-08-10T05:49:56+00:00,UK Property Data,https://property-shared.fly.dev/mcp,error,,"ReadTimeout: HTTPSConnectionPool(host='property-shared.fly.dev', port=443): Read timed out. (read timeout=20)"
+2026-08-10T05:49:58+00:00,EstNLTK,https://estonian-mcp.fly.dev/mcp,ok,26,
+2026-08-10T05:49:59+00:00,Ejentum,https://api.ejentum.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.ejentum.com/mcp
+2026-08-10T05:50:00+00:00,idealo,https://mcp.idealo.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.idealo.com/mcp
+2026-08-10T05:50:01+00:00,ilert,https://mcp.ilert.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.ilert.com/mcp
+2026-08-10T05:50:01+00:00,WordPress Trac,https://mcp-server-wporg-trac-staging.a8cai.workers.dev/mcp,ok,5,
+2026-08-10T05:50:03+00:00,KernelCAD,https://mcp.kernelcad.com/mcp,ok,45,
+2026-08-10T05:50:05+00:00,PapersFlow,https://doxa.papersflow.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://doxa.papersflow.ai/mcp
+2026-08-10T05:50:05+00:00,OpenRegistry,https://openregistry.sophymarine.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://openregistry.sophymarine.com/mcp
+2026-08-10T05:50:07+00:00,Source Library,https://sourcelibrary.org/api/mcp,ok,15,
+2026-08-10T05:50:08+00:00,Synapse Layer,https://forge.synapselayer.org/api/mcp,ok,13,
+2026-08-10T05:50:09+00:00,Agentic Mermaid,https://agentic-mermaid.dev/mcp,ok,9,
+2026-08-10T05:50:11+00:00,Chiplab,https://chiplab.veecle.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://chiplab.veecle.ai/mcp
+2026-08-10T05:50:11+00:00,DataDoe,https://mcp.datadoe.com/mcp/v1,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.datadoe.com/mcp/v1
+2026-08-10T05:50:14+00:00,Kolada,https://kolada-mcp-pafn.onrender.com/mcp,error,,HTTPError: 503 Server Error: Service Unavailable for url: https://kolada-mcp-pafn.onrender.com/mcp
+2026-08-10T05:50:18+00:00,Metagraphed,https://api.metagraph.sh/mcp,ok,230,
+2026-08-10T05:50:19+00:00,XMemo,https://xmemo.dev/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://xmemo.dev/mcp
+2026-08-10T05:50:20+00:00,Hono Docs,https://hono-docs-mcp.yusukebe.workers.dev/mcp,ok,2,
+2026-08-10T05:50:21+00:00,htmldrop,https://htmldrop.link/mcp,ok,1,
+2026-08-10T05:50:23+00:00,InfraNode,https://mcp.infranode.dev/mcp,ok,12,
+2026-08-10T05:50:24+00:00,Kiwi Flight Search,https://mcp.kiwi.com,ok,2,
+2026-08-10T05:50:25+00:00,UK Legal Research,https://uk-legal-mcp.fly.dev/mcp,ok,35,
+2026-08-10T05:50:26+00:00,Behavioral Prediction,https://prediction.mcp.chainaware.ai/,error,,HTTPError: 405 Client Error: Method Not Allowed for url: https://prediction.mcp.chainaware.ai/
+2026-08-10T05:50:27+00:00,SocialGPT,https://mcp.gpt.social/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.gpt.social/mcp
+2026-08-10T05:50:27+00:00,Frihet,https://mcp.frihet.io/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.frihet.io/mcp
+2026-08-10T05:50:29+00:00,SheetsData,https://mcp.sheetsdata.com/mcp,ok,12,
+2026-08-10T05:50:30+00:00,PasteHTML,https://pastehtml.dev/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://pastehtml.dev/mcp
+2026-08-10T05:50:31+00:00,SODAX Builders,https://builders.sodax.com/mcp,ok,40,
+2026-08-10T05:50:32+00:00,Steep,https://mcp.steep.app/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.steep.app/mcp
+2026-08-10T05:50:35+00:00,StitchAPI Docs,https://stitchapi.dev/api/mcp,error,,HTTPError: 500 Server Error: Internal Server Error for url: https://stitchapi.dev/api/mcp
+2026-08-10T05:50:37+00:00,XCatcher,https://xcatcher.top/mcp,ok,17,
+2026-08-10T05:50:38+00:00,Bullga,https://mcp.bullga.ai/mcp,ok,44,
+2026-08-10T05:50:39+00:00,Dali,https://dali.getlulu.dev/mcp,ok,16,
+2026-08-10T05:50:40+00:00,EN Diagram,https://api.endiagram.com/mcp,ok,7,
+2026-08-10T05:50:41+00:00,Document to JSON,https://mcp.apify.com/?actors=opportunity-biz/document-to-json-mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.apify.com/?actors=opportunity-biz/document-to-json-mcp
+2026-08-10T05:50:41+00:00,Flaim,https://api.flaim.app/mcp,ok,10,
+2026-08-10T05:50:44+00:00,Statistics Sweden,https://scb-mcp.onrender.com/mcp,error,,HTTPError: 503 Server Error: Service Unavailable for url: https://scb-mcp.onrender.com/mcp
+2026-08-10T05:50:46+00:00,Dice Rolling,https://dice-rolling-mcp.vercel.app/mcp,ok,4,
+2026-08-10T05:50:47+00:00,NordStellar,https://platform-mcp.nordstellar.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://platform-mcp.nordstellar.com/mcp
+2026-08-10T05:50:47+00:00,Rezi,https://api.rezi.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.rezi.ai/mcp
+2026-08-10T05:50:48+00:00,Sophtron Financial Data Connection,https://mcp.sophtron.com/mcp,error,,HTTPError: 400 Client Error: Bad Request for url: https://mcp.sophtron.com/mcp
+2026-08-10T05:50:48+00:00,Excel to JSON,https://mcp.wtsolutions.cn/excel-to-json-mcp-sse,error,,HTTPError: 405 Client Error: Method Not Allowed for url: https://mcp.wtsolutions.cn/excel-to-json-mcp-sse
+2026-08-10T05:50:49+00:00,AceDataCloud NanoBanana,https://nanobanana.mcp.acedata.cloud/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://nanobanana.mcp.acedata.cloud/mcp
+2026-08-10T05:50:51+00:00,SwapWizard,https://mcp.swapwizard.xyz/mcp,ok,11,
+2026-08-10T05:50:53+00:00,Ejentum Self-Inspect,https://api.ejentum.com/self-inspect-mcp,ok,1,
+2026-08-10T05:50:53+00:00,FitLLM,https://fitllm.run/api/mcp,ok,3,
+2026-08-10T05:50:54+00:00,Medical Terminologies,https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp,ok,31,
+2026-08-10T05:50:55+00:00,Package Version Check,https://package-version-check-mcp.onrender.com/mcp,ok,4,
+2026-08-10T05:50:56+00:00,PlanWright,https://mcp.planwright.tools/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.planwright.tools/mcp
+2026-08-10T05:50:59+00:00,QuantToGo,https://mcp.quanttogo.com/sse,error,,RuntimeError: tools/list returned no result
+2026-08-10T05:51:02+00:00,Royal MCP,https://demo.royalplugins.com/wp-json/royal-mcp/v1/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://demo.royalplugins.com/wp-json/royal-mcp/v1/mcp
+2026-08-10T05:51:03+00:00,YouTube Transcript & Search,https://transcriptapi.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://transcriptapi.com/mcp
+2026-08-10T05:51:03+00:00,ADPList,https://mcp.adplist.org/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.adplist.org/sse
+2026-08-10T05:51:04+00:00,Agent Central Amazon Seller Central,https://mcp.agentcentral.to/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.agentcentral.to/mcp
+2026-08-10T05:51:05+00:00,Cloudflare Docs Search,https://cf-docs-mcp.frosty-butterfly-d821.workers.dev/mcp,error,,HTTPError: 404 Client Error: Not Found for url: https://cf-docs-mcp.frosty-butterfly-d821.workers.dev/mcp
+2026-08-10T05:51:06+00:00,BuyWhere,https://mcp.buywhere.ai/mcp,ok,8,
+2026-08-10T05:51:06+00:00,NYC Property Intel,https://nyc-property-intel-production.up.railway.app/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://nyc-property-intel-production.up.railway.app/mcp
+2026-08-10T05:51:07+00:00,Context Book,https://context-book-mcp-production.up.railway.app,error,,HTTPError: 404 Client Error: Not Found for url: https://context-book-mcp-production.up.railway.app/
+2026-08-10T05:51:08+00:00,Convalytics,https://api.convalytics.dev/mcp,ok,15,
+2026-08-10T05:51:09+00:00,DomainKits,https://mcp.domainkits.com/mcp/ns-reverse,error,,RuntimeError: initialize returned no result
+2026-08-10T05:51:10+00:00,Drillr,https://gateway.drillr.ai/mcp/data,ok,9,
+2026-08-10T05:51:11+00:00,Emailens,https://emailens.dev/api/mcp,ok,9,
+2026-08-10T05:51:11+00:00,Fedlex Connector,https://mcp.fedlex-connector.ch/,ok,4,
+2026-08-10T05:51:12+00:00,PAPI,https://mcp.getpapi.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.getpapi.ai/mcp
+2026-08-10T05:51:14+00:00,Justice Libre,https://justicelibre.org/mcp,ok,31,
+2026-08-10T05:51:14+00:00,IBGE Brazil,https://ibge.sidneybissoli.com/mcp,ok,22,
+2026-08-10T05:51:15+00:00,HefestoAI,https://hefestoai.narapallc.com/api/mcp-protocol,ok,4,
+2026-08-10T05:51:19+00:00,TextArtTools,https://mcp.textarttools.com/,ok,7,
+2026-08-10T05:51:20+00:00,InFlow,https://app.inflowpay.ai/mcp,error,,HTTPError: 401 Client Error:  for url: https://app.inflowpay.ai/mcp
+2026-08-10T05:51:22+00:00,OECD,https://oecd-mcp.onrender.com/mcp,error,,HTTPError: 503 Server Error: Service Unavailable for url: https://oecd-mcp.onrender.com/mcp
+2026-08-10T05:51:24+00:00,TLE Satellite Tracker,https://tle.ivanstanojevic.me/mcp,error,,HTTPError: 405 Client Error: Method Not Allowed for url: https://tle.ivanstanojevic.me/mcp
+2026-08-10T05:51:25+00:00,Counsel,https://counsel-mcp.getmason.dev/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://counsel-mcp.getmason.dev/mcp
+2026-08-10T05:51:26+00:00,DevPlan,https://devplan-mcp-server.mike-c63.workers.dev/mcp,error,,HTTPError: 400 Client Error: Bad Request for url: https://mcp.devplanmcp.store/mcp
+2026-08-10T05:51:26+00:00,Outlit,https://mcp.outlit.ai/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.outlit.ai/mcp
+2026-08-10T05:51:27+00:00,Parlay,https://mcp.parlay.run/mcp,ok,6,
+2026-08-10T05:51:28+00:00,Pine Script,https://pinescript-mcp.fly.dev/mcp,ok,10,
+2026-08-10T05:51:30+00:00,PreClick,https://preclick.ai/mcp,ok,6,
+2026-08-10T05:51:31+00:00,Scavio,https://mcp.scavio.dev/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.scavio.dev/mcp
+2026-08-10T05:51:31+00:00,StudioMCPHub,https://studiomcphub.com/mcp,ok,27,
+2026-08-10T05:51:33+00:00,Zooza,https://mcp.zooza.app/mcp,ok,30,
+2026-08-10T05:51:34+00:00,Alai,https://slides-api.getalai.com/mcp/,error,,HTTPError: 401 Client Error: Unauthorized for url: https://slides-api.getalai.com/mcp/
+2026-08-10T05:51:35+00:00,FOLIO Legal Ontology,https://folio.openlegalstandard.org/mcp,error,,HTTPError: 405 Client Error: Method Not Allowed for url: https://folio.openlegalstandard.org/mcp
+2026-08-10T05:51:37+00:00,Supabase,https://sb-mcp.bifrotek.com/mcp,error,,"ConnectionError: HTTPSConnectionPool(host='sb-mcp.bifrotek.com', port=443): Max retries exceeded with url: /mcp (Caused by NameResolutionError(""<urllib3.connection.HTTPSConnection object at 0x106774b90>: Failed to resolve 'sb-mcp.bifrotek.com' ([Errno 8] nodename nor servname provided, or not known)"
+2026-08-10T05:51:38+00:00,Chia Health,https://mcp.chia.health/,ok,34,
+2026-08-10T05:51:40+00:00,Math Learning,https://math-mcp.fastmcp.app/mcp,ok,17,
+2026-08-10T05:51:40+00:00,Clover,https://four-leaf.ai/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://four-leaf.ai/api/mcp
+2026-08-10T05:51:42+00:00,Clueso,https://connect.clueso.io/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://connect.clueso.io/mcp
+2026-08-10T05:51:42+00:00,KeywordsPeopleUse,https://mcp-keywordspeopleuse.com/sse,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp-keywordspeopleuse.com/sse
+2026-08-10T05:51:44+00:00,.FAF Context,https://mcpaas.live/mcp,ok,19,
+2026-08-10T05:51:45+00:00,StealThis,https://mcp.stealthis.dev/mcp,ok,5,
+2026-08-10T05:51:46+00:00,Fortytwo Prime,https://mcp.fortytwo.network/mcp,ok,1,
+2026-08-10T05:51:47+00:00,Agent Utils,https://agent-utils-mcp.onrender.com/mcp,ok,18,
+2026-08-10T05:51:48+00:00,US Business Entity Data,https://business-entity-mcp.apify.actor/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://business-entity-mcp.apify.actor/mcp
+2026-08-10T05:51:48+00:00,HubSpot,https://mcp.hubspot.com,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.hubspot.com/
+2026-08-10T05:51:49+00:00,CoinGecko,https://mcp.api.coingecko.com/sse,error,,HTTPError: 404 Client Error: Not Found for url: https://mcp.api.coingecko.com/sse
+2026-08-10T05:51:49+00:00,Service Public France,https://mcp-service-public.nhaultcoeur.workers.dev/mcp,ok,38,
+2026-08-10T05:51:50+00:00,Neonia Cloud OS,https://mcp.neonia.io/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.neonia.io/mcp
+2026-08-10T05:51:51+00:00,NoteIt,https://www.noteit-mcp.com/api/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://www.noteit-mcp.com/api/mcp
+2026-08-10T05:51:52+00:00,OptionsAhoy,https://optionsahoy.com/mcp,ok,8,
+2026-08-10T05:51:53+00:00,Aiden Coffee Brewer,https://aidenmcp.ravenhoward.org/mcp,ok,13,
+2026-08-10T05:51:54+00:00,Scalekit,https://mcp.scalekit.com/,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.scalekit.com/
+2026-08-10T05:51:56+00:00,Shipstatic,https://mcp.shipstatic.com,error,,"ConnectionError: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))"
+2026-08-10T05:51:57+00:00,Fortuna,https://fortuna-mcp.siliconsociety.org/sse,error,,HTTPError: 405 Client Error: Method Not Allowed for url: https://fortuna-mcp.siliconsociety.org/sse
+2026-08-10T05:51:58+00:00,Sociality.io,https://api.sociality.io/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.sociality.io/mcp
+2026-08-10T05:51:59+00:00,STRING Database,https://mcp.string-db.org/,ok,17,
+2026-08-10T05:52:00+00:00,Subconscious AI,https://ghostshell-runi.vercel.app/api/sse,error,,HTTPError: 405 Client Error: Method Not Allowed for url: https://ghostshell-runi.vercel.app/api/sse
+2026-08-10T05:52:01+00:00,Tokenrip,https://api.tokenrip.com/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://api.tokenrip.com/mcp
+2026-08-10T05:52:02+00:00,Brandfetch,https://mcp.brandfetch.io/mcp,error,,HTTPError: 401 Client Error: Unauthorized for url: https://mcp.brandfetch.io/mcp
+2026-08-10T05:52:03+00:00,ChangeThisFile,https://changethisfile.com/mcp,ok,7,
+2026-08-10T05:52:04+00:00,Tick,https://tick-mcp-production.up.railway.app/mcp,ok,2,
+2026-08-10T05:52:07+00:00,Composer,https://mcp.usecomposer.com,error,,"ConnectionError: HTTPSConnectionPool(host='mcp.usecomposer.com', port=443): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x1067e57f0>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+2026-08-10T05:52:09+00:00,Nucleus,https://relay.nucleusos.dev/mcp,ok,28,
+2026-08-10T05:52:11+00:00,Foura,https://mcp.foura.ai/mcp,ok,4,
+2026-08-10T05:52:11+00:00,Polish Academic,https://polish-academic-mcp.kolpol25.workers.dev/mcp,error,,HTTPError: 404 Client Error: Not Found for url: https://polish-academic-mcp.kolpol25.workers.dev/mcp

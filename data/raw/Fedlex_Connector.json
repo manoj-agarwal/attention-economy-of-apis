@@ -1,0 +1,130 @@
+{
+  "name": "Fedlex Connector",
+  "source_url": "https://mcp.fedlex-connector.ch/",
+  "fetched_at": "2026-08-10T05:51:11+00:00",
+  "description": "Search Swiss federal legislation: laws, articles, and amendments via the Fedlex SPARQL endpoint.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "name": "search_by_title",
+      "description": "Search Swiss federal legislation titles in the Classified Compilation (RS/SR) on Fedlex. Use to find the RS number of a law when you know its name but not its number. Searches titles only, not article content. Returns only acts currently in force.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Keywords to match against act titles (e.g. 'code civil', 'protection des donnÃ©es')"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "fr",
+              "de",
+              "it"
+            ],
+            "description": "Language for results (default: de)"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "get_article",
+      "description": "Retrieve a single article when you already know the EXACT article number (e.g. from a cross-reference). Do NOT call this tool repeatedly to search for provisions â use get_law_text instead to fetch the full act or a section and locate relevant articles in the text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rs_number": {
+            "type": "string",
+            "description": "RS/SR number (e.g. '210' for CC, '220' for CO, '311.0' for CP)"
+          },
+          "article": {
+            "type": "string",
+            "description": "Article number (e.g. '3', '28a', '41')"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "fr",
+              "de",
+              "it"
+            ],
+            "description": "Language (default: de)"
+          },
+          "date": {
+            "type": "string",
+            "description": "Consolidation date in YYYY-MM-DD format. Defaults to the latest available version."
+          }
+        },
+        "required": [
+          "rs_number",
+          "article"
+        ]
+      }
+    },
+    {
+      "name": "get_law_text",
+      "description": "Retrieve the official consolidated text of a Swiss federal act (or a specific title/chapter) directly from Fedlex (fedlex.admin.ch). This is the PRIMARY tool for answering Swiss law questions â always start here. Fetch the full act or a specific section, then locate relevant provisions in the returned text. Prefer this over get_article unless you already know the exact article number.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rs_number": {
+            "type": "string",
+            "description": "RS/SR number (e.g. '210' for CC, '220' for CO)"
+          },
+          "section": {
+            "type": "string",
+            "description": "Limit to a specific title, chapter, or part (e.g. 'Titre huitiÃ¨me', 'Zweiter Teil'). If omitted, returns the full act."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "fr",
+              "de",
+              "it"
+            ],
+            "description": "Language (default: de)"
+          },
+          "page": {
+            "type": "number",
+            "description": "Page number for paginated results (default: 1). Large acts are split across multiple pages."
+          }
+        },
+        "required": [
+          "rs_number"
+        ]
+      }
+    },
+    {
+      "name": "list_amendments",
+      "description": "List consolidation version dates for a Swiss federal act. Returns the dates each consolidated version took effect.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rs_number": {
+            "type": "string",
+            "description": "RS/SR number"
+          },
+          "since": {
+            "type": "string",
+            "description": "Start date in YYYY-MM-DD format (default: 1 year ago)"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "fr",
+              "de",
+              "it"
+            ],
+            "description": "Language for amendment titles (default: de)"
+          }
+        },
+        "required": [
+          "rs_number"
+        ]
+      }
+    }
+  ]
+}

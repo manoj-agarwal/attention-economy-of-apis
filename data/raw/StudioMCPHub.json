@@ -1,0 +1,970 @@
+{
+  "name": "StudioMCPHub",
+  "source_url": "https://studiomcphub.com/mcp",
+  "fetched_at": "2026-08-10T05:51:31+00:00",
+  "description": "Creative AI tools for image generation, upscaling, background removal, vectorization, and art datasets.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "name": "upscale_image",
+      "description": "Super-resolution using Real-ESRGAN on NVIDIA L4 GPU. 5 models for different content types. Default: 2x general upscale. ($0.20 / 2 GCX)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "model": {
+            "type": "string",
+            "description": "ESRGAN model to use. Options: 'realesrgan_x2plus' (2x, general — default), 'realesrgan_x4plus' (4x, general/photo), 'realesrgan_x4plus_anime' (4x, anime/illustrations), 'realesr_general_x4v3' (4x, fast general), 'realesr_animevideov3' (4x, anime video frames).",
+            "default": "realesrgan_x2plus",
+            "enum": [
+              "realesrgan_x2plus",
+              "realesrgan_x4plus",
+              "realesrgan_x4plus_anime",
+              "realesr_general_x4v3",
+              "realesr_animevideov3"
+            ]
+          },
+          "scale": {
+            "type": "integer",
+            "description": "Shorthand: 2 selects x2plus, 4 selects x4plus. Ignored if model is specified directly.",
+            "default": 2
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Upscale Image (ESRGAN)",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "enrich_metadata",
+      "description": "AI-powered artwork analysis. Two tiers: 'standard' (1 GCX) = SEO-optimized title, description, keywords, alt_text via Nova-Lite. 'premium' (2 GCX, default) = full 8-section Golden Codex museum-grade analysis via Nova/Gemini 2.5 Pro. Optionally customize metadata fields and add a Soul Whisper personal message. ($0.20 / 2 GCX)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "tier": {
+            "type": "string",
+            "description": "Metadata tier: 'standard' (1 GCX — SEO title/description/keywords/alt_text) or 'premium' (2 GCX — full Golden Codex 8-section analysis)",
+            "default": "premium",
+            "enum": [
+              "standard",
+              "premium"
+            ]
+          },
+          "content_type": {
+            "type": "string",
+            "description": "Content type hint: 'artwork' or 'photo' — affects analysis style",
+            "default": "artwork",
+            "enum": [
+              "artwork",
+              "photo"
+            ]
+          },
+          "context": {
+            "type": "string",
+            "description": "Creator's brief — technical/artistic context for AI analysis (e.g. 'SD 3.5 Large, impressionist style')",
+            "default": ""
+          },
+          "artist_name": {
+            "type": "string",
+            "description": "Artist/creator name (embedded in metadata)",
+            "default": ""
+          },
+          "title": {
+            "type": "string",
+            "description": "Artwork title (leave blank for AI to suggest one)",
+            "default": ""
+          },
+          "copyright_holder": {
+            "type": "string",
+            "description": "Copyright owner name",
+            "default": ""
+          },
+          "creation_year": {
+            "type": "string",
+            "description": "4-digit creation year",
+            "default": ""
+          },
+          "soul_whisper": {
+            "type": "object",
+            "description": "Optional personal message embedded in metadata — visible to anyone who reads the image's provenance (premium tier only)",
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "Personal message, dedication, or story behind the artwork (max 1000 chars)"
+              },
+              "sender": {
+                "type": "string",
+                "description": "Your name or pseudonym"
+              }
+            }
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "AI Metadata Enrichment",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "infuse_metadata",
+      "description": "Embed metadata into image via ExifTool. Two modes: 'standard' (XMP/IPTC only — title, description, keywords, copyright) or 'full_gcx' (default — full Golden Codex XMP-gc namespace + IPTC + C2PA + soulmark + hash registration). ($0.10 / 1 GCX)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Metadata JSON to embed. For standard: {title, description, keywords, alt_text, copyright_holder}. For full_gcx: Golden Codex JSON from enrich_metadata."
+          },
+          "metadata_mode": {
+            "type": "string",
+            "description": "Infusion mode: 'standard' (XMP/IPTC fields only) or 'full_gcx' (full Golden Codex + soulmark + hash registration)",
+            "default": "full_gcx",
+            "enum": [
+              "standard",
+              "full_gcx"
+            ]
+          }
+        },
+        "required": [
+          "image",
+          "metadata"
+        ]
+      },
+      "annotations": {
+        "title": "Metadata Infusion (ExifTool)",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "register_hash",
+      "description": "Register 256-bit perceptual hash with LSH band indexing for strip-proof provenance. ($0.10 / 1 GCX)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Perceptual Hash Registration",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "verify_provenance",
+      "description": "Strip-proof provenance verification via Aegis hash index. FREE - no payment required. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Provenance Verification",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "search_artworks",
+      "description": "Search 53K+ museum artworks from Alexandria Aeternum (MET, Chicago, NGA, Rijksmuseum, Smithsonian, Cleveland, Paris). FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query (e.g. 'impressionist landscape', 'Monet', 'Dutch Golden Age')"
+          },
+          "museum": {
+            "type": "string",
+            "description": "Filter by museum (met, chicago, nga, rijks, smithsonian, cleveland, paris)",
+            "default": ""
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results (1-100)",
+            "default": 20
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "title": "Search Artworks",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "get_artwork",
+      "description": "Get Human_Standard metadata (500-1200 tokens) + signed image URL for a museum artwork. ($0.10 / 1 GCX)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "description": "Artifact ID from search results (e.g. 'met_437419')"
+          }
+        },
+        "required": [
+          "artifact_id"
+        ]
+      },
+      "annotations": {
+        "title": "Get Artwork Metadata",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "get_artwork_oracle",
+      "description": "Get Hybrid_Premium 111-field NEST analysis (2K-6K tokens) + image. Deep AI visual analysis with color palette, composition, symbolism, emotional mapping. ($0.20 / 2 GCX)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "description": "Artifact ID from search results (e.g. 'met_437419')"
+          }
+        },
+        "required": [
+          "artifact_id"
+        ]
+      },
+      "annotations": {
+        "title": "Get Artwork Oracle Analysis",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "batch_download",
+      "description": "Bulk download metadata + images from Alexandria Aeternum (min 100 artworks). ($5.00 / 50 GCX)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "description": "Dataset ID",
+            "default": "alexandria-aeternum"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Number of artworks (min 100)",
+            "default": 100
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Start offset for pagination",
+            "default": 0
+          }
+        }
+      },
+      "annotations": {
+        "title": "Batch Download",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "compliance_manifest",
+      "description": "Get AB 2013 (California) + EU AI Act Article 53 compliance manifests for dataset usage. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "description": "Dataset ID",
+            "default": "alexandria-aeternum"
+          },
+          "regulation": {
+            "type": "string",
+            "description": "Filter: ab2013, eu_ai_act, or all",
+            "default": "all"
+          }
+        }
+      },
+      "annotations": {
+        "title": "Compliance Manifest",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "resize_image",
+      "description": "Resize an image to target dimensions. Supports fit modes: 'cover' (crop to fill), 'contain' (fit within, letterbox), 'stretch' (exact size). Useful for preparing images for specific platforms, thumbnails, or social media. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "width": {
+            "type": "integer",
+            "description": "Target width in pixels (1-8192)",
+            "minimum": 1,
+            "maximum": 8192
+          },
+          "height": {
+            "type": "integer",
+            "description": "Target height in pixels (1-8192)",
+            "minimum": 1,
+            "maximum": 8192
+          },
+          "mode": {
+            "type": "string",
+            "description": "Resize mode: 'contain' (fit within bounds, preserve aspect ratio), 'cover' (crop to fill), 'stretch' (exact size, may distort)",
+            "default": "contain",
+            "enum": [
+              "contain",
+              "cover",
+              "stretch"
+            ]
+          },
+          "format": {
+            "type": "string",
+            "description": "Output format",
+            "default": "png",
+            "enum": [
+              "png",
+              "jpeg",
+              "webp"
+            ]
+          },
+          "quality": {
+            "type": "integer",
+            "description": "JPEG/WebP quality (1-100)",
+            "default": 90,
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "image",
+          "width",
+          "height"
+        ]
+      },
+      "annotations": {
+        "title": "Resize Image",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "extract_palette",
+      "description": "Extract dominant color palette from an image. Returns hex/RGB/HSL colors with percentages, CSS names, and complementary colors. Great for design systems, mood boards, and color matching. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "num_colors": {
+            "type": "integer",
+            "description": "Number of colors to extract (3-12)",
+            "default": 6,
+            "minimum": 3,
+            "maximum": 12
+          },
+          "format": {
+            "type": "string",
+            "description": "Color format in output",
+            "default": "hex",
+            "enum": [
+              "hex",
+              "rgb",
+              "hsl"
+            ]
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Extract Color Palette",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "remove_background",
+      "description": "Remove image background using AI (U2-Net). Returns RGBA PNG/WebP with transparent background. Perfect for product photos, portraits, and design assets. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Output format",
+            "default": "png",
+            "enum": [
+              "png",
+              "webp"
+            ]
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Remove Background",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "mockup_image",
+      "description": "Place your design onto product mockups (t-shirt, poster, canvas, phone case, mug, tote bag). Instant product visualization for e-commerce and print-on-demand. FREE. ($0.10 / 1 GCX)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded design image"
+          },
+          "product": {
+            "type": "string",
+            "description": "Product type",
+            "default": "tshirt",
+            "enum": [
+              "tshirt",
+              "poster",
+              "canvas",
+              "phone_case",
+              "mug",
+              "tote_bag"
+            ]
+          },
+          "background_color": {
+            "type": "string",
+            "description": "Background hex color",
+            "default": "#f5f5f5"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Product Mockup",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "convert_color_profile",
+      "description": "Convert between sRGB and CMYK color profiles. Essential for print production. CMYK output as TIFF with embedded DPI. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "target_profile": {
+            "type": "string",
+            "description": "Target color profile",
+            "default": "cmyk",
+            "enum": [
+              "cmyk",
+              "srgb"
+            ]
+          },
+          "dpi": {
+            "type": "integer",
+            "description": "Output DPI (72-1200)",
+            "default": 300,
+            "minimum": 72,
+            "maximum": 1200
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Convert Color Profile",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "print_ready",
+      "description": "Prepare images for professional printing with DPI, bleed margins, crop marks. Supports A4, A3, Letter, poster (24x36), custom sizes. Output as TIFF or PDF. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "dpi": {
+            "type": "integer",
+            "description": "Output DPI",
+            "default": 300,
+            "enum": [
+              150,
+              300,
+              600
+            ]
+          },
+          "bleed_mm": {
+            "type": "number",
+            "description": "Bleed margin in mm (0-10)",
+            "default": 3.0
+          },
+          "crop_marks": {
+            "type": "boolean",
+            "description": "Draw crop marks in bleed area",
+            "default": true
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Output format",
+            "default": "tiff",
+            "enum": [
+              "tiff",
+              "pdf"
+            ]
+          },
+          "product_size": {
+            "type": "string",
+            "description": "Standard paper size",
+            "default": "a4",
+            "enum": [
+              "a4",
+              "a3",
+              "letter",
+              "poster_24x36",
+              "custom"
+            ]
+          },
+          "custom_width_mm": {
+            "type": "number",
+            "description": "Custom width in mm (required if product_size=custom)"
+          },
+          "custom_height_mm": {
+            "type": "number",
+            "description": "Custom height in mm (required if product_size=custom)"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Print-Ready Preparation",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "vectorize_image",
+      "description": "Convert raster images to SVG vector format. Supports color and binary modes with precision controls. Returns raw SVG XML string. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "color_precision": {
+            "type": "integer",
+            "description": "Color clustering precision (1-10, higher = more colors)",
+            "default": 6,
+            "minimum": 1,
+            "maximum": 10
+          },
+          "filter_speckle": {
+            "type": "integer",
+            "description": "Speckle filter (0-100, higher = fewer small artifacts)",
+            "default": 4,
+            "minimum": 0,
+            "maximum": 100
+          },
+          "mode": {
+            "type": "string",
+            "description": "Vectorization mode",
+            "default": "color",
+            "enum": [
+              "color",
+              "binary"
+            ]
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Vectorize to SVG",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "watermark_embed",
+      "description": "Embed invisible DCT-domain watermark into an image. Encodes a text payload into luminance channel frequency coefficients. Survives light compression. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Text payload to embed (max 256 chars)",
+            "maxLength": 256
+          },
+          "strength": {
+            "type": "number",
+            "description": "Embedding strength (0.1-1.0, higher = more robust but more visible)",
+            "default": 0.5,
+            "minimum": 0.1,
+            "maximum": 1.0
+          }
+        },
+        "required": [
+          "image",
+          "payload"
+        ]
+      },
+      "annotations": {
+        "title": "Embed Invisible Watermark",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "watermark_detect",
+      "description": "Detect and extract invisible DCT watermark from an image. Returns the embedded text payload if found. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64-encoded PNG/JPEG image"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
+      "annotations": {
+        "title": "Detect Watermark",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "save_asset",
+      "description": "Save an image or data to your personal wallet storage. 100MB free per wallet, 500 assets max. ($0.10 / 1 GCX)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string",
+            "description": "Your EVM wallet address (0x...)"
+          },
+          "key": {
+            "type": "string",
+            "description": "Unique name for this asset (e.g., 'my-landscape', 'pipeline-001')"
+          },
+          "data": {
+            "type": "string",
+            "description": "Base64-encoded data (image, JSON, etc.) — max 10MB"
+          },
+          "content_type": {
+            "type": "string",
+            "description": "MIME type",
+            "default": "image/png"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Optional metadata JSON to store alongside"
+          }
+        },
+        "required": [
+          "wallet",
+          "key",
+          "data"
+        ]
+      },
+      "annotations": {
+        "title": "Save Asset to Storage",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_asset",
+      "description": "Retrieve a stored asset from your wallet storage by key. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string",
+            "description": "Your EVM wallet address (0x...)"
+          },
+          "key": {
+            "type": "string",
+            "description": "Asset key to retrieve"
+          }
+        },
+        "required": [
+          "wallet",
+          "key"
+        ]
+      },
+      "annotations": {
+        "title": "Retrieve Asset",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_assets",
+      "description": "List all assets in your wallet storage with sizes and metadata. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string",
+            "description": "Your EVM wallet address (0x...)"
+          }
+        },
+        "required": [
+          "wallet"
+        ]
+      },
+      "annotations": {
+        "title": "List Stored Assets",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "delete_asset",
+      "description": "Delete an asset from your wallet storage. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string",
+            "description": "Your EVM wallet address (0x...)"
+          },
+          "key": {
+            "type": "string",
+            "description": "Asset key to delete"
+          }
+        },
+        "required": [
+          "wallet",
+          "key"
+        ]
+      },
+      "annotations": {
+        "title": "Delete Asset",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "register_wallet",
+      "description": "Register your wallet to get 10 FREE GCX credits ($1 value). New wallets only — enough to try upscale + enrich. Purchase more via GCX packs. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string",
+            "description": "Your EVM wallet address (0x...)"
+          }
+        },
+        "required": [
+          "wallet"
+        ]
+      },
+      "annotations": {
+        "title": "Register Wallet",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_balance",
+      "description": "Check your GCX credit balance, loyalty rewards, and volume tier. FREE. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string",
+            "description": "Your EVM wallet address (0x...)"
+          }
+        },
+        "required": [
+          "wallet"
+        ]
+      },
+      "annotations": {
+        "title": "Check Balance",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "search_tools",
+      "description": "Discover available tools by category or price without loading all schemas. Start here to save tokens. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query to filter tools by name or description",
+            "default": ""
+          },
+          "category": {
+            "type": "string",
+            "description": "Filter by category",
+            "enum": [
+              "creative",
+              "dataset",
+              "storage",
+              "account",
+              "free",
+              "all"
+            ],
+            "default": "all"
+          },
+          "max_price_usd": {
+            "type": "number",
+            "description": "Max price per call in USD (0 = free only)",
+            "default": -1
+          }
+        }
+      },
+      "annotations": {
+        "title": "Search Tools",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_tool_schema",
+      "description": "Get the full JSON Schema and usage examples for a specific tool. Use after search_tools to load only what you need. (FREE)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tool_name": {
+            "type": "string",
+            "description": "Tool name from search_tools results (e.g. 'generate_image')"
+          }
+        },
+        "required": [
+          "tool_name"
+        ]
+      },
+      "annotations": {
+        "title": "Get Tool Schema",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    }
+  ]
+}

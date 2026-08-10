@@ -1,8 +1,9 @@
 {
-  "name": "ai.buywhere/catalog-api",
+  "name": "BuyWhere",
   "source_url": "https://mcp.buywhere.ai/mcp",
-  "fetched_at": "2026-08-10T02:30:11+00:00",
-  "registry_description": "Search 1.5M+ products across 20+ platforms. Compare prices, find deals, browse categories.",
+  "fetched_at": "2026-08-10T05:51:06+00:00",
+  "description": "Search 11M+ products across SG, SEA, and US. Agent-native catalog for AI shopping agents.",
+  "github_stars": 6,
   "tools": [
     {
       "name": "search_products",

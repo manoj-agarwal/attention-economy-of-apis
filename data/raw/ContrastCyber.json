@@ -1,0 +1,5213 @@
+{
+  "name": "ContrastCyber",
+  "source_url": "https://api.contrastcyber.com/mcp/",
+  "fetched_at": "2026-08-10T05:48:18+00:00",
+  "description": "54 tools, 7 Resources, Sigma rules, email SPF/DMARC, MITRE, CVE/KEV, risk_score. No key.",
+  "github_stars": 32,
+  "tools": [
+    {
+      "name": "domain_report",
+      "title": "Domain Report",
+      "description": "Query DNS, WHOIS, SSL, subdomains, and threat intel for a domain in one call. By default dns.txt is filtered to security-relevant entries (SPF, DMARC, DKIM, MTA-STS, TLS-RPT) and dns.total_txt_records reports the honest pre-filter count; pass include_all_txt=true for the raw TXT list. Use as a starting point for domain investigations; use audit_domain for live headers + tech stack. Response carries next_calls — chain with subdomain_enum (always emitted), ssl_check + tech_fingerprint (when an A record resolves) for the standard recon depth without re-prompting. Free: 30/hr, Pro: 500/hr. Returns domain report with DNS records, WHOIS data, SSL cert, risk score, email config, threat status, recommendation, and next_calls.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Root domain to analyze, without protocol or path (e.g. 'example.com', 'shopify.com')",
+            "title": "Domain",
+            "type": "string"
+          },
+          "include_all_txt": {
+            "default": false,
+            "description": "Return every TXT record (default: False, only SPF/DMARC/DKIM/MTA-STS/TLS-RPT kept). dns.total_txt_records is always emitted with the honest pre-filter count. Default filter strips vendor verification strings (google-site-verification, ms=, facebook-domain-verification, etc.) that bloat the response without security signal. Set True only when you need the raw TXT inventory.",
+            "title": "Include All Txt",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "domain_reportArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "dns": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "reverse_dns": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "whois": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "ssl": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "subdomains": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "certificates": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "email_security": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "waf": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "threat": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "risk": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "reputation": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "audit_domain",
+      "title": "Audit Domain",
+      "description": "Perform comprehensive domain audit: combines domain_report + live HTTP security headers + technology fingerprinting. By default report.dns.txt is filtered to security-relevant entries (SPF, DMARC, DKIM, MTA-STS, TLS-RPT) and report.dns.total_txt_records reports the honest pre-filter count; pass include_all_txt=true for the raw TXT list. Use when you need the full picture (recon + active checks); use domain_report for passive-only assessment. Response carries next_calls — chain with subdomain_enum (always emitted) and ssl_check (when an A record resolves) for the residual recon depth (tech_fingerprint already inline as `technologies`). Free: 30/hr (costs 6 tokens), Pro: 500/hr. Returns {domain, report, technologies, live_headers, summary, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Root domain to audit, without protocol or path (e.g. 'example.com', 'shopify.com')",
+            "title": "Domain",
+            "type": "string"
+          },
+          "include_all_txt": {
+            "default": false,
+            "description": "Return every TXT record under report.dns.txt (default: False, only SPF/DMARC/DKIM/MTA-STS/TLS-RPT kept). report.dns.total_txt_records is always emitted with the honest pre-filter count. Default filter strips vendor verification strings (google-site-verification, ms=, facebook-domain-verification, etc.) that bloat the response without security signal. Set True only when you need the raw TXT inventory.",
+            "title": "Include All Txt",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "audit_domainArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "report": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "technologies": {
+                "type": "object"
+              },
+              "live_headers": {
+                "type": "object"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "contrast_scan",
+      "title": "Contrast Scan",
+      "description": "Active website security scan: runs the ContrastScan C engine (11 modules — HTTP security headers, SSL/TLS, DNS, redirect chain, information disclosure, cookie flags, DNSSEC, HTTP methods, CORS, HTML hygiene, deep CSP analysis) against the live site and enriches the raw result with severity-ranked vulnerability findings and a letter grade. Use for a hands-on misconfiguration scan; use audit_domain for passive recon (DNS/WHOIS/SSL/threat intel) and scan_headers for headers only. Active outbound fetch — a per-target eTLD+1 throttle (60 req/min) applies. Free: 30/hr (costs 6 tokens), Pro: 500/hr. Returns {domain, resolved_ip, total_score, max_score, grade, findings, findings_count, headers, ssl, dns, redirect, disclosure, cookies, dnssec, methods, cors, html, csp_analysis, enterprise, summary, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Root domain to scan, without protocol or path (e.g. 'example.com'). Bare IPs and private-resolving domains are rejected.",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "contrast_scanArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "resolved_ip": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "total_score": {
+                "type": "integer"
+              },
+              "max_score": {
+                "type": "integer"
+              },
+              "grade": {
+                "type": "string"
+              },
+              "findings": {
+                "type": "array"
+              },
+              "findings_count": {
+                "type": "object"
+              },
+              "headers": {
+                "type": "object"
+              },
+              "ssl": {
+                "type": "object"
+              },
+              "dns": {
+                "type": "object"
+              },
+              "redirect": {
+                "type": "object"
+              },
+              "disclosure": {
+                "type": "object"
+              },
+              "cookies": {
+                "type": "object"
+              },
+              "dnssec": {
+                "type": "object"
+              },
+              "methods": {
+                "type": "object"
+              },
+              "cors": {
+                "type": "object"
+              },
+              "html": {
+                "type": "object"
+              },
+              "csp_analysis": {
+                "type": "object"
+              },
+              "enterprise": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "tech_stack_cve_audit",
+      "title": "Tech Stack CVE Audit",
+      "description": "Composite tech-stack + CVE audit (MCP-only, no REST endpoint). Detects technologies on the target domain, queries CVE database for known vulnerabilities per product, enriches top-10 CVE candidates with CISA KEV federal patch deadlines, and checks public exploit / PoC availability. Identical for every tier — all data is sourced from local DB mirrors (no Shodan/AbuseIPDB), so there is no tier gating. CVE candidate batch: 50. Cost: 10 tokens per call — Free 30/hr ≈ 3 audits, Pro 500/hr ≈ 50 audits. Returns {domain, technologies, cves_by_tech, kev_findings, exploit_findings, summary, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Target domain to fingerprint and CVE-audit (e.g. 'example.com'). IPs and internal hostnames are rejected.",
+            "maxLength": 253,
+            "minLength": 1,
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "tech_stack_cve_auditArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "technologies": {
+                "type": "object"
+              },
+              "cves_by_tech": {
+                "type": "object"
+              },
+              "kev_findings": {
+                "type": "array"
+              },
+              "exploit_findings": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain",
+              "technologies",
+              "summary"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "threat_report",
+      "title": "Threat Report",
+      "description": "Query comprehensive threat profile for an IP: Shodan host data, AbuseIPDB reputation, ASN/geolocation, and open ports. Use for IP investigation and SOC alert triage; for domain data use domain_report. Note: nested asn block always returns at most 50 IPv4/IPv6 prefixes — call asn_lookup with include_full_prefixes=True for the full announced-prefixes list. enrichment.vulns is severity-aware list[VulnInfo] (cve_id + severity + cvss_v3) — Phase 2 v1.16.0 BREAKING; pre-1.16 it was list[str] of CVE IDs. Free: 30/hr (costs 6 tokens), Pro: 500/hr. Returns {ip, enrichment, abuseipdb, shodan, asn, threat_level}.",
+      "inputSchema": {
+        "properties": {
+          "ip": {
+            "description": "Public IPv4 or IPv6 address to investigate (e.g. '8.8.8.8', '1.1.1.1'). Private/reserved IPs are rejected.",
+            "title": "Ip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ip"
+        ],
+        "title": "threat_reportArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "ip": {
+                "type": "string"
+              },
+              "enrichment": {
+                "type": "object"
+              },
+              "abuseipdb": {
+                "type": "object"
+              },
+              "shodan": {
+                "type": "object"
+              },
+              "asn": {
+                "type": "object"
+              },
+              "threat_level": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "ptr": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "asn_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "country": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cloud_provider": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "is_datacenter": {
+                "type": "boolean"
+              },
+              "tor_exit": {
+                "type": "boolean"
+              },
+              "firehol": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "risk_score": {
+                "type": "integer"
+              },
+              "severity_label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ip"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "dns_lookup",
+      "title": "DNS Lookup",
+      "description": "Query all DNS record types (A, AAAA, MX, NS, TXT, CNAME, SOA) for a domain. Use for mail routing inspection, nameserver verification, or SPF/DMARC checks; for full overview use domain_report. TXT records are returned raw (no filter) — `total_txt_records` always carries the honest count (use domain_report for the security-only filtered TXT view). Free: 30/hr, Pro: 500/hr. Returns {domain, records: {a, aaaa, mx, ns, txt, total_txt_records, cname, soa}, summary}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Root domain to query, without protocol or path (e.g. 'example.com', 'cloudflare.com')",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "dns_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "records": {
+                "type": "object"
+              },
+              "summary": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "domain",
+              "records"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "whois_lookup",
+      "title": "WHOIS Lookup",
+      "description": "Retrieve WHOIS registration data: registrar, creation/expiry dates, nameservers, status. Use to verify domain ownership, age, expiration; for full audit use domain_report. Free: 30/hr, Pro: 500/hr. Returns {domain, whois: {registrar, creation_date, expiry_date, updated_date, name_servers, status, raw_length, error}, summary}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Root domain to query WHOIS for (e.g. 'example.com', 'github.com')",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "whois_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "whois": {
+                "type": "object"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain",
+              "whois"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "ssl_check",
+      "title": "SSL Check",
+      "description": "Analyze SSL/TLS certificate: grade (A/B/C/D/F), protocol version, cipher suite, chain, expiry, Subject Alternative Names, and structured validation findings. Invalid certs (expired, self-signed, hostname mismatch, untrusted root) are reported as findings via valid=false + validation_errors[] rather than as endpoint failures, so an unreachable cert still returns useful intel. Grade D = cert readable but invalid; F = expired, legacy TLS, or probe failure. Use to audit certificate validity and detect expiring certs; for full domain audit use audit_domain. Free: 30/hr, Pro: 500/hr. Returns {grade, valid, validation_errors, protocol, cipher, issuer, subject, not_before, not_after, days_remaining, chain, san, warnings}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Domain to check SSL/TLS certificate for (e.g. 'example.com', 'api.stripe.com')",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "ssl_checkArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "valid": {
+                "type": "boolean"
+              },
+              "issuer": {
+                "type": "string"
+              },
+              "subject": {
+                "type": "string"
+              },
+              "not_before": {
+                "type": "string"
+              },
+              "not_after": {
+                "type": "string"
+              },
+              "days_remaining": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "serial_number": {
+                "type": "string"
+              },
+              "signature_algorithm": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "san": {
+                "type": "array"
+              },
+              "protocol": {
+                "type": "string"
+              },
+              "cipher": {
+                "type": "object"
+              },
+              "chain": {
+                "type": "array"
+              },
+              "grade": {
+                "type": "string"
+              },
+              "validation_errors": {
+                "type": "array"
+              },
+              "warnings": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "subdomain_enum",
+      "title": "Subdomain Enum",
+      "description": "Discover subdomains using passive methods: Certificate Transparency logs + DNS brute-force (no active probing). Use to map organization's attack surface; non-intrusive. Response carries next_calls — capped at 5 ssl_check hints (one per first-five subdomain) so triage scales to large enumerations without token bloat; pull tail entries by name when needed. Free: 30/hr, Pro: 500/hr. Returns {domain, count, subdomains, sources, found_via_wordlist, found_via_crtsh, wildcard_status, crtsh_status, warnings, summary, next_calls}. Always check wildcard_status FIRST: 'absent' means the DNS brute-force plane was meaningful; 'present' means the zone answers every name (wildcard DNS) so wordlist results were discarded and count is a certificate-transparency LOWER BOUND — report the surface as UNKNOWN, not small, and never infer low exposure from it; 'undetermined' means a negative-control probe went unanswered, so count is unverified. Then check crtsh_status: 'ok' means the CT lookup completed (so a low count is real); 'timeout' / 'rate_limited' / 'unavailable' / 'error' means CT logs did not respond and the count is wordlist-only — the actual attack surface is likely larger, retry later or surface the limitation to the user.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Root domain to enumerate subdomains for (e.g. 'example.com', 'tesla.com')",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "subdomain_enumArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer"
+              },
+              "subdomains": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "sources": {
+                "type": "array"
+              },
+              "warnings": {
+                "type": "array"
+              },
+              "found_via_wordlist": {
+                "type": "integer"
+              },
+              "found_via_crtsh": {
+                "type": "integer"
+              },
+              "wildcard_status": {
+                "type": "string"
+              },
+              "crtsh_status": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "tech_fingerprint",
+      "title": "Tech Fingerprint",
+      "description": "Detect website technology stack: CMS, frameworks, CDN, analytics tools, web servers, languages (via HTTP headers + HTML analysis). Use for passive reconnaissance; for full audit use audit_domain. Free: 30/hr, Pro: 500/hr. Returns {technologies: [{name, category, confidence%, version}]}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Domain to fingerprint (e.g. 'example.com', 'shopify.com')",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "tech_fingerprintArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "technologies": {
+                "type": "array"
+              },
+              "categories": {
+                "type": "object"
+              },
+              "count": {
+                "type": "integer"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "threat_intel",
+      "title": "Threat Intel",
+      "description": "Check domain against abuse.ch URLhaus for known malware-distribution URLs (single source — for multi-feed correlation use ioc_lookup which adds ThreatFox and, for IPs, Feodo Tracker). Use for fast domain-level threat assessment; use phishing_check for specific URLs. Free: 30/hr, Pro: 500/hr. Returns {malware_urls, threat_tags, threat_status, summary}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Domain to check for threats (e.g. 'suspicious-site.com', 'example.com')",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "threat_intelArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "urlhaus_status": {
+                "type": "string"
+              },
+              "urls_online": {
+                "type": "integer"
+              },
+              "url_count": {
+                "type": "integer"
+              },
+              "threat_types": {
+                "type": "array"
+              },
+              "tags": {
+                "type": "array"
+              },
+              "urls": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain",
+              "urlhaus_status"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "wayback_lookup",
+      "title": "Wayback Lookup",
+      "description": "Retrieve Wayback Machine snapshots for a domain: first capture, latest, total count, snapshot list. Use to investigate domain history and age; for full audit use domain_report. Free: 30/hr, Pro: 500/hr. status='ok' means the count is authoritative (even when 0 → confirmed no archives). status='unavailable' means CDX timed out/rate-limited/5xx — total_snapshots is OMITTED (unknown, NOT zero) and the agent should NOT report \"no snapshots\"; the warnings[] array carries the cdx_* error code (cdx_timeout/cdx_rate_limited/cdx_unavailable/cdx_error/cdx_parse_error/cdx_body_too_large). Heavy domains (kernel.org, microsoft.com, archive.org itself) frequently time out the CDX endpoint despite having millions of snapshots — fall back to archive_url for manual inspection. Returns {domain, status, total_snapshots, first_seen, last_seen, years_online, snapshots, archive_url, summary, warnings}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Domain to look up in web archives (e.g. 'example.com', 'archive.org')",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "wayback_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "total_snapshots": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "first_seen": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "last_seen": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "years_online": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "snapshots": {
+                "type": "array"
+              },
+              "archive_url": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "warnings": {
+                "type": "array"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "scan_headers",
+      "title": "Scan Headers",
+      "description": "Perform live HTTP GET and analyze security headers: CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Referrer-Policy. Use to audit live website headers; use check_headers to validate headers you already have. Free: 30/hr, Pro: 500/hr. By default header values are truncated to 500 chars (CSP can exceed 4 KB on large sites); pass include='full' for the full raw value. Returns {headers_present, headers_missing, findings, total_score}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Domain to scan live HTTP headers for (e.g. 'example.com', 'api.github.com')",
+            "title": "Domain",
+            "type": "string"
+          },
+          "include": {
+            "default": "",
+            "description": "Detail level. Default ('') returns slim findings — raw header values capped at 500 chars with total_value_length carrying the honest pre-truncation length. Pass 'full' to restore the full raw value (useful for inspecting full CSP directives on sites like GitHub where the CSP header exceeds 4 KB). Allowed: '' or 'full'.",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "scan_headersArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "status_code": {
+                "type": "integer"
+              },
+              "url": {
+                "type": "string"
+              },
+              "score": {
+                "type": "integer"
+              },
+              "grade": {
+                "type": "string"
+              },
+              "findings": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "headers_present": {
+                "type": "array"
+              },
+              "headers_missing": {
+                "type": "array"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "email_mx",
+      "title": "Email MX",
+      "description": "Analyze email security: MX records, SPF policy, DMARC policy, DKIM probe across common+date-based selectors, mail provider, grade. Use to verify email-auth setup and phishing risk; for full audit use domain_report. Free: 30/hr, Pro: 500/hr. email_security.dkim_status reports honest evidence: 'verified' iff at least one selector responded, else 'unverifiable' (custom selectors cannot be discovered without prior knowledge). Grade: when DKIM verified, A=SPF+DMARC+DKIM/B=2of3/C=1of3; when DKIM unverifiable, A=SPF+DMARC/B=one/F=neither — DKIM absence is NOT penalized because it is unprovable in DNS. Returns {mx_records, mail_provider, email_security:{spf, dmarc, dkim_selectors, dkim_status, grade, issues}, summary}.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Domain to analyze email configuration for (e.g. 'example.com', 'google.com')",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "email_mxArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "mx_records": {
+                "type": "array"
+              },
+              "mail_provider": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email_security": {
+                "type": "object"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "email_security_posture",
+      "title": "Email Security Posture",
+      "description": "Analyze domain email authentication posture: SPF, DMARC, DKIM with numeric score and findings. Dual-use: red-team (spoofing feasibility) + blue-team (posture audit). Score 0-100, grades A+-F. DKIM probing tests common selectors + recent dates; custom selectors must be supplied. Passive DNS-only; no SMTP probe. Free: 30/hr, Pro: 500/hr.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Domain to audit email authentication posture for (e.g. 'example.com')",
+            "title": "Domain",
+            "type": "string"
+          },
+          "selectors": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional comma-separated custom DKIM selectors to probe",
+            "title": "Selectors"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "email_security_postureArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "spf": {
+                "type": "object"
+              },
+              "dmarc": {
+                "type": "object"
+              },
+              "dkim": {
+                "type": "object"
+              },
+              "posture_score": {
+                "type": "integer"
+              },
+              "posture_grade": {
+                "type": "string"
+              },
+              "all_findings": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain",
+              "spf",
+              "dmarc",
+              "dkim",
+              "posture_score",
+              "posture_grade",
+              "all_findings",
+              "summary"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "email_disposable",
+      "title": "Email Disposable",
+      "description": "Check if email address uses a known disposable/temporary provider (Guerrilla Mail, Temp Mail, Mailinator, etc.). Use for input validation to detect throwaway signups; for domain reputation use threat_intel. Companion email-investigation tools: email_mx (deliverability + MX trust), domain_report on the email's domain (full recon), threat_intel (malware-distribution signal on the domain). Free: 30/hr, Pro: 500/hr. Returns {disposable, domain, provider}.",
+      "inputSchema": {
+        "properties": {
+          "email": {
+            "description": "Full email address to check (e.g. 'user@tempmail.com', 'test@guerrillamail.com')",
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "email_disposableArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": "string"
+              },
+              "domain": {
+                "type": "string"
+              },
+              "disposable": {
+                "type": "boolean"
+              },
+              "provider": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "mx_disposable": {
+                "type": "boolean"
+              },
+              "risk_level": {
+                "type": "string"
+              },
+              "mx_records": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email",
+              "domain"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "email_verify",
+      "title": "Email Verify",
+      "description": "One-call email validation combining syntax + MX records + disposable check + role-address detection (admin@/info@/...) + free-provider classification (gmail/outlook/yahoo/...). Use BEFORE adding an email to a contact list, sending an outbound message, or auditing a lead-list dump — replaces 2-3 tool calls (email_mx + email_disposable + manual role parse) with one structured response. Deliberately does NOT do SMTP `RCPT TO` deliverability probing — Hunter.io / NeverBounce-style mailbox enumeration is an ethical grey area we declined; use those services if you need that specific signal. role_address=true on `admin@`, `info@`, `noreply@`, `support@`, etc. (Gmail-style `+tag` is stripped before classification). free_provider=true on consumer-mailbox domains (B2B detection signal — a 'work' email at `@gmail.com` likely isn't a corporate user). Free: 30/hr, Pro: 500/hr. Returns {email, domain, syntax_valid, mx_records, disposable, disposable_provider, role_address, role_type, free_provider, summary}.",
+      "inputSchema": {
+        "properties": {
+          "email": {
+            "description": "Full email address to verify (e.g. 'admin@example.com', 'user@gmail.com'). Must contain '@'.",
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "email_verifyArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": "string"
+              },
+              "domain": {
+                "type": "string"
+              },
+              "syntax_valid": {
+                "type": "boolean"
+              },
+              "mx_records": {
+                "type": "array"
+              },
+              "disposable": {
+                "type": "boolean"
+              },
+              "disposable_provider": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "role_address": {
+                "type": "boolean"
+              },
+              "role_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "free_provider": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email",
+              "domain",
+              "syntax_valid"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "robots_txt",
+      "title": "Robots.txt",
+      "description": "Fetch + parse the target domain's robots.txt — sitemaps, per-User-agent allow/disallow rules, crawl-delay, Host directive. Use BEFORE crawling/scraping a target site (seo_audit, brand_assets, redirect_chain) to honour the site's published rules. status_code=404 means no robots.txt exists = implicit allow-all per RFC 9309 §2.4. ContrastAPI fetches with `User-agent: ContrastAPI/<version> (+https://contrastcyber.com/bot)` so site operators can identify + opt out via robots.txt; we honour `Disallow: /` for our UA in seo_audit and brand_assets. Per-target eTLD+1 throttle (60 req/min) prevents weaponising this endpoint against a single site; subdomain rotation collapses to the same bucket. Free: 30/hr, Pro: 500/hr. Returns {domain, fetched_url, status_code, sitemaps, user_agents:{ua:{allow,disallow,crawl_delay}}, host, truncated, summary}. Returns 502 ErrorResponse if the target rejected the connection (DNS/TCP/TLS failure); the agent should NOT assume \"no robots\" in that case — it's an upstream-failure signal.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Registrable domain to fetch robots.txt for (e.g. 'example.com', 'github.com'). No scheme, no path, no port. Subdomains accepted; the bot fetches https://<domain>/robots.txt with HTTP fallback.",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "robots_txtArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "fetched_url": {
+                "type": "string"
+              },
+              "status_code": {
+                "type": "integer"
+              },
+              "sitemaps": {
+                "type": "array"
+              },
+              "user_agents": {
+                "type": "object"
+              },
+              "host": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain",
+              "fetched_url",
+              "status_code"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "redirect_chain",
+      "title": "Redirect Chain",
+      "description": "Walk an HTTP redirect chain hop-by-hop, returning per-hop {url, status_code, location, latency_ms}. Use to deobfuscate URL shorteners (bit.ly / t.co / lnkd.in), audit suspicious links from phishing investigations, or trace marketing tracking redirects. SSRF-guarded: each redirect target's resolved IP is re-validated before connecting (private IPs and non-HTTP schemes rejected). Up to 10 hops; loop_detected=true if a hop would revisit a previously-seen URL (we abort before the duplicate fetch); truncated=true if the chain still had a 30x at hop 10. Per-target eTLD+1 throttle (60 req/min) consumed once for the start host AND once per new host reached — a chain across 11 unrelated domains cannot bypass the cap. Free: 30/hr, Pro: 500/hr. Returns {start_url, final_url, hops, hop_count, final_status, loop_detected, truncated, summary}. Returns 502 ErrorResponse on hard fetch failure (timeout / TLS / connect); 429 with Retry-After if a hop's eTLD+1 throttle is exceeded mid-chain.",
+      "inputSchema": {
+        "properties": {
+          "url": {
+            "description": "Full URL whose redirect chain to walk, e.g. 'https://bit.ly/3xyz' or 'http://example.com/old-path'. Must start with http:// or https://. Pass the URL exactly as you'd `curl -L` it; the server handles encoding.",
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "redirect_chainArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "start_url": {
+                "type": "string"
+              },
+              "final_url": {
+                "type": "string"
+              },
+              "hops": {
+                "type": "array"
+              },
+              "hop_count": {
+                "type": "integer"
+              },
+              "final_status": {
+                "type": "integer"
+              },
+              "loop_detected": {
+                "type": "boolean"
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "start_url",
+              "final_url",
+              "hop_count",
+              "final_status"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "brand_assets",
+      "title": "Brand Assets",
+      "description": "Scrape a domain's homepage `<head>` for public brand assets — favicon, og:image, theme-color, og:site_name, JSON-LD `Organization.logo`. Use to enrich CRM records, build company-card UIs, or correlate a lead's site to their visual identity (no manual screenshot required). Strictly homepage-only (path `/`); we do NOT crawl. Ethical floor: target's robots.txt is honoured — `Disallow: /` for ContrastAPI OR `*` returns 403 `error.code = robots_txt_disallow` and we DO NOT fetch. `Cache-Control: no-store` / `private` from the target is respected (response is built but NOT written to our cache; `cache_respected=false` flags this). Per-target eTLD+1 throttle (60 req/min) prevents weaponising via subdomain rotation. All URL fields are absolute and `_untrusted` (DO NOT execute or shell-out — the target controls these strings). Free: 30/hr, Pro: 500/hr. Returns {domain, fetched_url, status_code, favicon_url_untrusted, og_image_url_untrusted, theme_color, site_name_untrusted, logo_url_untrusted, cache_respected, summary}. Returns 502 on DNS/TCP/TLS failure; 403 `robots_txt_disallow` when the target opted out.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Registrable domain to scrape brand assets for (e.g. 'github.com', 'stripe.com'). No scheme, no path, no port. The bot fetches https://<domain>/ with HTTP fallback.",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "brand_assetsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "fetched_url": {
+                "type": "string"
+              },
+              "status_code": {
+                "type": "integer"
+              },
+              "favicon_url_untrusted": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "og_image_url_untrusted": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "theme_color": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "site_name_untrusted": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "logo_url_untrusted": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cache_respected": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain",
+              "fetched_url",
+              "status_code"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "seo_audit",
+      "title": "SEO Audit",
+      "description": "One-shot SEO audit of a domain's homepage with a 0-100 composite score + a `missing_signals` list of concrete fixes. Use BEFORE pitching SEO work to a prospect, when triaging a lead's marketing maturity, or as a structured pre-flight before deeper auditing tools (Lighthouse / SEMrush). 10 audit rules each worth 10 pts: title present, title length 30-60 chars (Google SERP truncation window), meta description present, meta description length 50-160, exactly one H1, canonical link, >=3 OG tags, JSON-LD present, image alt-text coverage (proportional), HTTPS. Strictly homepage-only — we do NOT crawl the site. Ethical floor: target's robots.txt is honoured — `Disallow: /` for ContrastAPI OR `*` returns 403 `error.code = robots_txt_disallow` and we DO NOT fetch. `Cache-Control: no-store`/`private` skips our cache write (`cache_respected=false` in the response). Per-target eTLD+1 throttle (60 req/min) prevents weaponising via subdomain rotation. All target-derived strings/lists are `_untrusted`. Free: 30/hr, Pro: 500/hr. Returns {domain, fetched_url, status_code, title_untrusted, meta_description_untrusted, canonical_url, h1_untrusted, h1_count, h2_count, h3_count, images_total, images_missing_alt, internal_link_count, external_link_count, og_tags, json_ld_present, score, missing_signals, cache_respected, summary}. Returns 502 on DNS/TCP/TLS failure; 403 `robots_txt_disallow` when the target opted out.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Registrable domain to audit SEO for (e.g. 'example.com', 'shopify.com'). No scheme, no path, no port. Strictly homepage-only — the bot fetches https://<domain>/ with HTTP fallback and audits that single page (we do NOT crawl).",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "seo_auditArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "fetched_url": {
+                "type": "string"
+              },
+              "status_code": {
+                "type": "integer"
+              },
+              "title_untrusted": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "meta_description_untrusted": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "canonical_url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "h1_untrusted": {
+                "type": "array"
+              },
+              "h1_count": {
+                "type": "integer"
+              },
+              "h2_count": {
+                "type": "integer"
+              },
+              "h3_count": {
+                "type": "integer"
+              },
+              "images_total": {
+                "type": "integer"
+              },
+              "images_missing_alt": {
+                "type": "integer"
+              },
+              "internal_link_count": {
+                "type": "integer"
+              },
+              "external_link_count": {
+                "type": "integer"
+              },
+              "og_tags": {
+                "type": "object"
+              },
+              "json_ld_present": {
+                "type": "boolean"
+              },
+              "score": {
+                "type": "integer"
+              },
+              "missing_signals": {
+                "type": "array"
+              },
+              "cache_respected": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain",
+              "fetched_url",
+              "status_code",
+              "score"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "geo_audit",
+      "title": "Geo Audit",
+      "description": "Deterministic GEO / AI-visibility readiness audit of a domain's homepage with a 0-100 score + a `missing_signals` fix list. Answers \"can AI assistants (ChatGPT, Claude, Perplexity, Google AI) discover, crawl, and recommend this site?\" using STRUCTURAL signals ONLY — no LLM is queried, fully deterministic. 7 weighted rules: llms.txt present (15), AI-crawler robots.txt access — 9 crawlers incl. GPTBot/ClaudeBot/PerplexityBot/Google-Extended/CCBot (25 — the dominant signal; blocking = invisible to that AI surface), schema.org @type coverage Organization/Product/FAQPage (20), server-side rendering vs client-only SPA (15 — a JS-only SPA serves AI crawlers empty HTML), discovery signals og/canonical/sitemap (10), semantic headings single-H1 + H2 structure (10), competitor-comparison content (5). Use to triage why a brand is absent from AI recommendations, as a pre-flight before GEO/AEO content work, or to score a prospect's AI-readiness. Strictly homepage-only — we do NOT crawl. Ethical floor: target's robots.txt is honoured — `Disallow: /` for ContrastAPI returns 403 `error.code = robots_txt_disallow` and we DO NOT fetch. `Cache-Control: no-store`/`private` skips our cache write (`cache_respected=false`). Per-target eTLD+1 throttle (60 req/min). Free: 30/hr, Pro: 500/hr. Returns {domain, fetched_url, status_code, llms_txt_present, ai_crawlers_total, ai_crawlers_allowed, ai_crawlers_blocked, schema_types, client_side_rendered, render_framework, has_canonical, og_tag_count, sitemap_count, h1_count, h2_count, comparison_content, score, missing_signals, cache_respected, summary}. Returns 502 on DNS/TCP/TLS failure; 403 `robots_txt_disallow` when the target opted out.",
+      "inputSchema": {
+        "properties": {
+          "domain": {
+            "description": "Registrable domain to audit for AI-visibility / GEO readiness (e.g. 'example.com', 'shopify.com'). No scheme, no path, no port. Strictly homepage-only — the bot fetches https://<domain>/ with HTTP fallback (we do NOT crawl).",
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "title": "geo_auditArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "domain": {
+                "type": "string"
+              },
+              "fetched_url": {
+                "type": "string"
+              },
+              "status_code": {
+                "type": "integer"
+              },
+              "llms_txt_present": {
+                "type": "boolean"
+              },
+              "ai_crawlers_total": {
+                "type": "integer"
+              },
+              "ai_crawlers_allowed": {
+                "type": "integer"
+              },
+              "ai_crawlers_blocked": {
+                "type": "array"
+              },
+              "schema_types": {
+                "type": "array"
+              },
+              "client_side_rendered": {
+                "type": "boolean"
+              },
+              "render_framework": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "has_canonical": {
+                "type": "boolean"
+              },
+              "og_tag_count": {
+                "type": "integer"
+              },
+              "sitemap_count": {
+                "type": "integer"
+              },
+              "h1_count": {
+                "type": "integer"
+              },
+              "h2_count": {
+                "type": "integer"
+              },
+              "comparison_content": {
+                "type": "boolean"
+              },
+              "score": {
+                "type": "integer"
+              },
+              "missing_signals": {
+                "type": "array"
+              },
+              "cache_respected": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "domain",
+              "fetched_url",
+              "status_code",
+              "score"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "phone_lookup",
+      "title": "Phone Lookup",
+      "description": "Validate and analyze phone number: country, region, carrier, line type (mobile/landline/VoIP), timezone, formatted versions. Use to verify phone legitimacy and detect fraud risks. Requires E.164 format (+1234567890). Companion OSINT identity-investigation tools: username_lookup (social-platform handle correlation), email_disposable (throwaway-mail signal on associated email). Free: 30/hr, Pro: 500/hr. Returns {valid, country, region, carrier, carrier_status, line_type, timezone, formats}. carrier is omitted from the wire when libphonenumber has no mapping for the region (US/CA/GB and other MNP-restricted regions); always read carrier_status — 'known' means carrier is present, 'unsupported_region' means we cannot identify the carrier (do not infer the number lacks one).",
+      "inputSchema": {
+        "properties": {
+          "number": {
+            "description": "Phone number in E.164 format: + followed by country code and number, no spaces or dashes. Examples: '+14155552671' (US), '+905551234567' (TR), '+442071234567' (UK). Wrong: '0555-123-4567', '(415) 555-2671'",
+            "title": "Number",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number"
+        ],
+        "title": "phone_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "valid": {
+                "type": "boolean"
+              },
+              "number": {
+                "type": "string"
+              },
+              "format": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "country_code": {
+                "type": "string"
+              },
+              "country_name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "carrier": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "carrier_status": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "timezone": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "error": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "ip_lookup",
+      "title": "IP Lookup",
+      "description": "Query comprehensive IP intelligence: reverse DNS, ASN + holder name + country inline (RIPE Stat, Phase 1), open ports, hostnames, vulnerabilities (Shodan InternetDB enriched with severity + cvss_v3 from local cve.db — Phase 2 v1.16.0 BREAKING; vulns is now list[VulnInfo] {cve_id, severity, cvss_v3} dicts, pre-1.16 it was list[str] of CVE IDs; unknown CVEs emit severity='UNKNOWN' / cvss_v3=null — do NOT infer benign), cloud provider, Tor exit status, and reputation. cloud_provider uses two-tier detection: published cloud CIDR ranges (AWS/GCP/Cloudflare) first, then an ASN-to-provider fallback map for anycast/public-service IPs outside published ranges (e.g. 8.8.8.8 → AS15169 → 'Google'). Reputation: FireHOL level1 blocklist on Free tier; +AbuseIPDB + Shodan on Pro (Phase 4). Use for IP investigation; for orchestrated IP+reputation use threat_report. Response is null-explicit: every field is always present (cloud_provider=null when neither tier matches; tor_exit=false when not listed or upstream fetch failed — check verdict.sources_unavailable to disambiguate fetch failure from genuine absence). Response carries next_calls (conditional) — asn_lookup when ASN is populated, ioc_lookup when reputation is FireHOL-listed or AbuseIPDB confidence>50, threat_report on Pro tier for orchestrated profile. Free: 30/hr, Pro: 500/hr. Returns {ip, ptr, geo, asn, asn_name, country, ports, hostnames, vulns, cloud_provider, tor_exit, reputation, risk_score, verdict, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "ip": {
+            "description": "IPv4 or IPv6 address to investigate (e.g. '8.8.8.8', '2606:4700::1111')",
+            "title": "Ip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ip"
+        ],
+        "title": "ip_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "ip": {
+                "type": "string"
+              },
+              "ptr": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "asn": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "asn_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "country": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "ports": {
+                "type": "array"
+              },
+              "hostnames": {
+                "type": "array"
+              },
+              "vulns": {
+                "type": "array"
+              },
+              "cpes": {
+                "type": "array"
+              },
+              "tags": {
+                "type": "array"
+              },
+              "reputation": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "cloud_provider": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "is_datacenter": {
+                "type": "boolean"
+              },
+              "tor_exit": {
+                "type": "boolean"
+              },
+              "risk_score": {
+                "type": "integer"
+              },
+              "severity_label": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ip"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "asn_lookup",
+      "title": "ASN Lookup",
+      "description": "Look up Autonomous System Number (ASN) for a domain or IP: AS number, organization, IPv4/IPv6 prefixes. Use to identify network operator and IP range ownership. Default returns first 50 prefixes per family — set include_full_prefixes=True for full list. Free: 30/hr, Pro: 500/hr. Returns {asn, asn_name, ipv4_prefixes, ipv6_prefixes, ipv4_count, ipv6_count}.",
+      "inputSchema": {
+        "properties": {
+          "target": {
+            "description": "Domain or IP address to look up ASN for (e.g. 'cloudflare.com', '8.8.8.8')",
+            "title": "Target",
+            "type": "string"
+          },
+          "include_full_prefixes": {
+            "default": false,
+            "description": "Return the full announced-prefixes list (default: False, returns first 50). ipv4_count and ipv6_count are always honest pre-truncation totals. Set True for network mapping or BGP route audits — Cloudflare AS13335 announces 2500+ prefixes.",
+            "title": "Include Full Prefixes",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "title": "asn_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "target": {
+                "type": "string"
+              },
+              "resolved_ip": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "asn": {
+                "type": "integer"
+              },
+              "asn_name": {
+                "type": "string"
+              },
+              "ipv4_prefixes": {
+                "type": "array"
+              },
+              "ipv6_prefixes": {
+                "type": "array"
+              },
+              "ipv4_count": {
+                "type": "integer"
+              },
+              "ipv6_count": {
+                "type": "integer"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "warnings": {
+                "type": "array"
+              }
+            },
+            "required": [
+              "target",
+              "asn"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "cve_lookup",
+      "title": "CVE Lookup",
+      "description": "Retrieve detailed CVE data by ID: description, CVSS v3.1 + vector, CVSS v2 (always emitted), EPSS score + percentile, CISA KEV status (expanded: due_date, required_action, ransomware flag, vendor_project, product, vulnerability_name, short_description, notes, cwes, date_removed when in_kev=true), NVD vulnerability_status (Analyzed/Modified/Awaiting Analysis/Deferred/Rejected/Withdrawn), cve_tags ('disputed' triggers [DISPUTED] summary prefix), affected products (CPE), references, patch availability, related CVEs. By default affected_products is truncated to the first 20 entries (total_products reports the honest count) and references to the first 10 (total_references reports the honest count). Pass include_affected_products=true and/or include_full_references=true for the complete lists. Pass include_reference_tags=true to receive structured references_full=[{url, tags, source}] (NVD upstream tags + source provenance) — also activates tag-first patch detection. Pass include_severity_breakdown=true to receive severity_sources/consensus/disagreement (multi-source view of NVD/MITRE/GHSA/OSV severity assessments). Use for single-CVE details; use cve_search for queries by product/severity. Response carries next_calls — chain with kev_detail when kev.in_kev=true, with cwe_lookup on each CWE in cwes (up to 3 pivots), and with exploit_lookup for public PoC availability. Free: 30/hr, Pro: 500/hr. Returns {cve_id, summary, description, severity, cvss_v3, cvss_v2, cvss_v2_vector, cvss_breakdown, cwe_id, cwes, vulnerability_status, cve_tags, published, modified, sources, first_seen_source, first_seen_at, epss, kev (in_kev, date_added, due_date, required_action, known_ransomware_use, vendor_project, product, vulnerability_name, short_description, notes, cwes, date_removed), affected_products (first 20 by default), total_products, references (first 10 by default), total_references, total_references_unique, references_full (only when include_reference_tags=true), severity_sources/severity_consensus/severity_disagreement (only when include_severity_breakdown=true), patch_available, related_cves, verdict, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "cve_id": {
+            "description": "CVE identifier in format CVE-YYYY-NNNNN (e.g. 'CVE-2024-3094', 'CVE-2023-44487')",
+            "title": "Cve Id",
+            "type": "string"
+          },
+          "include_affected_products": {
+            "default": false,
+            "description": "Return the full affected_products list (default: False, returns first 20). Set True for bulk audits or dependency scanning of Log4j-class CVEs with 50+ products.",
+            "title": "Include Affected Products",
+            "type": "boolean"
+          },
+          "include_full_references": {
+            "default": true,
+            "description": "Return the full references list (default: True, returns all references). total_references is always emitted with the honest count; patch URL detection always runs against the full list, so patch_url/patch_available are unaffected. Set False to truncate to first 10 entries when bandwidth-bound.",
+            "title": "Include Full References",
+            "type": "boolean"
+          },
+          "include_reference_tags": {
+            "default": true,
+            "description": "Return structured references_full field with [{url, tags, source}] objects (NVD reference tags + source provenance) (default: True). Inspects which references are vendor patches (tags=['Patch']) vs exploit PoCs (tags=['Exploit']) vs mailing list discussions. Patch URL detection is tag-first when refs_with_tags is populated; legacy cached rows fall back to regex. Set False to skip the structured shape for legacy clients.",
+            "title": "Include Reference Tags",
+            "type": "boolean"
+          },
+          "include_severity_breakdown": {
+            "default": true,
+            "description": "Return severity_sources, severity_consensus, and severity_disagreement (multi-source severity breakdown) (default: True). Surfaces vendor disputes (e.g. CVE-2023-38545 NVD-CRITICAL vs GHSA-HIGH). cvss_v2 and cvss_v2_vector are always emitted (additive non-opt-in). Consensus uses majority-bucket vote with highest-severity tie-break (CRITICAL > HIGH > MEDIUM > LOW > NONE). Set False to skip if downstream cannot tolerate the extra fields.",
+            "title": "Include Severity Breakdown",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cve_id"
+        ],
+        "title": "cve_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "cve_id": {
+                "type": "string"
+              },
+              "summary": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "severity": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cvss_v3": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "cvss_breakdown": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "cwe_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cwes": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "vulnerability_status": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cve_tags": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "epss": {
+                "type": "object"
+              },
+              "kev": {
+                "type": "object"
+              },
+              "affected_products": {
+                "type": "array"
+              },
+              "total_products": {
+                "type": "integer"
+              },
+              "published": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "modified": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "references": {
+                "type": "array"
+              },
+              "total_references": {
+                "type": "integer"
+              },
+              "total_references_unique": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "references_full": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "sources": {
+                "type": "array"
+              },
+              "first_seen_source": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "first_seen_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "patch_available": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "patch_url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "related_cves": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "cvss_v2": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "cvss_v2_vector": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "severity_sources": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "severity_consensus": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "severity_disagreement": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "cve_id"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "calculate_risk_score",
+      "title": "Calculate Risk Score",
+      "description": "Composite CVE risk score (0-100) — fuses CVSS, EPSS, KEV, and PoC into a single agent-ready triage signal. Formula: CVSS*0.20 + EPSS*0.35 + KEV*0.30 + PoC*0.15 (each component rescaled to 0-100 before weighting). Multiplicative boosters applied in order: KEV+PoC combo (*1.15), critical-severity-with-high-EPSS (CVSS>=9 AND EPSS>0.7, *1.10), recently published (within last 7 days, *1.05). Final score clamped to [0, 100]. Label bands: CRITICAL>=90, HIGH>=70, MEDIUM>=40, LOW<40. Urgency text encodes patch SLA (immediate when KEV; 24h/72h/30d by label). Use to triage a single CVE without orchestrating cve_lookup + exploit_lookup separately. PoC signal here is the local ExploitDB mirror only — for full multi-source exploit detail (GitHub Advisory + Shodan refs + ExploitDB), call exploit_lookup separately. Methodology adapted from mukul975/cve-mcp-server (Apache-2.0): https://github.com/mukul975/cve-mcp-server. Free: 30/hr, Pro: 500/hr. Returns {cve_id, score (0-100), label (CRITICAL/HIGH/MEDIUM/LOW), urgency, has_public_poc, components (cvss_v3, epss_score, in_kev, has_public_poc, weighted_breakdown), boosters_applied, recommendation, summary, verdict, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "cve_id": {
+            "description": "CVE identifier in format CVE-YYYY-NNNNN (e.g. 'CVE-2021-44228', 'CVE-2024-3094')",
+            "title": "Cve Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cve_id"
+        ],
+        "title": "calculate_risk_scoreArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "cve_id": {
+                "type": "string"
+              },
+              "score": {
+                "type": "number"
+              },
+              "label": {
+                "type": "string"
+              },
+              "urgency": {
+                "type": "string"
+              },
+              "has_public_poc": {
+                "type": "boolean"
+              },
+              "components": {
+                "type": "object"
+              },
+              "boosters_applied": {
+                "type": "array"
+              },
+              "recommendation": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "cve_id",
+              "score",
+              "label",
+              "urgency",
+              "has_public_poc",
+              "components",
+              "recommendation",
+              "summary"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_cvss_details",
+      "title": "Get CVSS Details",
+      "description": "Parse a CVSS v3.x vector string into a per-metric breakdown plus a recomputed base score. Returns the canonicalized vector, version (3.0 or 3.1), base_score, base_severity (NONE/LOW/MEDIUM/HIGH/CRITICAL), and the eight base metrics: attack_vector (NETWORK/ADJACENT_NETWORK/LOCAL/PHYSICAL), attack_complexity (LOW/HIGH), privileges_required (NONE/LOW/HIGH), user_interaction (NONE/REQUIRED), scope (UNCHANGED/CHANGED), and the three impact metrics confidentiality_impact / integrity_impact / availability_impact (NONE/LOW/HIGH each). When temporal/environmental metrics are explicit in the vector, temporal_score and environmental_score are populated separately. Use to translate raw CVSS strings into agent-friendly attributes without re-parsing the vector grammar yourself, and to verify upstream NVD scoring against the recomputed value. v2 vectors (AV:N/AC:L/Au:N/...) are rejected with 400 — read cvss_v2_vector from cve_lookup if you need v2 detail. Free: 30/hr, Pro: 500/hr. Returns {version, vector, base_score, base_severity, metrics: {attack_vector, attack_complexity, privileges_required, user_interaction, scope, confidentiality_impact, integrity_impact, availability_impact}, temporal_score, environmental_score, summary, verdict}.",
+      "inputSchema": {
+        "properties": {
+          "vector": {
+            "description": "CVSS v3.0 or v3.1 vector string, e.g. 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H'. v2 vectors are rejected — use the cvss_v2_vector field on cve_lookup if you need v2.",
+            "title": "Vector",
+            "type": "string"
+          }
+        },
+        "required": [
+          "vector"
+        ],
+        "title": "get_cvss_detailsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "version": {
+                "type": "string"
+              },
+              "vector": {
+                "type": "string"
+              },
+              "base_score": {
+                "type": "number"
+              },
+              "base_severity": {
+                "type": "string"
+              },
+              "metrics": {
+                "type": "object"
+              },
+              "temporal_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "environmental_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "version",
+              "vector",
+              "base_score",
+              "base_severity",
+              "metrics",
+              "summary"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "cve_search",
+      "title": "CVE Search",
+      "description": "Search CVE database with filters: product/vendor, severity, published date range, EPSS score, CWE, CVSS range, CISA KEV status. Default response is SLIM per-result (cve_id, summary, severity, cvss_v3, cwe_id, epss, kev, total_products, published, modified, sources) — pass include='full' for description, cvss_breakdown, affected_products, references, first_seen_*. Verdict (sources_queried, falsifiable_fields, completeness, data_age) is at the response root — applies to the whole batch, not per-row. Product/vendor filters are EXACT NVD-canonical-token matches (not the common name — e.g. nginx is 'nginx_open_source'/'nginx_plus', vendor 'f5'); a low/zero count for a well-known product means the token differs, so for dependency/package lists use check_dependencies and for a domain's whole stack tech_stack_cve_audit (both auto-normalize tokens). Use for vulnerability discovery by criteria; pass cwe_id (e.g. CWE-79) to enumerate every CVE in our database mapped to a weakness — pair with cwe_lookup for the category description and mitigations. Use cve_lookup for single CVE by ID, kev_detail when kev=true filtering and the agent needs federal patch deadlines per result. Response carries a global hint pointing at cve_lookup — drill into any returned cve_id for full detail and chained pivots (exploit_lookup, kev_detail, cwe_lookup). Free: 30/hr, Pro: 500/hr. Returns {count, total, truncated, offset, summary, results, query_echo, next_offset, verdict, hint}.",
+      "inputSchema": {
+        "properties": {
+          "product": {
+            "default": "",
+            "description": "Product or vendor token to filter by. EXACT match (case-insensitive) against the NVD-canonical CPE product/vendor token — NOT substring/fuzzy, and NOT necessarily the common project name. Common names, vendor renames, and build-tool artifact ids often differ from the canonical token (e.g. modern nginx CVEs are under 'nginx_open_source'/'nginx_plus', vendor 'f5', not 'nginx'; Maven 'log4j-core' maps to 'log4j'). A low or zero count for a well-known product usually means the token differs — do NOT assume coverage is complete. For dependency/package lists prefer check_dependencies, and for a domain's whole tech stack tech_stack_cve_audit (both auto-normalize tokens). A product match means CVEs exist for that product, not that a specific running version is affected — verify the running version is within each CVE's affected range. Omit to search all products.",
+            "title": "Product",
+            "type": "string"
+          },
+          "severity": {
+            "default": "",
+            "description": "CVSS severity level. Must be one of: CRITICAL, HIGH, MEDIUM, LOW. Omit for all severities.",
+            "enum": [
+              "",
+              "CRITICAL",
+              "HIGH",
+              "MEDIUM",
+              "LOW"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "published_after": {
+            "default": "",
+            "description": "Inclusive lower bound on publish date as YYYY-MM-DD (UTC). Pick this when the user names a starting point, e.g. 'since 2015' → '2015-01-01', 'after March 2024' → '2024-03-01'. Omit to not bound the lower edge. Combine with published_before for ranges.",
+            "title": "Published After",
+            "type": "string"
+          },
+          "published_before": {
+            "default": "",
+            "description": "Inclusive upper bound on publish date as YYYY-MM-DD (UTC). Pick this when the user names an ending point, e.g. 'before 2020' → '2019-12-31', 'up to 2023' → '2023-12-31'. Omit to not bound the upper edge. Combine with published_after for ranges.",
+            "title": "Published Before",
+            "type": "string"
+          },
+          "kev": {
+            "default": false,
+            "description": "If true, return only CVEs in the CISA Known Exploited Vulnerabilities (KEV) catalog — these are actively exploited in the wild.",
+            "title": "Kev",
+            "type": "boolean"
+          },
+          "epss_min": {
+            "default": 0.0,
+            "description": "Minimum EPSS score filter (0.0-1.0). EPSS predicts exploitation probability. 0.5 = top ~5% most likely to be exploited. 0.0 = no filter.",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Epss Min",
+            "type": "number"
+          },
+          "sort": {
+            "default": "",
+            "description": "Sort order for results. Must be one of: published_desc (newest first), epss_desc (most exploitable first), cvss_desc (most severe first). Omit for newest first (default=published_desc).",
+            "enum": [
+              "",
+              "published_desc",
+              "epss_desc",
+              "cvss_desc"
+            ],
+            "title": "Sort",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Maximum results to return. Range: 1-200.",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "description": "Skip N results for pagination. Use with limit to page through results.",
+            "maximum": 5000,
+            "minimum": 0,
+            "title": "Offset",
+            "type": "integer"
+          },
+          "cwe_id": {
+            "default": "",
+            "description": "Filter by CWE weakness ID. Exact match, case-insensitive. Common values: CWE-79 (XSS), CWE-89 (SQL injection), CWE-120 (buffer overflow), CWE-78 (command injection). Format: CWE-<number>. Omit to not filter by CWE.",
+            "title": "Cwe Id",
+            "type": "string"
+          },
+          "cvss_min": {
+            "default": 0.0,
+            "description": "Minimum CVSS v3 base score (0.0-10.0). Default 0.0 = no filter (sentinel, not applied). Set > 0 to filter — CVEs with null CVSS are excluded when active. Use 7.0 for high+critical, 9.0 for critical only.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Cvss Min",
+            "type": "number"
+          },
+          "cvss_max": {
+            "default": 10.0,
+            "description": "Maximum CVSS v3 base score (0.0-10.0). Default 10.0 = no filter (sentinel, not applied). Set < 10.0 to filter — CVEs with null CVSS are excluded when active. Combine with cvss_min for a range.",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Cvss Max",
+            "type": "number"
+          },
+          "vendor": {
+            "default": "",
+            "description": "Filter by vendor name (case-insensitive). When combined with product, both must match the same CPE row — prevents cross-row false matches. Example: vendor=apache, product=struts.",
+            "title": "Vendor",
+            "type": "string"
+          },
+          "include": {
+            "default": "",
+            "description": "Per-result detail level. Default (omit) returns slim list items (cve_id, summary, severity, cvss_v3, cwe_id, epss, kev, total_products, published, modified, sources). Pass 'full' to also return description, cvss_breakdown, affected_products, references, first_seen_source, first_seen_at — only do this when the user explicitly wants drill-down on every result. Even with 'full', per-result affected_products and references may be truncated (the per-result total_products/total_references report the honest counts); use cve_lookup for the guaranteed-complete per-CVE lists. For single-CVE detail prefer cve_lookup; slim default keeps token cost ~70% lower on Log4j-class queries. Note: verdict is at the response root, not per-row (was deduplicated to save ~40% payload).",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          }
+        },
+        "title": "cve_searchArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "count": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "offset": {
+                "type": "integer"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "results": {
+                "type": "array"
+              },
+              "query_echo": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_offset": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "hint": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "cve_leading",
+      "title": "CVE Leading",
+      "description": "List CVEs indexed from MITRE/GHSA BEFORE NVD publication (early-warning, freshest data). By default each result is slim (no description, no cvss_breakdown, no affected_products list, no references) — pass include='full' for the same payload shape as cve_lookup; for drill-down on a single CVE prefer cve_lookup. Use for threat intelligence on emerging CVEs; use cve_search for published NVD data. Verdict (sources_queried, falsifiable_fields, completeness, data_age) is at the response root — applies to the whole batch, not per-row. Response carries a global hint pointing at cve_lookup — drill into any returned cve_id for full detail and chained pivots (exploit_lookup, kev_detail, cwe_lookup). Free: 30/hr, Pro: 500/hr. Returns {count, total, truncated, offset, summary, results, next_offset, verdict, hint}.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "default": 50,
+            "description": "Maximum results to return. Range: 1-200.",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "description": "Skip N results for pagination.",
+            "maximum": 5000,
+            "minimum": 0,
+            "title": "Offset",
+            "type": "integer"
+          },
+          "include": {
+            "default": "",
+            "description": "Per-result detail level. Default ('') returns slim list items (cve_id, summary, severity, cvss_v3, cwe_id, epss, kev, total_products, published, modified, sources). Pass 'full' to also return description, cvss_breakdown, affected_products, references, first_seen_source, first_seen_at. Slim default avoids description/summary duplication that bloats 50-item leading lists. Verdict is at the response root, not per-row (deduplicated for ~40% payload savings). Allowed: '' or 'full'.",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          }
+        },
+        "title": "cve_leadingArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "count": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "offset": {
+                "type": "integer"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "results": {
+                "type": "array"
+              },
+              "query_echo": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_offset": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "hint": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "exploit_lookup",
+      "title": "Exploit Lookup",
+      "description": "Search public exploits/PoC for a specific CVE across three sources: (1) GitHub Advisory Database (sources.github.advisories[]), (2) Shodan CVEDB references (sources.shodan_refs.results[] — packetstorm/seclists/vendor URLs cited by Shodan; results capped at SHODAN_REFS_LIMIT default 200, truncated=true when capped, count is the honest upstream total), (3) ExploitDB CSV mirror (exploits[] array, with edb_id + author + verified flag — these are the actual ExploitDB entries). Use to assess if a vulnerability has weaponized exploits in the wild; run after cve_lookup to evaluate real-world risk. When the CVE is also in CISA KEV (kev.in_kev=true on cve_lookup), pair with kev_detail for federal patch deadline; pair with cwe_lookup on cwe_id for the underlying weakness category and mitigations. Response carries next_calls — single cve_lookup pivot for full context (KEV status, CWE chain, CVSS, EPSS); cve_lookup's own next_calls then surface kev_detail and cwe_lookup automatically (this endpoint has no in_kev/cwe_id schema, so blind emission of those pivots is intentionally avoided). Free: 30/hr, Pro: 500/hr. Returns {cve_id, exploits_found, has_public_exploit, sources: {github, shodan_refs: {found, count, truncated, results}}, exploits: [{edb_id, cve_id, date_published, author, type, platform, url, verified, description}], summary, verdict, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "cve_id": {
+            "description": "CVE identifier in format CVE-YYYY-NNNNN (e.g. 'CVE-2024-3094', 'CVE-2023-44487')",
+            "title": "Cve Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cve_id"
+        ],
+        "title": "exploit_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "cve_id": {
+                "type": "string"
+              },
+              "exploits_found": {
+                "type": "integer"
+              },
+              "sources": {
+                "type": "object"
+              },
+              "has_public_exploit": {
+                "type": "boolean"
+              },
+              "exploits": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "cve_id"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "bulk_cve_lookup",
+      "title": "Bulk CVE Lookup",
+      "description": "Batch query multiple CVEs (up to 50 per call, same for Free and Pro): retrieve full CVE details for all in 1 request instead of N. By default each CVE's affected_products is truncated to the first 20 entries (total_products reports honest count) and references to the first 10 (total_references reports honest count); pass include_affected_products=true / include_full_references=true to return full lists. Pass include_reference_tags=true to receive references_full=[{url, tags, source}] per CVE in the batch. Pass include_severity_breakdown=true to receive severity_sources/consensus/disagreement per CVE. Use for dependency audits or bulk vulnerability enrichment; use cve_lookup for single CVE. Each successful item carries next_calls — chain with kev_detail (when kev.in_kev=true), cwe_lookup (when cwe_id is present), or exploit_lookup. Free: 30/hr (1 per item), Pro: 500/hr. Returns {results, total, successful, failed, timed_out, partial, summary}.",
+      "inputSchema": {
+        "properties": {
+          "cve_ids": {
+            "description": "List of CVE identifiers in format CVE-YYYY-NNNNN (e.g. ['CVE-2024-3094', 'CVE-2021-44228', 'CVE-2023-44487']). Maximum 50 per request (same cap for Free and Pro).",
+            "items": {
+              "type": "string"
+            },
+            "title": "Cve Ids",
+            "type": "array"
+          },
+          "include_affected_products": {
+            "default": false,
+            "description": "Return the full affected_products list for each CVE in the batch (default: False, each CVE returns first 20). Set True for bulk dependency audits.",
+            "title": "Include Affected Products",
+            "type": "boolean"
+          },
+          "include_full_references": {
+            "default": true,
+            "description": "Return the full references list for each CVE in the batch (default: True). total_references is always emitted. Set False to truncate each item to first 10 entries when payload-bound.",
+            "title": "Include Full References",
+            "type": "boolean"
+          },
+          "include_reference_tags": {
+            "default": true,
+            "description": "Return structured references_full per CVE in the batch [{url, tags, source}]. Same shape as cve_lookup (default: True). Activates tag-first patch detection per item. Set False for legacy clients.",
+            "title": "Include Reference Tags",
+            "type": "boolean"
+          },
+          "include_severity_breakdown": {
+            "default": true,
+            "description": "Return severity_sources/consensus/disagreement per CVE in batch. Same shape as cve_lookup (default: True). cvss_v2 and cvss_v2_vector are always emitted (additive non-opt-in). Set False to skip if downstream cannot tolerate the extra fields.",
+            "title": "Include Severity Breakdown",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cve_ids"
+        ],
+        "title": "bulk_cve_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "results": {
+                "type": "array"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "processed": {
+                "type": "integer"
+              },
+              "skipped_due_to_rate_limit": {
+                "type": "array"
+              },
+              "successful": {
+                "type": "integer"
+              },
+              "failed": {
+                "type": "integer"
+              },
+              "timed_out": {
+                "type": "integer"
+              },
+              "partial": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "kev_detail",
+      "title": "KEV Detail",
+      "description": "Look up CISA KEV (Known Exploited Vulnerabilities) full record for a CVE. Returns federal patch deadline (due_date), CISA-specified required_action remediation, known ransomware association, vendor/product, the CISA-given common name (e.g. 'Log4Shell'), CISA-reported CWE list, plus lifecycle metadata: date_updated (when CISA last revised the entry), date_removed (set when CISA removed the CVE from the catalog — null while still active), and updated_at (our DB sync freshness). Returns 404 when the CVE is not in the KEV catalog — use cve_lookup for non-KEV CVEs. Best follow-up after cve_lookup or cve_search(kev=true) when an in_kev=true CVE is identified; chain with cwe_lookup on each returned CWE to investigate the weakness category. Free: 30/hr, Pro: 500/hr. Returns {cve_id, vendor_project, product, vulnerability_name, date_added, due_date, required_action, known_ransomware_use, notes, cwes, date_updated, date_removed, updated_at, verdict, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "cve_id": {
+            "description": "CVE identifier in format CVE-YYYY-NNNNN (e.g. 'CVE-2021-44228', 'CVE-2024-3094')",
+            "title": "Cve Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cve_id"
+        ],
+        "title": "kev_detailArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "cve_id": {
+                "type": "string"
+              },
+              "in_kev": {
+                "type": "boolean"
+              },
+              "date_added": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "due_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "required_action": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "known_ransomware_use": {
+                "type": "boolean"
+              },
+              "vendor_project": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "product": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "vulnerability_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "short_description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "notes": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cwes": {
+                "type": "array"
+              },
+              "date_updated": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "date_removed": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "updated_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "cve_id"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "cwe_lookup",
+      "title": "CWE Lookup",
+      "description": "Look up MITRE CWE (Common Weakness Enumeration) catalog record from research view 1000. Default response is SLIM (first 3 mitigations, first 3 examples; extended_description is null) — pass include='full' for the verbose record (full mitigations + examples lists, populated extended_description). Returns description, abstract type (Pillar/Class/Base/Variant/Compound), status (Stable/Draft/Incomplete/Deprecated), exploit likelihood, recommended mitigations, observed example CVEs, parent_cwe (walk up the hierarchy), child_cwes (drill down to more specific weaknesses), and cve_count (LOWER BOUND — counts only CVEs whose primary CWE matches; CVEs with multiple CWEs may not be counted). Use after cve_lookup or kev_detail to understand the underlying weakness category; chain with cve_search(cwe_id=...) to enumerate all matching CVEs. Returns 404 when the CWE is not in research view 1000. Free: 30/hr, Pro: 500/hr. Returns {cwe_id, name, description, extended_description (null on slim, populated on include='full'), abstract_type, status, likelihood, mitigations (first 3 by default), total_mitigations, examples (first 3 by default), total_examples, parent_cwe, child_cwes, cve_count, updated_at, verdict, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "cwe_id": {
+            "description": "CWE identifier — accepts 'CWE-79', 'cwe-79', or bare '79'. Common values: CWE-79 (XSS), CWE-89 (SQL injection), CWE-78 (command injection), CWE-502 (deserialization), CWE-22 (path traversal), CWE-120 (buffer overflow).",
+            "title": "Cwe Id",
+            "type": "string"
+          },
+          "include": {
+            "default": "",
+            "description": "Detail level. Default ('') returns slim record (first 3 mitigations, first 3 examples; extended_description is null). total_mitigations / total_examples are always honest pre-truncation counts. Pass 'full' to populate extended_description and return the full mitigations + examples lists.",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cwe_id"
+        ],
+        "title": "cwe_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "cwe_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "extended_description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "abstract_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "likelihood": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "mitigations": {
+                "type": "array"
+              },
+              "examples": {
+                "type": "array"
+              },
+              "parent_cwe": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "child_cwes": {
+                "type": "array"
+              },
+              "cve_count": {
+                "type": "integer"
+              },
+              "total_mitigations": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "total_examples": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "updated_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "cwe_id",
+              "name"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "atlas_technique_lookup",
+      "title": "ATLAS Technique Lookup",
+      "description": "Look up a MITRE ATLAS technique — the AI/ML adversarial attack catalog. ATLAS catalogues TTPs targeting machine learning systems: prompt injection, model evasion, training data poisoning, model theft, etc. Roughly 80% of ATLAS techniques are AI/ML-specific (no ATT&CK bridge); 20% mirror an enterprise ATT&CK technique via attack_reference_id — use that to pivot to D3FEND defenses (d3fend_defense_for_attack) and CVE search. Sub-techniques inherit `tactics` from the parent (inherited_tactics=true flag) when ATLAS upstream leaves them empty. Use this tool when the user asks about AI/ML threats, LLM red-teaming, or adversarial ML; for multiple techniques in one call (e.g. drilling into a case study's techniques_used), prefer bulk_atlas_technique_lookup. Returns 404 when the id is not in the synced ATLAS catalog. Free: 30/hr, Pro: 500/hr. Returns {technique_id, name, description, tactics, inherited_tactics, maturity (demonstrated|feasible|realized), attack_reference_id, attack_reference_url, subtechnique_of, created_date, modified_date, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "technique_id": {
+            "description": "MITRE ATLAS technique id, format 'AML.T####' or 'AML.T####.###' for sub-techniques (e.g. 'AML.T0000', 'AML.T0051' LLM Prompt Injection, 'AML.T0000.000').",
+            "title": "Technique Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "technique_id"
+        ],
+        "title": "atlas_technique_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "technique_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tactics": {
+                "type": "array"
+              },
+              "inherited_tactics": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "maturity": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "attack_reference_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "attack_reference_url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "subtechnique_of": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "created_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "modified_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "technique_id",
+              "name"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "bulk_atlas_technique_lookup",
+      "title": "Bulk ATLAS Technique Lookup",
+      "description": "Bulk ATLAS technique lookup — retrieve full records for up to 50 techniques in a single request instead of N separate atlas_technique_lookup calls. Designed as the natural follow-up to atlas_case_study_lookup, whose techniques_used array can be passed directly. Each item is the same shape as atlas_technique_lookup, including parent-tactics inheritance for sub-techniques (inherited_tactics=true flag) and per-item next_calls (D3FEND bridge when attack_reference_id present, sibling-technique search by tactic, parent lookup for sub-techniques). Free: 30/hr (1 per item), Pro: 500/hr. Returns {results [{technique_id, status (ok|not_found|invalid_format), technique, error}], total, successful, failed, partial, summary}.",
+      "inputSchema": {
+        "properties": {
+          "technique_ids": {
+            "description": "List of MITRE ATLAS technique ids in format 'AML.T####' or 'AML.T####.###' (e.g. ['AML.T0051', 'AML.T0043', 'AML.T0000.000']). Up to 50 per call. Case-insensitive; normalized + de-duplicated server-side. Each id counts as 1 request toward the rate limit.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Technique Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "technique_ids"
+        ],
+        "title": "bulk_atlas_technique_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "results": {
+                "type": "array"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "processed": {
+                "type": "integer"
+              },
+              "skipped_due_to_rate_limit": {
+                "type": "array"
+              },
+              "successful": {
+                "type": "integer"
+              },
+              "failed": {
+                "type": "integer"
+              },
+              "partial": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "atlas_technique_search",
+      "title": "ATLAS Technique Search",
+      "description": "Search the MITRE ATLAS catalog of AI/ML attack techniques by keyword, tactic, or maturity. Default response is SLIM (description truncated to 240 chars per row); pass include='full' for the verbose record. Pass exclude_id when chaining from atlas_technique_lookup to skip self in sibling-tactic searches. Use this to discover techniques matching a threat-model question, e.g. 'what techniques target LLM serving infrastructure?'. Drill into atlas_technique_lookup with any returned technique_id for the full description, ATT&CK bridge, and pivot hints. For broader cross-referencing: when a result has attack_reference_id, that bridges to D3FEND mitigations via d3fend_defense_for_attack. Free: 30/hr, Pro: 500/hr. Returns {query (echoed filters), total, results [{technique_id, name, description (truncated by default), tactics, inherited_tactics, maturity, attack_reference_id, subtechnique_of}], next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "keyword": {
+            "default": "",
+            "description": "Substring match against technique name + description (case-insensitive). Min 2 chars. Example: 'prompt injection', 'model evasion', 'poisoning'. Omit to list all.",
+            "title": "Keyword",
+            "type": "string"
+          },
+          "tactic": {
+            "default": "",
+            "description": "Filter by ATLAS tactic id, format 'AML.TA####'. Examples: 'AML.TA0002' (Reconnaissance), 'AML.TA0007' (ML Attack Staging). Omit for all tactics.",
+            "title": "Tactic",
+            "type": "string"
+          },
+          "maturity": {
+            "default": "",
+            "description": "Filter by maturity: 'demonstrated' (observed in real attacks), 'feasible' (theoretical), or 'realized' (newer ATLAS classification, treat similar to demonstrated). Omit for all.",
+            "enum": [
+              "",
+              "demonstrated",
+              "feasible",
+              "realized"
+            ],
+            "title": "Maturity",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Max results to return. Range: 1-200.",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "include": {
+            "default": "",
+            "description": "Detail level. Default ('') returns slim records (description truncated to 240 chars; drill via atlas_technique_lookup for full text). Pass 'full' for full description on every row — large catalogs (167 techniques) can return ~100KB at full.",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          },
+          "exclude_id": {
+            "default": "",
+            "description": "Optional ATLAS technique id to exclude from results, format 'AML.T####' or 'AML.T####.###'. Useful when chaining from atlas_technique_lookup to fetch siblings without echoing self in the same-tactic search.",
+            "title": "Exclude Id",
+            "type": "string"
+          }
+        },
+        "title": "atlas_technique_searchArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "query": {
+                "type": "object"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "results": {
+                "type": "array"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "atlas_case_study_lookup",
+      "title": "ATLAS Case Study Lookup",
+      "description": "Look up a MITRE ATLAS case study — a documented real-world AI/ML attack incident. Each case study links a sequence of ATLAS techniques (techniques_used) to the incident. Default response is SLIM (description truncated to 240 chars); pass include='full' for the verbose narrative. Use this after atlas_technique_search to find which incidents have exercised a given technique. Drill into the full techniques_used array via bulk_atlas_technique_lookup in a single call (next_calls emits exactly that hint). Returns 404 when the id is not in the synced catalog. Free: 30/hr, Pro: 500/hr. Returns {case_study_id, name, description, techniques_used, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "case_study_id": {
+            "description": "MITRE ATLAS case study id, format 'AML.CS####' (e.g. 'AML.CS0000', 'AML.CS0014').",
+            "title": "Case Study Id",
+            "type": "string"
+          },
+          "include": {
+            "default": "",
+            "description": "Detail level. Default (omit/empty) returns slim (description truncated to 240 chars). Pass 'full' for the verbose narrative — case-study descriptions can run 1-3KB.",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          }
+        },
+        "required": [
+          "case_study_id"
+        ],
+        "title": "atlas_case_study_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "case_study_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "techniques_used": {
+                "type": "array"
+              }
+            },
+            "required": [
+              "case_study_id",
+              "name"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "atlas_case_study_search",
+      "title": "ATLAS Case Study Search",
+      "description": "Search ATLAS case studies (real-world AI/ML attack incidents) by keyword or referenced technique. Default response is SLIM (description truncated to 240 chars per row); pass include='full' for the verbose summary. Useful when the user has a technique in hand and wants to see incidents that exercised it. Drill via atlas_case_study_lookup for the full procedure list. Free: 30/hr, Pro: 500/hr. Returns {query, total, results [{case_study_id, name, description (truncated by default), techniques_used}], next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "keyword": {
+            "default": "",
+            "description": "Substring match against case study name + description (case-insensitive). Min 2 chars. Example: 'evasion', 'data poisoning'. Omit to list all.",
+            "title": "Keyword",
+            "type": "string"
+          },
+          "technique_id": {
+            "default": "",
+            "description": "Filter to case studies that include this ATLAS technique id, format 'AML.T####' or 'AML.T####.###' (e.g. 'AML.T0051'). Omit for any technique.",
+            "title": "Technique Id",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Max results to return. Range: 1-200.",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "include": {
+            "default": "",
+            "description": "Detail level. Default ('') returns slim records (description truncated to 240 chars). Pass 'full' for full description on every row.",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          }
+        },
+        "title": "atlas_case_study_searchArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "query": {
+                "type": "object"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "results": {
+                "type": "array"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "d3fend_defense_lookup",
+      "title": "D3FEND Defense Lookup",
+      "description": "Look up a MITRE D3FEND defense technique. D3FEND is the canonical defensive counterpart to ATT&CK — each defense is classified into one of 7 tactics (Model/Harden/Detect/Isolate/Deceive/Evict/Restore) and may target a specific digital artifact (e.g. 'Access Token'). Response includes attack_techniques: the list of ATT&CK T-codes this defense mitigates. Use after d3fend_defense_search for the full record + ATT&CK chain. Returns 404 when the slug is not in the synced D3FEND catalog. Free: 30/hr, Pro: 500/hr. Returns {defense_id, label, uri, parent_label, description, tactic, artifact, attack_techniques, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "defense_id": {
+            "description": "D3FEND defense slug from the ontology URI fragment (CamelCase), e.g. 'TokenBinding', 'FileHashing', 'CertificatePinning'.",
+            "title": "Defense Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "defense_id"
+        ],
+        "title": "d3fend_defense_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "defense_id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "uri": {
+                "type": "string"
+              },
+              "parent_label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tactic": {
+                "type": "string"
+              },
+              "artifact": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "attack_techniques": {
+                "type": "array"
+              }
+            },
+            "required": [
+              "defense_id",
+              "label",
+              "uri",
+              "tactic"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "d3fend_defense_search",
+      "title": "D3FEND Defense Search",
+      "description": "Search the MITRE D3FEND catalog of defensive techniques by keyword, tactic, or targeted artifact. Default response is SLIM (drops `uri` from each row — saves ~60 chars/row, ~30% on popular drills); pass include='full' for the verbose record. Pass exclude_id when chaining from d3fend_defense_lookup to skip self in sibling-artifact searches. Use to discover defenses applicable to a given threat model — e.g. 'what defenses harden access tokens?' (tactic=Harden + artifact='Access Token'). Drill into d3fend_defense_lookup with any returned defense_id for the ATT&CK technique mappings. Free: 30/hr, Pro: 500/hr. Returns {query, total, results [{defense_id, label, uri (only when include=full), parent_label, tactic, artifact}], next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "keyword": {
+            "default": "",
+            "description": "Substring match against defense label, description, or parent_label (case-insensitive). Min 2 chars. Example: 'token', 'hashing', 'sandbox'. Omit to list all.",
+            "title": "Keyword",
+            "type": "string"
+          },
+          "tactic": {
+            "default": "",
+            "description": "Filter by D3FEND tactic. One of: Model, Harden, Detect, Isolate, Deceive, Evict, Restore. Omit for all tactics.",
+            "enum": [
+              "",
+              "Model",
+              "Harden",
+              "Detect",
+              "Isolate",
+              "Deceive",
+              "Evict",
+              "Restore"
+            ],
+            "title": "Tactic",
+            "type": "string"
+          },
+          "artifact": {
+            "default": "",
+            "description": "Filter by exact targeted digital artifact (case-insensitive), e.g. 'Access Token', 'File', 'Process'. Omit for any artifact.",
+            "title": "Artifact",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Max results to return. Range: 1-200.",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "include": {
+            "default": "",
+            "description": "Detail level. Default (omit/empty) returns slim rows (drops the deterministic ontology `uri` field, ~60 chars/row saved). Pass 'full' to get `uri` back on every row. The slug `defense_id` is always returned and uniquely identifies the defense.",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          },
+          "exclude_id": {
+            "default": "",
+            "description": "Optional D3FEND defense slug (CamelCase, e.g. 'TokenBinding') to omit from results. Useful when chaining from d3fend_defense_lookup so the originating defense is not echoed back in its own siblings list. Omit when not needed.",
+            "title": "Exclude Id",
+            "type": "string"
+          }
+        },
+        "title": "d3fend_defense_searchArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "query": {
+                "type": "object"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "results": {
+                "type": "array"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "d3fend_defense_for_attack",
+      "title": "D3FEND Defense for Attack",
+      "description": "Reverse lookup: given an ATT&CK T-code, return D3FEND defenses that mitigate it. This is the bridge from offensive intelligence (ATT&CK / ATLAS / CVE) to defensive playbook. Pair with cve_lookup or atlas_technique_lookup output — when those carry an ATT&CK id, call this tool to surface the mitigations. `defenses` is capped at `limit` (default 30) for token efficiency; `total` is the honest pre-truncation count and `truncated=true` flags when the cap was hit. `coverage_by_tactic` always aggregates the FULL set, not the slice. Default response is SLIM (drops `uri` from each row); pass include='full' for the verbose record. Pass exclude_id when drilling from d3fend_defense_lookup to skip self in the 'see also' list. Returns 200 with empty defenses list when the T-code has no D3FEND mapping (the gap is itself a signal). Free: 30/hr, Pro: 500/hr. Returns {attack_technique_id, total, truncated, defenses [{defense_id, label, uri (only when include=full), parent_label, tactic, artifact, attack_label, attack_tactic}], coverage_by_tactic, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "attack_technique_id": {
+            "description": "ATT&CK technique id matching 'T####' or 'T####.###' (e.g. 'T1059', 'T1550.001'). Use this to bridge from CVE/ATLAS findings to D3FEND mitigations.",
+            "title": "Attack Technique Id",
+            "type": "string"
+          },
+          "limit": {
+            "default": 30,
+            "description": "Cap on `defenses` array length. Default 30; popular T-codes (T1059, T1078) map to 30-50+ defenses. `total` and `coverage_by_tactic` always reflect the honest pre-truncation count.",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "include": {
+            "default": "",
+            "description": "Detail level. Default (omit/empty) returns slim rows (drops the deterministic ontology `uri` — popular T-codes with 15+ defenses save ~900 chars). Pass 'full' to get `uri` back on every row.",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          },
+          "exclude_id": {
+            "default": "",
+            "description": "Optional D3FEND defense slug to omit from the defenses list. Used when chaining from d3fend_defense_lookup so the originating defense is not echoed back in its own 'see also' results.",
+            "title": "Exclude Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attack_technique_id"
+        ],
+        "title": "d3fend_defense_for_attackArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "attack_technique_id": {
+                "type": "string"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "defenses": {
+                "type": "array"
+              },
+              "coverage_by_tactic": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "attack_technique_id"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "d3fend_attack_coverage",
+      "title": "D3FEND Attack Coverage",
+      "description": "Batch coverage breakdown: given a list of ATT&CK T-codes, return distinct defense counts per D3FEND tactic + identify which techniques have NO D3FEND mapping (undefended_techniques). Use to assess the defensive posture of an entire attack campaign or threat model in one call. defended_techniques is the subset with at least one D3FEND defense; undefended_techniques are gaps worth flagging. Pair with cve_search per gap to identify exploit availability. Free: 30/hr, Pro: 500/hr. Returns {queried_techniques, coverage_by_tactic, defended_techniques, undefended_techniques, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "attack_technique_ids": {
+            "description": "List of ATT&CK technique ids (T#### or T####.###) to assess. Capped at 500 — extra entries are dropped server-side. Example: ['T1059', 'T1550.001', 'T1190', 'T9999'].",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "title": "Attack Technique Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "attack_technique_ids"
+        ],
+        "title": "d3fend_attack_coverageArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "queried_techniques": {
+                "type": "array"
+              },
+              "coverage_by_tactic": {
+                "type": "object"
+              },
+              "defended_techniques": {
+                "type": "array"
+              },
+              "undefended_techniques": {
+                "type": "array"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "sigma_rule_lookup",
+      "title": "Sigma Rule Lookup",
+      "description": "Look up a single Sigma detection rule by UUID from the SigmaHQ corpus (~3,200 rules, refreshed daily at 02:00 UTC). Returns the full rule with title, description, status (stable/test/experimental/deprecated/unsupported), level (informational/low/medium/high/critical), logsource (product/category/service), detection logic, tags (including attack.t#### ATT&CK technique refs and cve.YYYY-#### CVE refs), author, references, and modification date. Use to fetch a known rule for context (e.g., a SIEM detection that fired) or to inspect a rule discovered via REST sigma_rule_search. When a rule tags an ATT&CK technique or CVE, the response next_calls surfaces atlas_technique_lookup / cve_lookup as natural follow-ups. Free: 30/hr, Pro: 500/hr. Returns {rule, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "rule_id": {
+            "description": "Sigma rule UUID (RFC 4122, 36 chars, hyphenated). Example: '195e1b9d-bfc2-4ffa-ab4e-35aef69815f8'. Obtained from the REST sigma_rule_search endpoint or external SIEM correlation.",
+            "maxLength": 50,
+            "title": "Rule Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_id"
+        ],
+        "title": "sigma_rule_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "rule": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "rule"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "bulk_sigma_rule_lookup",
+      "title": "Bulk Sigma Rule Lookup",
+      "description": "Bulk Sigma rule lookup — retrieve full records for up to 50 rule UUIDs in a single request instead of N separate sigma_rule_lookup calls. Designed for triage workflows where multiple rule ids are known (e.g., from a SIEM alert batch or a tagged detection bundle). Each item is the same shape as sigma_rule_lookup with status ok/not_found/invalid_format and an error field when applicable. Up to 50 rule ids per call (same cap for Free and Pro). Each rule_id consumes 1 unit of the hourly quota; ids beyond the caller's remaining quota land in skipped_due_to_rate_limit instead of failing the whole batch (parity with bulk_cve/ioc). Free: 30/hr, Pro: 500/hr. Returns {results [{rule_id, status, rule, error}], total, processed, skipped_due_to_rate_limit, successful, failed, partial, summary, next_calls}.",
+      "inputSchema": {
+        "properties": {
+          "rule_ids": {
+            "description": "List of Sigma rule UUIDs in RFC 4122 format. Up to 50 per call (same cap for Free and Pro). Each rule_id counts as 1 request toward the hourly quota. Per-item validation: invalid-format ids return status='invalid_format', unknown UUIDs return status='not_found' — the whole call does not fail.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Rule Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rule_ids"
+        ],
+        "title": "bulk_sigma_rule_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "results": {
+                "type": "array"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "processed": {
+                "type": "integer"
+              },
+              "skipped_due_to_rate_limit": {
+                "type": "array"
+              },
+              "successful": {
+                "type": "integer"
+              },
+              "failed": {
+                "type": "integer"
+              },
+              "partial": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "ioc_lookup",
+      "title": "IOC Lookup",
+      "description": "Enrich Indicator of Compromise (IP/domain/URL/hash) by auto-detecting type and querying abuse.ch feeds. Per-type source coverage: hash → ThreatFox only (Feodo and URLhaus do not index hashes); IP → ThreatFox + Feodo Tracker + URLhaus; domain / URL → ThreatFox + URLhaus. verdict.sources_queried lists what actually ran; verdict.sources_unavailable lists what failed (timeout / upstream error). Use as primary IOC triage tool when type unknown; use threat_intel for domain-only, hash_lookup for richer MalwareBazaar hash data. Free: 30/hr, Pro: 500/hr. Returns {indicator, type, threat_level, sources, summary, verdict}.",
+      "inputSchema": {
+        "properties": {
+          "indicator": {
+            "description": "Indicator of Compromise: IP address, domain, full URL, or file hash in MD5/SHA1/SHA256 format (e.g. '8.8.8.8', 'evil.com', 'https://evil.com/malware.exe', 'd41d8cd98f00b204e9800998ecf8427e')",
+            "title": "Indicator",
+            "type": "string"
+          }
+        },
+        "required": [
+          "indicator"
+        ],
+        "title": "ioc_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "indicator": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "threat_level": {
+                "type": "string"
+              },
+              "sources": {
+                "type": "object"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "indicator",
+              "type"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "hash_lookup",
+      "title": "Hash Lookup",
+      "description": "Query MalwareBazaar for file hash (MD5/SHA1/SHA256): malware family, file type, size, tags, first/last seen, download count. Use to check if file hash is known malware; use ioc_lookup for auto-detection of all IOC types. Companion malware-investigation tools: ioc_lookup (multi-source: ThreatFox + Feodo Tracker + URLhaus), threat_intel (domain-level URLhaus check), exploit_lookup (link a known CVE to PoC code if the hash maps to an exploit binary). Free: 30/hr, Pro: 500/hr. Returns {found, malware_family, file_type, file_size, tags, first_seen, last_seen, signature}.",
+      "inputSchema": {
+        "properties": {
+          "file_hash": {
+            "description": "File hash to look up. Accepts MD5 (32 chars), SHA-1 (40 chars), or SHA-256 (64 chars). Lowercase hex only, no spaces. Example: 'd41d8cd98f00b204e9800998ecf8427e'",
+            "title": "File Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_hash"
+        ],
+        "title": "hash_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "hash": {
+                "type": "string"
+              },
+              "hash_type": {
+                "type": "string"
+              },
+              "found": {
+                "type": "boolean"
+              },
+              "malware_family": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "file_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "file_size": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "first_seen": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tags": {
+                "type": "array"
+              },
+              "file_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "hash",
+              "hash_type"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "password_check",
+      "title": "Password Check",
+      "description": "Check if SHA-1 hash appears in Have I Been Pwned (HIBP) breach dataset using k-anonymity (5-char prefix only, full hash never leaves tool). Use for password breach audits; read-only, no data stored. Companion OSINT investigation tools: hash_lookup (file-hash malware family lookup, different namespace), email_disposable (throwaway-mail signal on associated accounts), username_lookup (social-platform exposure on associated handles). Free: 30/hr, Pro: 500/hr. Returns {found, count}.",
+      "inputSchema": {
+        "properties": {
+          "sha1_hash": {
+            "description": "Full SHA-1 hash of the password as 40 lowercase hexadecimal characters (e.g. '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8' for 'password')",
+            "title": "Sha1 Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sha1_hash"
+        ],
+        "title": "password_checkArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "hash_prefix": {
+                "type": "string"
+              },
+              "found": {
+                "type": "boolean"
+              },
+              "breach_count": {
+                "type": "integer"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "hash_prefix"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "phishing_check",
+      "title": "Phishing Check",
+      "description": "Query URLhaus for a specific URL and its host. is_malicious is True only when there is ACTIVE evidence — exact URL match with url_status='online' (or unknown) OR host has urls_online > 0. URLhaus retains historical records forever, so a host can have url_count > 0 with urls_online == 0; in that case is_malicious=False, is_stale=True, threat_level='low'. Use for URL-level threat assessment; use threat_intel for domain-level checks. Companion threat-investigation tools: ioc_lookup (multi-source IOC: ThreatFox + URLhaus + Feodo Tracker, auto-detect type), hash_lookup (file-hash malware family, MalwareBazaar), threat_intel (domain-level URLhaus only). Free: 30/hr, Pro: 500/hr. Returns {url, host, is_malicious, is_stale, urlhaus_host:{found,urls_online,url_count}, urlhaus_url:{found,threat,tags,status}, threat_level, summary}.",
+      "inputSchema": {
+        "properties": {
+          "url": {
+            "description": "Full URL to check, including protocol (e.g. 'https://suspicious-login.com/verify', 'http://evil.com/payload.exe')",
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "phishing_checkArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "url": {
+                "type": "string"
+              },
+              "host": {
+                "type": "string"
+              },
+              "is_malicious": {
+                "type": "boolean"
+              },
+              "is_stale": {
+                "type": "boolean"
+              },
+              "urlhaus_host": {
+                "type": "object"
+              },
+              "urlhaus_url": {
+                "type": "object"
+              },
+              "threat_level": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "url",
+              "host"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "bulk_ioc_lookup",
+      "title": "Bulk IOC Lookup",
+      "description": "Batch query multiple IOCs (IP/domain/URL/hash, up to 50 per call, same for Free and Pro) in 1 request: auto-detects type + queries abuse.ch feeds per-indicator. Per-type source coverage matches ioc_lookup: hash → ThreatFox only; IP → ThreatFox + Feodo + URLhaus; domain / URL → ThreatFox + URLhaus. Each result item carries its own verdict.sources_queried / sources_unavailable so partial failures are visible per indicator. Use for SOC alert triage or batch enrichment; use ioc_lookup for single indicator. Free: 30/hr (1 per item), Pro: 500/hr. Returns {results, total, successful, failed, timed_out, partial, summary}.",
+      "inputSchema": {
+        "properties": {
+          "indicators": {
+            "description": "List of indicators of compromise: IP addresses, domains, URLs, or file hashes (e.g. ['8.8.8.8', 'evil.com', 'd41d8cd98f00b204e9800998ecf8427e']). Maximum 50 per request (same cap for Free and Pro). Each indicator type is auto-detected.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Indicators",
+            "type": "array"
+          }
+        },
+        "required": [
+          "indicators"
+        ],
+        "title": "bulk_ioc_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "results": {
+                "type": "array"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "processed": {
+                "type": "integer"
+              },
+              "skipped_due_to_rate_limit": {
+                "type": "array"
+              },
+              "successful": {
+                "type": "integer"
+              },
+              "failed": {
+                "type": "integer"
+              },
+              "timed_out": {
+                "type": "integer"
+              },
+              "invalid": {
+                "type": "integer"
+              },
+              "partial": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_secrets",
+      "title": "Check Secrets",
+      "description": "Scan source code (or snippet) for hardcoded secrets — cloud provider keys, API tokens, connection strings, private keys, passwords. Supports Python, JavaScript, TypeScript, Java, Go, Ruby, Shell, Bash. Use to detect leaked credentials before commit; for injection detection use check_injection. Free: 30/hr, Pro: 500/hr. Returns {total, by_severity, findings}. No data stored. The generic password-assignment rule is suppressed when a more-specific credential rule fires on the same line — one targeted finding per leaked secret, not two.",
+      "inputSchema": {
+        "properties": {
+          "code": {
+            "description": "Source code string to scan for secrets (can be a single file or code snippet)",
+            "title": "Code",
+            "type": "string"
+          },
+          "language": {
+            "default": "generic",
+            "description": "Programming language of the code. Must be one of: python, javascript, typescript, java, go, ruby, shell, bash, generic. Use 'generic' if unsure.",
+            "enum": [
+              "python",
+              "javascript",
+              "typescript",
+              "java",
+              "go",
+              "ruby",
+              "shell",
+              "bash",
+              "generic"
+            ],
+            "title": "Language",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "check_secretsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "findings": {
+                "type": "array"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "by_severity": {
+                "type": "object"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_injection",
+      "title": "Check Injection",
+      "description": "Scan source code for injection vulnerabilities: SQL injection, command injection, path traversal via unsafe string concatenation/unsanitized input. Supports Python, JavaScript, TypeScript, Java, Go, Ruby, Shell, Bash. Use to detect input-handling bugs; for secrets use check_secrets. Companion code-security tools: check_secrets (hard-coded credential detection), check_dependencies (known-CVE vulnerability audit), check_headers (live HTTP security-header validation), scan_headers (live HTTP scan via domain). Free: 30/hr, Pro: 500/hr. Returns {total, by_severity, findings}. No data stored.",
+      "inputSchema": {
+        "properties": {
+          "code": {
+            "description": "Source code string to scan for injection vulnerabilities (can be a single file or code snippet)",
+            "title": "Code",
+            "type": "string"
+          },
+          "language": {
+            "default": "generic",
+            "description": "Programming language of the code. Must be one of: python, javascript, typescript, java, go, ruby, shell, bash, generic. Use 'generic' if unsure.",
+            "enum": [
+              "python",
+              "javascript",
+              "typescript",
+              "java",
+              "go",
+              "ruby",
+              "shell",
+              "bash",
+              "generic"
+            ],
+            "title": "Language",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "check_injectionArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "findings": {
+                "type": "array"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "by_severity": {
+                "type": "object"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "check_dependencies",
+      "title": "Check Dependencies",
+      "description": "Audit project dependencies (npm/PyPI/Maven/RubyGems/etc.) against CVE database: find known vulnerabilities in your package list. Bulk query up to 50 packages per call (same for Free and Pro). Use for dependency security scanning; use cve_lookup for single CVE. Free: 30/hr (1 per package), Pro: 500/hr. Returns {findings, total, by_severity, summary}. Each finding includes fixed_in (first patched version per NVD/MITRE version range) when a version range matched — omitted from wire when the range is open-ended or no input version was supplied; remediation copy then says 'Check if ... is affected ... and upgrade if so' instead of 'Upgrade to X.Y.Z or later'.",
+      "inputSchema": {
+        "properties": {
+          "packages": {
+            "description": "List of dependency packages to audit. Each item is an object with 'name' (required, max 200 chars, e.g. 'lodash', 'django', 'log4j-core') and optional 'version' (max 100 chars, e.g. '4.17.0', '2.14.1'). Only 'name' and 'version' fields are used; extra fields are ignored. Example: [{\"name\": \"lodash\", \"version\": \"4.17.0\"}, {\"name\": \"django\"}]. Maximum 50 per request (same cap for Free and Pro).",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Packages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "packages"
+        ],
+        "title": "check_dependenciesArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "findings": {
+                "type": "array"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "processed": {
+                "type": "integer"
+              },
+              "skipped_due_to_rate_limit": {
+                "type": "array"
+              },
+              "by_severity": {
+                "type": "object"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "username_lookup",
+      "title": "Username Lookup",
+      "description": "Search for username across 15+ social/dev platforms (GitHub, Reddit, X/Twitter, LinkedIn, Instagram, TikTok, Discord, YouTube, Keybase, HackerOne, etc.). Use for OSINT investigations and identity verification. Free: 30/hr, Pro: 500/hr. Returns {username, total_found, platforms: [{name, exists, url, status_code}]}.",
+      "inputSchema": {
+        "properties": {
+          "username": {
+            "description": "Username string to search across platforms, without @ prefix (e.g. 'torvalds', 'johndoe', 'elonmusk')",
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username"
+        ],
+        "title": "username_lookupArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "username": {
+                "type": "string"
+              },
+              "found_count": {
+                "type": "integer"
+              },
+              "checked_count": {
+                "type": "integer"
+              },
+              "results": {
+                "type": "array"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "error": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "check_headers",
+      "title": "Check Headers",
+      "description": "Validate HTTP security headers you provide (JSON): CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Referrer-Policy against best practices. Use to test header config before deployment or validate non-public servers; use scan_headers to fetch live. Free: 30/hr, Pro: 500/hr. By default header values are truncated to 500 chars; pass include='full' for the full raw value. Returns {total, by_severity, findings}. No external requests.",
+      "inputSchema": {
+        "properties": {
+          "headers": {
+            "description": "JSON string of HTTP header name-value pairs to validate. Example: '{\"Strict-Transport-Security\": \"max-age=31536000\", \"X-Frame-Options\": \"DENY\"}'. Include only security-relevant headers you want to analyze.",
+            "title": "Headers",
+            "type": "string"
+          },
+          "include": {
+            "default": "",
+            "description": "Detail level. Default ('') returns slim findings — raw header values capped at 500 chars with total_value_length carrying the honest pre-truncation length. Pass 'full' to restore the full raw value. Allowed: '' or 'full'.",
+            "enum": [
+              "",
+              "full"
+            ],
+            "title": "Include",
+            "type": "string"
+          }
+        },
+        "required": [
+          "headers"
+        ],
+        "title": "check_headersArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "verdict": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "next_calls": {
+                "type": [
+                  "array",
+                  "null"
+                ]
+              },
+              "findings": {
+                "type": "array"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "by_severity": {
+                "type": "object"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "score": {
+                "type": "integer"
+              },
+              "grade": {
+                "type": "string"
+              },
+              "headers_present": {
+                "type": "array"
+              },
+              "headers_missing": {
+                "type": "array"
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    }
+  ]
+}

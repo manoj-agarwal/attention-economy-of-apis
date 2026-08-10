@@ -1,0 +1,387 @@
+{
+  "name": "Package Version Check",
+  "source_url": "https://package-version-check-mcp.onrender.com/mcp",
+  "fetched_at": "2026-08-10T05:50:55+00:00",
+  "description": "Returns the latest stable versions of packages and tools across Python, NPM, Go, Docker, Helm, and other ecosystems.",
+  "github_stars": 7,
+  "tools": [
+    {
+      "name": "get_latest_package_versions",
+      "description": "Get the latest versions of packages from various ecosystems.\n\nThis tool fetches the latest version information for packages from NPM, PyPI, NuGet, Maven/Gradle, Go modules,\nPHP/Packagist, Ruby gems, Rust crates, Swift packages, Dart packages, Docker, Helm, Terraform modules\nand Terraform providers.\nIt returns both successful lookups and any errors that occurred.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "packages": {
+            "items": {
+              "description": "Request for a package version lookup.",
+              "properties": {
+                "ecosystem": {
+                  "description": "Supported package ecosystems.",
+                  "enum": [
+                    "npm",
+                    "pypi",
+                    "docker",
+                    "nuget",
+                    "maven_gradle",
+                    "helm",
+                    "terraform_provider",
+                    "terraform_module",
+                    "go",
+                    "php",
+                    "rubygems",
+                    "rust",
+                    "swift",
+                    "dart"
+                  ],
+                  "type": "string"
+                },
+                "package_name": {
+                  "type": "string"
+                },
+                "version_hint": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                }
+              },
+              "required": [
+                "ecosystem",
+                "package_name"
+              ],
+              "type": "object"
+            },
+            "type": "array",
+            "description": "A list of package version requests with:\n- ecosystem: \"npm\", \"pypi\", \"nuget\", \"maven_gradle\", \"go\", \"php\", \"rubygems\", \"rust\", \"swift\", \"dart\", \"docker\", \"helm\", \"terraform_provider\", or \"terraform_module\"\n- package_name: The name of the package (e.g., \"express\", \"requests\", \"Newtonsoft.Json\")\n  For Maven/Gradle, use format \"[registry:]<groupId>:<artifactId>\" (e.g., \"org.springframework:spring-core\" for Maven Central,\n  \"maven.google.com:com.google.android.material:material\" for Google Maven)\n  For Go, use the absolute module identifier (e.g., \"github.com/gin-gonic/gin\")\n  For PHP, use the Packagist package name in \"vendor/package\" format (e.g., \"monolog/monolog\", \"laravel/framework\")\n  For RubyGems, use the gem name (e.g., \"rails\", \"devise\")\n  For Rust, use the crate name (e.g., \"serde\", \"tokio\")\n  For Swift, use the GitHub URL (e.g., \"https://github.com/owner/repo.git\" or \"github.com/owner/repo.git\") - only github.com is supported\n  For Dart, use the package name from pub.dev (e.g., \"flutter\", \"http\")\n  For Docker, this must be fully qualified (e.g., \"index.docker.io/library/busybox\")\n  For Helm, use one of these formats:\n    - ChartMuseum: \"https://host/path/chart-name\" (fetches from index.yaml)\n    - OCI: \"oci://host/path/chart-name\" (queries OCI registry tags)\n- version_hint: (optional) For Docker and Helm OCI, used as a tag compatibility hint (e.g., \"1.2-alpine\")\n  to find the latest tag matching the same suffix pattern.\n  For NPM/PyPI/NuGet/Maven/ChartMuseum/Go/PHP/RubyGems/Rust/Swift/Dart, not used."
+          }
+        },
+        "required": [
+          "packages"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "description": "Response from get_latest_package_versions tool.",
+        "properties": {
+          "result": {
+            "items": {
+              "description": "Successful package version lookup result.",
+              "properties": {
+                "ecosystem": {
+                  "description": "Supported package ecosystems.",
+                  "enum": [
+                    "npm",
+                    "pypi",
+                    "docker",
+                    "nuget",
+                    "maven_gradle",
+                    "helm",
+                    "terraform_provider",
+                    "terraform_module",
+                    "go",
+                    "php",
+                    "rubygems",
+                    "rust",
+                    "swift",
+                    "dart"
+                  ],
+                  "type": "string"
+                },
+                "package_name": {
+                  "type": "string"
+                },
+                "latest_version": {
+                  "type": "string"
+                },
+                "digest": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "published_on": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                }
+              },
+              "required": [
+                "ecosystem",
+                "package_name",
+                "latest_version"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "lookup_errors": {
+            "items": {
+              "description": "Error during package version lookup.",
+              "properties": {
+                "ecosystem": {
+                  "description": "Supported package ecosystems.",
+                  "enum": [
+                    "npm",
+                    "pypi",
+                    "docker",
+                    "nuget",
+                    "maven_gradle",
+                    "helm",
+                    "terraform_provider",
+                    "terraform_module",
+                    "go",
+                    "php",
+                    "rubygems",
+                    "rust",
+                    "swift",
+                    "dart"
+                  ],
+                  "type": "string"
+                },
+                "package_name": {
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ecosystem",
+                "package_name",
+                "error"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "result",
+          "lookup_errors"
+        ],
+        "type": "object"
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_github_action_versions_and_args",
+      "description": "Get the latest versions and metadata for GitHub Actions.\n\nThis tool fetches the latest Git tag and action.yml metadata for GitHub Actions\nhosted on github.com. It can optionally include the README.md for usage instructions.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "action_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "A list of action names in \"owner/repo\" format\n(e.g., [\"actions/checkout\", \"docker/login-action\"])"
+          },
+          "include_readme": {
+            "default": false,
+            "type": "boolean",
+            "description": "Whether to include the README.md content (default: False)"
+          }
+        },
+        "required": [
+          "action_names"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "description": "Response from get_github_action_versions_and_args tool.",
+        "properties": {
+          "result": {
+            "items": {
+              "description": "Successful GitHub action lookup result.",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "latest_version": {
+                  "type": "string"
+                },
+                "digest": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "readme": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                }
+              },
+              "required": [
+                "name",
+                "latest_version",
+                "digest",
+                "metadata"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "lookup_errors": {
+            "items": {
+              "description": "Error during GitHub action lookup.",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "error"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "result",
+          "lookup_errors"
+        ],
+        "type": "object"
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_supported_tools",
+      "description": "Get list of all tools supported by the get_latest_tool_versions MCP tool.\n\nThis tool queries the mise registry to retrieve all available tool names\nthat can be used with the get_latest_tool_versions tool.\n\nReturns:\n    A list of tool short names (e.g., [\"1password\", \"act\", \"node\", \"python\", ...])\n\nExample:\n    >>> await get_supported_tools()\n    [\"1password\", \"act\", \"node\", \"python\", ...]",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "x-fastmcp-wrap-result": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_latest_tool_versions",
+      "description": "Get the latest stable versions of tools supported by mise-en-place.\n\nThis tool fetches the latest stable version of development and DevOps tools\nthat are NOT part of language ecosystems like PyPI or NPM. For language\necosystem packages (including Terraform providers and modules), use the\nget_latest_package_versions tool instead.\n\nUse this tool to determine the latest versions of tools like:\n- gradle: Pin the Gradle version in distributionUrl in gradle-wrapper.properties\n  (e.g., distributionUrl=https://services.gradle.org/distributions/gradle-8.5-bin.zip)\n- maven: Pin the Maven version in distributionUrl in maven-wrapper.properties\n  (e.g., distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.zip)\n- terraform: Pin terraform.required_version in a file like version.tf or versions.tf\n  (e.g., terraform { required_version = \"~> 1.6.0\" })\n- kubectl: Pin the version in a download URL called with curl or wget in a Dockerfile\n  (e.g., RUN curl -LO https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl)\n- azure: Pin Azure CLI version in download URL\n  (e.g., curl -LO https://azurecliprod.blob.core.windows.net/releases/azure-cli-2.50.0.tar.gz)\n\nTo see all available tools, use the get_supported_tools tool.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "tool_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "A list of tool names (e.g., [\"terraform\", \"gradle\", \"kubectl\"])"
+          }
+        },
+        "required": [
+          "tool_names"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "description": "Response from get_latest_tool_versions tool.",
+        "properties": {
+          "result": {
+            "items": {
+              "description": "Successful tool version lookup result.",
+              "properties": {
+                "tool_name": {
+                  "type": "string"
+                },
+                "latest_version": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "tool_name",
+                "latest_version"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "lookup_errors": {
+            "items": {
+              "description": "Error during tool version lookup.",
+              "properties": {
+                "tool_name": {
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "tool_name",
+                "error"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "result",
+          "lookup_errors"
+        ],
+        "type": "object"
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    }
+  ]
+}

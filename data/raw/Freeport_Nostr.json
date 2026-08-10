@@ -1,0 +1,360 @@
+{
+  "name": "Freeport Nostr",
+  "source_url": "https://nostr-mcp.trinh.uk/mcp",
+  "fetched_at": "2026-08-10T05:48:51+00:00",
+  "description": "Search Freeport Nostr events by kind, tag, and geohash radius for rides, services, and reputation data.",
+  "github_stars": 15,
+  "tools": [
+    {
+      "name": "nostr_search_intents",
+      "description": "Search Freeport ride/service/product intents (offers & requests). Filter by side, category/area topic tags, and an optional geographic radius. Results are decoded, expiry-filtered, and sorted nearest-first when a point is given.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "side": {
+            "type": "string",
+            "enum": [
+              "offer",
+              "request",
+              "any"
+            ],
+            "default": "any",
+            "description": "offer = drivers/providers/sellers; request = riders/buyers; any = both"
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Topic `t` tags to require (category/subcategory/area keys, e.g. \"vn_hanoi\", \"ridesharing\")."
+          },
+          "near": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lon": {
+                "type": "number"
+              },
+              "radiusKm": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 20000,
+                "default": 100
+              }
+            },
+            "required": [
+              "lat",
+              "lon"
+            ],
+            "additionalProperties": false,
+            "description": "Filter & sort by distance from this point."
+          },
+          "relaySideGeohash": {
+            "type": "boolean",
+            "default": false,
+            "description": "Also narrow at the relay via a #g cover of the radius. Only effective if posts carry geohash-prefix tags; off by default."
+          },
+          "since": {
+            "type": "integer",
+            "description": "Only events created at/after this unix-seconds time."
+          },
+          "until": {
+            "type": "integer",
+            "description": "Only events created at/before this unix-seconds time."
+          },
+          "includeExpired": {
+            "type": "boolean",
+            "default": false
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500,
+            "default": 200
+          },
+          "relays": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "description": "Override the relay set for this call (ws/wss URLs, max 10). Defaults to the server relays."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "nostr_search_reputation",
+      "description": "Fetch reputation signals for a pubkey: karma ratings (kind 32103) it received and deal receipts (kind 32104). Returns proven-deal count (both receipt halves present) and a karma summary. Note: scores are subjective and un-weighted here; do not treat as Sybil-proof.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pubkey": {
+            "type": "string",
+            "description": "Subject pubkey (hex) to look up reputation for."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 500
+          },
+          "relays": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "description": "Override the relay set for this call (ws/wss URLs, max 10). Defaults to the server relays."
+          }
+        },
+        "required": [
+          "pubkey"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "nostr_get_event",
+      "description": "Fetch one or more events by id. Returns the raw signed events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "relays": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "description": "Override the relay set for this call (ws/wss URLs, max 10). Defaults to the server relays."
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "nostr_profile",
+      "description": "Fetch NIP-01 profile metadata (kind 0) for one or more pubkeys — name, about, picture, nip05, lud16, etc. Optionally include each author's most recent notes (kind 1). General-purpose: works for any Nostr user, not just Freeport.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pubkeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "description": "Hex pubkeys to fetch profiles for."
+          },
+          "recentNotes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20,
+            "default": 0,
+            "description": "If >0, also fetch up to this many recent text notes (kind 1) per pubkey."
+          },
+          "relays": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "description": "Override the relay set for this call (ws/wss URLs, max 10). Defaults to the server relays."
+          }
+        },
+        "required": [
+          "pubkeys"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "nostr_query_raw",
+      "description": "Escape hatch: run an arbitrary NIP-01 filter (kinds/authors/ids/tags/since/until/limit). Use the typed tools above when they fit. Returns raw signed events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "kinds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Tag filters, e.g. {\"t\":[\"vn_hanoi\"],\"g\":[\"w3gv\"]}. Keys are single tag letters."
+          },
+          "since": {
+            "type": "integer"
+          },
+          "until": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500,
+            "default": 100
+          },
+          "relays": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "description": "Override the relay set for this call (ws/wss URLs, max 10). Defaults to the server relays."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "freeport_create_post",
+      "description": "Publish a Freeport intent — an OFFER (side \"offer\": driver/provider/seller) or a REQUEST (side \"request\": rider/buyer). Provide EITHER a `secretKey` (nsec or hex — the server builds, signs and publishes; use a DEDICATED agent key, never a personal one — it is used once and never stored) OR a pre-signed `event` (you sign locally; nothing secret reaches the server). Strict rate limits apply. Returns the published event id + addressable `d`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "secretKey": {
+            "type": "string",
+            "description": "nsec or 64-hex private key. Used transiently to sign; never stored. Omit if passing a pre-signed `event`."
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "offer",
+              "request"
+            ],
+            "description": "offer = provider/seller/driver; request = buyer/rider."
+          },
+          "market": {
+            "type": "string",
+            "description": "Market key, e.g. \"rideshare\" or \"service\"."
+          },
+          "schema": {
+            "type": "string",
+            "description": "Payload schema, e.g. \"rideshare/1\" or \"service/1\"."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Intent payload (from/to/location, payment, etc.) per the freeport://protocol resource."
+          },
+          "expiresInMinutes": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 43200,
+            "description": "How long the post stays live (default 720). Max 30 days."
+          },
+          "window": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "integer"
+              },
+              "end": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "additionalProperties": false
+          },
+          "geohashes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "description": "Geohashes for location-scoped discovery. Each is expanded into all its prefixes (precision 1-6) so radius searches at any precision match."
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "description": "Topic `t` tags (area/category), e.g. [\"vn_hanoi\",\"vn_hanoi_ridesharing\"]."
+          },
+          "d": {
+            "type": "string",
+            "description": "Stable id to republish/replace an existing post; defaults to random."
+          },
+          "event": {
+            "description": "A complete, signed Nostr event (kind 32101/32102). Use instead of secretKey to keep keys off the server."
+          },
+          "relays": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

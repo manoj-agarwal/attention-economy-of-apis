@@ -1,0 +1,206 @@
+{
+  "name": "RevoGrid",
+  "source_url": "https://mcp.rv-grid.com",
+  "fetched_at": "2026-08-10T05:46:51+00:00",
+  "description": "Hosted Pro MCP server for the RevoGrid DataGrid — docs, examples, feature checks, and migration guidance.",
+  "github_stars": 3430,
+  "tools": [
+    {
+      "name": "search_revogrid_docs",
+      "title": "Search RevoGrid Docs",
+      "description": "Search docs, API reference, examples, and migration notes for RevoGrid.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1
+          },
+          "framework": {
+            "type": "string",
+            "enum": [
+              "react",
+              "vue",
+              "angular",
+              "svelte",
+              "vanilla"
+            ]
+          },
+          "version": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string",
+            "enum": [
+              "core",
+              "pro",
+              "pivot",
+              "plugin",
+              "columntype",
+              "migration",
+              "changelog",
+              "internal"
+            ]
+          },
+          "requiresPro": {
+            "type": "boolean"
+          },
+          "docTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "guide",
+                "api",
+                "example",
+                "live-demo",
+                "migration",
+                "faq"
+              ]
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 5
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "find_examples",
+      "title": "Find RevoGrid Examples",
+      "description": "Search runnable or live RevoGrid examples only.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1
+          },
+          "framework": {
+            "type": "string",
+            "enum": [
+              "react",
+              "vue",
+              "angular",
+              "svelte",
+              "vanilla"
+            ]
+          },
+          "version": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string",
+            "enum": [
+              "core",
+              "pro",
+              "pivot",
+              "plugin",
+              "columntype",
+              "migration",
+              "changelog",
+              "internal"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 5
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "resolve_feature_matrix",
+      "title": "Resolve RevoGrid Feature",
+      "description": "Resolve whether a RevoGrid feature exists, whether it is Pro, and where to learn it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "featureName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "framework": {
+            "type": "string",
+            "enum": [
+              "react",
+              "vue",
+              "angular",
+              "svelte",
+              "vanilla"
+            ]
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "featureName"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_migration_notes",
+      "title": "Get Migration Notes",
+      "description": "Get upgrade notes between RevoGrid versions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "fromVersion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "toVersion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "framework": {
+            "type": "string",
+            "enum": [
+              "react",
+              "vue",
+              "angular",
+              "svelte",
+              "vanilla"
+            ]
+          }
+        },
+        "required": [
+          "fromVersion",
+          "toVersion"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

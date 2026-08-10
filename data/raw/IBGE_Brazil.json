@@ -1,0 +1,5156 @@
+{
+  "name": "IBGE Brazil",
+  "source_url": "https://ibge.sidneybissoli.com/mcp",
+  "fetched_at": "2026-08-10T05:51:14+00:00",
+  "description": "Brazilian IBGE statistical data — locations, census, demographics, and geographic boundaries.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "name": "ibge_estados",
+      "title": "Estados do Brasil",
+      "description": "Lists all Brazilian states from IBGE.\n\nFeatures:\n- Lists all 27 states (26 states + Federal District)\n- Filter by region (North, Northeast, Southeast, South, Central-West)\n- Sort by ID, name, or abbreviation\n\nExamples:\n- List all states: (no parameters)\n- Northeast states: regiao=\"NE\"\n- Sorted by abbreviation: ordenar=\"sigla\"\n\nUse a different tool when:\n- Municipalities of a state â ibge_municipios\n- Details/hierarchy of one locality by code â ibge_localidade\n\nBehavior: read-only and idempotent â a live GET against the public IBGE Localidades API. Returns a Markdown table.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "regiao": {
+            "description": "Filtrar por regiÃ£o: N (Norte), NE (Nordeste), SE (Sudeste), S (Sul), CO (Centro-Oeste)",
+            "type": "string",
+            "enum": [
+              "N",
+              "NE",
+              "SE",
+              "S",
+              "CO"
+            ]
+          },
+          "ordenar": {
+            "default": "nome",
+            "description": "Campo para ordenaÃ§Ã£o dos resultados",
+            "type": "string",
+            "enum": [
+              "id",
+              "nome",
+              "sigla"
+            ]
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "estados": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "description": "CÃ³digo IBGE do estado"
+                },
+                "sigla": {
+                  "type": "string",
+                  "description": "Sigla da UF"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome do estado"
+                },
+                "regiao": {
+                  "type": "string",
+                  "description": "Nome da regiÃ£o"
+                }
+              },
+              "required": [
+                "id",
+                "sigla",
+                "nome",
+                "regiao"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Lista de estados"
+          },
+          "total": {
+            "type": "number",
+            "description": "Total de estados retornados"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "estados",
+          "total",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_municipios",
+      "title": "MunicÃ­pios do Brasil",
+      "description": "Lists Brazilian municipalities from IBGE.\n\nFeatures:\n- List municipalities by state (using state abbreviation)\n- List all municipalities in Brazil (5,570 municipalities)\n- Search by municipality name\n- Returns 7-digit IBGE code\n\nExamples:\n- SÃ£o Paulo municipalities: uf=\"SP\"\n- Search by name: busca=\"Campinas\"\n- MG municipalities containing \"Belo\": uf=\"MG\", busca=\"Belo\"\n\nUse a different tool when:\n- Resolve/decode a code at any level (region, state, district), not just municipalities â ibge_geocodigo\n- Full details/hierarchy of one locality by code â ibge_localidade\n- Neighboring municipalities â ibge_vizinhos\n\nBehavior: read-only and idempotent â a live GET against the public IBGE Localidades API. Returns a Markdown table.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "uf": {
+            "description": "Estado por sigla (SP), nome (SÃ£o Paulo) ou cÃ³digo IBGE (35). Se nÃ£o informado, retorna todos os municÃ­pios do Brasil.",
+            "type": "string"
+          },
+          "busca": {
+            "description": "Termo para buscar no nome do municÃ­pio",
+            "type": "string"
+          },
+          "limite": {
+            "default": 100,
+            "description": "NÃºmero mÃ¡ximo de resultados (padrÃ£o: 100, mÃ¡ximo: 5570)",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5570
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "municipios": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "description": "CÃ³digo IBGE do municÃ­pio"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome do municÃ­pio"
+                }
+              },
+              "required": [
+                "id",
+                "nome"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Lista de municÃ­pios retornados (apÃ³s filtro e limite)"
+          },
+          "total": {
+            "type": "number",
+            "description": "Total de municÃ­pios encontrados antes do limite"
+          },
+          "uf": {
+            "description": "UF informada no filtro (como recebida na entrada)",
+            "type": "string"
+          },
+          "busca": {
+            "description": "Termo de busca aplicado ao nome do municÃ­pio",
+            "type": "string"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "municipios",
+          "total",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_localidade",
+      "title": "Detalhes de localidade",
+      "description": "Returns details of a specific locality by IBGE code.\n\nFeatures:\n- State information (2-digit code)\n- Municipality information (7-digit code)\n- District information (9-digit code)\n- Complete hierarchy (region, mesoregion, microregion)\n\nExamples:\n- SÃ£o Paulo state: codigo=35\n- SÃ£o Paulo city: codigo=3550308\n- District: codigo=355030805\n\nThis tool returns the full record of ONE locality you already have the code for.\nUse a different tool when:\n- You have a name and need the code â ibge_municipios (municipalities) or ibge_geocodigo (any level)\n- You want to decompose/understand a code's structure â ibge_geocodigo\n\nBehavior: read-only and idempotent â a live GET against the public IBGE Localidades API. Returns a Markdown record.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "codigo": {
+            "type": "number",
+            "description": "CÃ³digo IBGE da localidade (estado: 2 dÃ­gitos, municÃ­pio: 7 dÃ­gitos, distrito: 9 dÃ­gitos)"
+          },
+          "tipo": {
+            "description": "Tipo da localidade. Se nÃ£o informado, serÃ¡ inferido pelo tamanho do cÃ³digo.",
+            "type": "string",
+            "enum": [
+              "estado",
+              "municipio",
+              "distrito"
+            ]
+          }
+        },
+        "required": [
+          "codigo"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "estado",
+              "municipio",
+              "distrito"
+            ],
+            "description": "Tipo da localidade retornada"
+          },
+          "id": {
+            "type": "number",
+            "description": "CÃ³digo IBGE da localidade"
+          },
+          "nome": {
+            "type": "string",
+            "description": "Nome da localidade"
+          },
+          "sigla": {
+            "description": "Sigla da UF (apenas para estados)",
+            "type": "string"
+          },
+          "regiao": {
+            "description": "RegiÃ£o do estado (apenas para estados)",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "CÃ³digo IBGE da regiÃ£o"
+              },
+              "sigla": {
+                "type": "string",
+                "description": "Sigla da regiÃ£o"
+              },
+              "nome": {
+                "type": "string",
+                "description": "Nome da regiÃ£o"
+              }
+            },
+            "required": [
+              "id",
+              "sigla",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "mesorregiao": {
+            "description": "MesorregiÃ£o do municÃ­pio",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "CÃ³digo IBGE da mesorregiÃ£o"
+              },
+              "nome": {
+                "type": "string",
+                "description": "Nome da mesorregiÃ£o"
+              }
+            },
+            "required": [
+              "id",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "microrregiao": {
+            "description": "MicrorregiÃ£o do municÃ­pio",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "CÃ³digo IBGE da microrregiÃ£o"
+              },
+              "nome": {
+                "type": "string",
+                "description": "Nome da microrregiÃ£o"
+              }
+            },
+            "required": [
+              "id",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "regiaoImediata": {
+            "description": "RegiÃ£o imediata do municÃ­pio",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "CÃ³digo IBGE da regiÃ£o imediata"
+              },
+              "nome": {
+                "type": "string",
+                "description": "Nome da regiÃ£o imediata"
+              }
+            },
+            "required": [
+              "id",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "regiaoIntermediaria": {
+            "description": "RegiÃ£o intermediÃ¡ria do municÃ­pio",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "CÃ³digo IBGE da regiÃ£o intermediÃ¡ria"
+              },
+              "nome": {
+                "type": "string",
+                "description": "Nome da regiÃ£o intermediÃ¡ria"
+              }
+            },
+            "required": [
+              "id",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "municipio": {
+            "description": "MunicÃ­pio ao qual o distrito pertence (apenas para distritos)",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "CÃ³digo IBGE do municÃ­pio"
+              },
+              "nome": {
+                "type": "string",
+                "description": "Nome do municÃ­pio"
+              }
+            },
+            "required": [
+              "id",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "estado": {
+            "description": "Estado da localidade (municÃ­pio ou distrito)",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number",
+                "description": "CÃ³digo IBGE do estado"
+              },
+              "sigla": {
+                "type": "string",
+                "description": "Sigla da UF"
+              },
+              "nome": {
+                "type": "string",
+                "description": "Nome do estado"
+              }
+            },
+            "required": [
+              "id",
+              "sigla",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "tipo",
+          "id",
+          "nome",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_populacao",
+      "title": "PopulaÃ§Ã£o do Brasil em tempo real",
+      "description": "Returns real-time Brazilian population projection.\n\nFeatures:\n- Current population estimate\n- Birth rate (average time between births)\n- Death rate (average time between deaths)\n- Daily population increment\n\nSource: IBGE - Brazilian Population Projection\n\nThis tool ONLY returns Brazil's real-time national projection.\n\nUse a different tool when:\n- Population of a specific municipality/state â ibge_cidades (panorama)\n- Census or historical population â ibge_censo\n- Comparing/ranking multiple localities â ibge_comparar\n- Population time series â ibge_indicadores\n- An arbitrary SIDRA table â ibge_sidra\n\nBehavior: read-only and idempotent â a live GET against the public IBGE population-projection API. Returns Markdown plus a typed structuredContent payload.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "localidade": {
+            "default": "BR",
+            "description": "Localidade para projeÃ§Ã£o populacional (atualmente apenas BR disponÃ­vel)",
+            "type": "string",
+            "enum": [
+              "BR"
+            ]
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "localidade": {
+            "type": "string",
+            "description": "Localidade da projeÃ§Ã£o"
+          },
+          "horario": {
+            "type": "string",
+            "description": "Data/hora da consulta"
+          },
+          "populacao": {
+            "type": "number",
+            "description": "PopulaÃ§Ã£o projetada (habitantes)"
+          },
+          "periodoMedio": {
+            "type": "object",
+            "properties": {
+              "incrementoPopulacional": {
+                "type": "number",
+                "description": "Incremento populacional por dia"
+              },
+              "nascimento": {
+                "type": "number",
+                "description": "Segundos entre nascimentos"
+              },
+              "obito": {
+                "type": "number",
+                "description": "Segundos entre Ã³bitos"
+              }
+            },
+            "required": [
+              "incrementoPopulacional",
+              "nascimento",
+              "obito"
+            ],
+            "additionalProperties": false,
+            "description": "Indicadores do perÃ­odo mÃ©dio"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "localidade",
+          "horario",
+          "populacao",
+          "periodoMedio",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_sidra",
+      "title": "Consulta de tabelas SIDRA",
+      "description": "Queries SIDRA tables (IBGE's Automatic Recovery System).\n\nSIDRA contains data from IBGE surveys like Census, PNAD, GDP, etc.\n\nCommon tables:\n- 6579: Population estimates (annual)\n- 9514: Census 2022 population\n- 200: Census population (1970-2010)\n- 4714: Unemployment rate (PNAD ContÃ­nua)\n- 6381: Average income (PNAD ContÃ­nua)\n- 6706: GDP at current prices\n- 5938: GDP per capita\n\nTerritorial levels:\n- 1: Brazil\n- 2: Region (North, Northeast, etc.)\n- 3: State (UF)\n- 6: Municipality\n- 7: Metropolitan Region\n\nExamples:\n- Brazil population 2023: tabela=\"6579\", periodos=\"2023\"\n- Population by state: tabela=\"6579\", nivel_territorial=\"3\"\n- Census 2022 by municipality: tabela=\"9514\", nivel_territorial=\"6\", localidades=\"3550308\"\n\nStatistics mode: for **largest/smallest/mean/median/distribution/ranking** questions (\"which municipality has the largest population?\", \"median GDP by state\") use estatisticas=true â it computes min/max/mean/median/std-dev/labeled percentiles over ALL data rows BEFORE pagination and returns top/bottom rankings (default 10, cap 100 via topN), so one call answers what would otherwise require paging thousands of records. With agruparPor=\"<column label>\" (e.g. \"Unidade da FederaÃ§Ã£o\", \"Ano\") it ranks groups by descending sum, each with its own mini-distribution. Queries mixing several variables auto-group by \"VariÃ¡vel\" (units differ). SIDRA absence markers (\"-\", \"..\", \"...\", \"X\") are excluded from n. In this mode pagina/campos/formato are ignored and registros comes empty. The query itself still respects SIDRA's official cap of 100,000 values.\n\nibge_sidra is the low-level engine. Prefer a friendlier wrapper when it fits:\n- Census themes (1970â2022) â ibge_censo\n- Economic/social time series â ibge_indicadores\n- Rank/compare 2â10 localities â ibge_comparar\n- One municipality's panel â ibge_cidades\nUse ibge_sidra_tabelas and ibge_sidra_metadados to find a table code and its structure before querying.\n\nBehavior: read-only and idempotent â a live GET against the public IBGE SIDRA API. Returns Markdown plus a typed structuredContent payload.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "tabela": {
+            "type": "string",
+            "description": "CÃ³digo da tabela SIDRA (ex: 6579 para estimativas de populaÃ§Ã£o, 9514 para censo 2022)"
+          },
+          "variaveis": {
+            "default": "allxp",
+            "description": "IDs das variÃ¡veis separados por vÃ­rgula, ou 'allxp' para todas",
+            "type": "string"
+          },
+          "nivel_territorial": {
+            "default": "1",
+            "description": "NÃ­vel territorial (cÃ³digo N): 1=Brasil, 2=RegiÃ£o, 3=UF, 6=MunicÃ­pio, 7=RegiÃ£o Metropolitana, 8=MesorregiÃ£o, 9=MicrorregiÃ£o, 10=Distrito, 11=Subdistrito, 13=RM/RIDE, 14=RIDE, 15=AglomeraÃ§Ã£o Urbana, 17=RegiÃ£o GeogrÃ¡fica Imediata, 18=RegiÃ£o GeogrÃ¡fica IntermediÃ¡ria, 105=MacrorregiÃ£o de SaÃºde, 106=RegiÃ£o de SaÃºde, 114=Aglomerado Subnormal, 127=AmazÃ´nia Legal, 128=SemiÃ¡rido",
+            "type": "string"
+          },
+          "localidades": {
+            "default": "all",
+            "description": "CÃ³digos das localidades separados por vÃ­rgula, ou 'all' para todas",
+            "type": "string"
+          },
+          "periodos": {
+            "default": "last",
+            "description": "PerÃ­odos: 'last' para Ãºltimo, 'all' para todos, ou anos especÃ­ficos (ex: 2020,2021,2022)",
+            "type": "string"
+          },
+          "classificacoes": {
+            "description": "ClassificaÃ§Ãµes no formato 'id[categorias]' (ex: '2[6794]' para sexo masculino)",
+            "type": "string"
+          },
+          "formato": {
+            "default": "tabela",
+            "description": "Formato de saÃ­da: 'json' para dados brutos ou 'tabela' para formato legÃ­vel",
+            "type": "string",
+            "enum": [
+              "json",
+              "tabela"
+            ]
+          },
+          "pagina": {
+            "default": 1,
+            "description": "PÃ¡gina de resultados (100 registros por pÃ¡gina)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "campos": {
+            "description": "Selecionar apenas algumas colunas por rÃ³tulo, separadas por vÃ­rgula (ex: 'Valor,Ano'). Reduz o volume da resposta. Omitir traz todas.",
+            "type": "string"
+          },
+          "estatisticas": {
+            "default": false,
+            "description": "Computa estatÃ­sticas (mÃ­nimo/mÃ¡ximo/mÃ©dia/mediana/desvio-padrÃ£o/percentis) sobre TODOS os registros da consulta, antes da paginaÃ§Ã£o, + ranking top/bottom. Use para 'qual o maior/menor', 'mÃ©dia', 'mediana', 'distribuiÃ§Ã£o', 'ranking'. Quando true, ignora pagina, campos e formato",
+            "type": "boolean"
+          },
+          "agruparPor": {
+            "description": "Com estatisticas=true, agrupa pela coluna informada (rÃ³tulo, ex: 'Unidade da FederaÃ§Ã£o', 'Ano') e ranqueia os grupos por soma decrescente (grupos[0] = maior total), cada grupo com sua mini-distribuiÃ§Ã£o",
+            "type": "string"
+          },
+          "topN": {
+            "default": 10,
+            "description": "Tamanho das listas top/bottom quando estatisticas=true sem agruparPor (padrÃ£o: 10, mÃ¡x: 100)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "tabela"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tabela": {
+            "type": "string",
+            "description": "CÃ³digo da tabela SIDRA consultada"
+          },
+          "nome": {
+            "type": "string",
+            "description": "Nome da tabela (quando conhecido)"
+          },
+          "totalRegistros": {
+            "type": "number",
+            "description": "Total de registros de dados disponÃ­veis (todas as pÃ¡ginas)"
+          },
+          "colunas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "RÃ³tulos das colunas, na ordem"
+          },
+          "registros": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "description": "Registros da pÃ¡gina atual: cada um mapeia rÃ³tulo da coluna -> valor"
+          },
+          "paginacao": {
+            "type": "object",
+            "properties": {
+              "pagina": {
+                "type": "number"
+              },
+              "porPagina": {
+                "type": "number"
+              },
+              "totalPaginas": {
+                "type": "number"
+              },
+              "temMais": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "pagina",
+              "porPagina",
+              "totalPaginas",
+              "temMais"
+            ],
+            "additionalProperties": false,
+            "description": "Metadados de paginaÃ§Ã£o para continuaÃ§Ã£o"
+          },
+          "estatisticas": {
+            "type": "object",
+            "properties": {
+              "colunaValor": {
+                "type": "string",
+                "description": "RÃ³tulo da coluna numÃ©rica analisada (sempre 'Valor' no SIDRA)"
+              },
+              "registrosConsiderados": {
+                "type": "number",
+                "description": "Registros com valor numÃ©rico (contam no n)"
+              },
+              "registrosSemValor": {
+                "type": "number",
+                "description": "Registros excluÃ­dos por marcador de ausÃªncia SIDRA ('-', '..', '...', 'X') ou valor nÃ£o numÃ©rico"
+              },
+              "aviso": {
+                "description": "Avisos sobre agrupamento automÃ¡tico, mistura de unidades ou truncamento",
+                "type": "string"
+              },
+              "distribuicao": {
+                "description": "DistribuiÃ§Ã£o do conjunto inteiro (sem agruparPor)",
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "number",
+                    "description": "Registros com valor numÃ©rico considerados"
+                  },
+                  "soma": {
+                    "type": "number"
+                  },
+                  "minimo": {
+                    "type": "number"
+                  },
+                  "maximo": {
+                    "type": "number"
+                  },
+                  "media": {
+                    "type": "number"
+                  },
+                  "mediana": {
+                    "type": "number"
+                  },
+                  "desvioPadrao": {
+                    "type": "number"
+                  },
+                  "percentis": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "percentil": {
+                          "type": "number",
+                          "description": "Percentil (50 = mediana)"
+                        },
+                        "valor": {
+                          "type": "number"
+                        },
+                        "rotulo": {
+                          "type": "string",
+                          "description": "Enunciado por extenso, pronto para citar ao leitor"
+                        }
+                      },
+                      "required": [
+                        "percentil",
+                        "valor",
+                        "rotulo"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "n",
+                  "soma",
+                  "minimo",
+                  "maximo",
+                  "media",
+                  "mediana",
+                  "desvioPadrao",
+                  "percentis"
+                ],
+                "additionalProperties": false
+              },
+              "top": {
+                "description": "Maiores valores, com as colunas de identificaÃ§Ã£o do registro (sem agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "bottom": {
+                "description": "Menores valores (sem agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "agrupadoPor": {
+                "description": "RÃ³tulo da coluna de agrupamento (com agruparPor)",
+                "type": "string"
+              },
+              "totalGrupos": {
+                "description": "Total de grupos existentes antes do teto (com agruparPor)",
+                "type": "number"
+              },
+              "grupos": {
+                "description": "Grupos ordenados por soma decrescente, cada um com sua mini-distribuiÃ§Ã£o (com agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "n": {
+                      "type": "number",
+                      "description": "Registros com valor numÃ©rico considerados"
+                    },
+                    "soma": {
+                      "type": "number"
+                    },
+                    "minimo": {
+                      "type": "number"
+                    },
+                    "maximo": {
+                      "type": "number"
+                    },
+                    "media": {
+                      "type": "number"
+                    },
+                    "mediana": {
+                      "type": "number"
+                    },
+                    "desvioPadrao": {
+                      "type": "number"
+                    },
+                    "percentis": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "percentil": {
+                            "type": "number",
+                            "description": "Percentil (50 = mediana)"
+                          },
+                          "valor": {
+                            "type": "number"
+                          },
+                          "rotulo": {
+                            "type": "string",
+                            "description": "Enunciado por extenso, pronto para citar ao leitor"
+                          }
+                        },
+                        "required": [
+                          "percentil",
+                          "valor",
+                          "rotulo"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "grupo": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "n",
+                    "soma",
+                    "minimo",
+                    "maximo",
+                    "media",
+                    "mediana",
+                    "desvioPadrao",
+                    "percentis",
+                    "grupo"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "colunaValor",
+              "registrosConsiderados",
+              "registrosSemValor"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco estatÃ­stico presente quando estatisticas=true (registros vem vazio nesse modo)"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "tabela",
+          "nome",
+          "totalRegistros",
+          "colunas",
+          "registros",
+          "paginacao",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_nomes",
+      "title": "FrequÃªncia e ranking de nomes",
+      "description": "Queries name frequency and rankings in Brazil (IBGE).\n\nFeatures:\n1. **Name frequency** (tipo='frequencia'):\n   - Birth frequency by decade\n   - Multiple names separated by comma\n   - Filter by sex and locality\n\n2. **Name ranking** (tipo='ranking'):\n   - Most popular names\n   - Filter by decade, sex, and locality\n\nAvailable decades: 1930-2010\n\nExamples:\n- Frequency of \"Maria\": tipo=\"frequencia\", nomes=\"Maria\"\n- Compare names: tipo=\"frequencia\", nomes=\"JoÃ£o,JosÃ©,Pedro\"\n- 2000s ranking: tipo=\"ranking\", decada=2000\n- Female names: tipo=\"ranking\", sexo=\"F\"\n\nBehavior: read-only and idempotent â a live GET against the public IBGE Nomes (Censo) API. Returns a Markdown table.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "frequencia",
+              "ranking"
+            ],
+            "description": "Tipo de consulta: 'frequencia' para buscar nomes especÃ­ficos ou 'ranking' para ver os mais populares"
+          },
+          "nomes": {
+            "description": "Para tipo='frequencia': Nome ou nomes separados por vÃ­rgula",
+            "type": "string"
+          },
+          "decada": {
+            "description": "Para tipo='ranking': DÃ©cada do ranking (ex: 1990, 2000, 2010)",
+            "type": "number"
+          },
+          "sexo": {
+            "description": "Filtrar por sexo: M (masculino) ou F (feminino)",
+            "type": "string",
+            "enum": [
+              "M",
+              "F"
+            ]
+          },
+          "localidade": {
+            "description": "CÃ³digo IBGE da localidade (UF: 2 dÃ­gitos, MunicÃ­pio: 7 dÃ­gitos)",
+            "type": "string"
+          },
+          "limite": {
+            "default": 20,
+            "description": "Para tipo='ranking': NÃºmero de nomes (padrÃ£o: 20)",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "tipo"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "frequencia",
+              "ranking"
+            ],
+            "description": "Tipo da consulta realizada"
+          },
+          "frequencia": {
+            "description": "Resultados de frequÃªncia (presente quando tipo='frequencia')",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nome": {
+                  "type": "string",
+                  "description": "Nome consultado"
+                },
+                "sexo": {
+                  "description": "Sexo do nome: M, F ou nulo",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "localidade": {
+                  "type": "string",
+                  "description": "CÃ³digo IBGE da localidade (ou BR para Brasil)"
+                },
+                "periodos": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "periodo": {
+                        "type": "string",
+                        "description": "PerÃ­odo/dÃ©cada (ex: '1930[', '1990,2000[')"
+                      },
+                      "frequencia": {
+                        "type": "number",
+                        "description": "FrequÃªncia de registros do nome no perÃ­odo"
+                      }
+                    },
+                    "required": [
+                      "periodo",
+                      "frequencia"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "FrequÃªncia do nome por perÃ­odo"
+                },
+                "total": {
+                  "type": "number",
+                  "description": "Soma das frequÃªncias de todos os perÃ­odos"
+                }
+              },
+              "required": [
+                "nome",
+                "localidade",
+                "periodos",
+                "total"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "ranking": {
+            "description": "Resultado do ranking (presente quando tipo='ranking')",
+            "type": "object",
+            "properties": {
+              "localidade": {
+                "type": "string",
+                "description": "CÃ³digo IBGE da localidade (ou BR para Brasil)"
+              },
+              "sexo": {
+                "description": "Sexo do ranking: M, F ou nulo",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "decada": {
+                "description": "DÃ©cada do ranking, quando informada",
+                "type": "number"
+              },
+              "itens": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "ranking": {
+                      "type": "number",
+                      "description": "PosiÃ§Ã£o no ranking"
+                    },
+                    "nome": {
+                      "type": "string",
+                      "description": "Nome"
+                    },
+                    "frequencia": {
+                      "type": "number",
+                      "description": "FrequÃªncia de registros do nome"
+                    }
+                  },
+                  "required": [
+                    "ranking",
+                    "nome",
+                    "frequencia"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Itens do ranking, limitados pelo parÃ¢metro 'limite'"
+              }
+            },
+            "required": [
+              "localidade",
+              "itens"
+            ],
+            "additionalProperties": false
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "tipo",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_noticias",
+      "title": "NotÃ­cias do IBGE",
+      "description": "Searches and lists already-published IBGE news articles and press releases.\n\nUse this to find recent IBGE publications or announcements about a survey or topic â when an indicator was released, or news mentioning a term like \"censo\". Results are sorted newest-first; with no parameters it returns the 10 most recent items.\n\nParameters:\n- busca: free-text term to match (e.g. \"PIB\", \"censo\")\n- tipo: \"release\" (official publication of survey results) or \"noticia\" (general news); omit for both\n- de / ate: date range, format DD/MM/AAAA (e.g. de=\"01/01/2024\", ate=\"31/12/2024\")\n- destaque: true to return only featured items\n- quantidade: how many to return (default 10, max 100); pagina: page number to page through more\n\nEach item returns: title, type (release/news), publication date, editoria (section), related products/surveys, a featured flag, a plain-text summary, and a link to the full article. The header reports the total count and current page.\n\nExamples:\n- Latest 10 news: (no parameters)\n- Search census: busca=\"censo\"\n- 2024 news: de=\"01/01/2024\", ate=\"31/12/2024\"\n- Releases only: tipo=\"release\"\n\nUse a different tool when:\n- Scheduled/upcoming release dates (not yet published) â ibge_calendario\n\nBehavior: read-only and idempotent â a live GET against the public IBGE NotÃ­cias API. Returns a Markdown list.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "busca": {
+            "description": "Termo para buscar nas notÃ­cias",
+            "type": "string"
+          },
+          "quantidade": {
+            "default": 10,
+            "description": "Quantidade de notÃ­cias a retornar (padrÃ£o: 10, mÃ¡ximo: 100)",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "pagina": {
+            "default": 1,
+            "description": "NÃºmero da pÃ¡gina para paginaÃ§Ã£o",
+            "type": "number",
+            "minimum": 1
+          },
+          "de": {
+            "description": "Data inicial no formato DD/MM/AAAA (ex: 01/01/2024)",
+            "type": "string"
+          },
+          "ate": {
+            "description": "Data final no formato DD/MM/AAAA (ex: 31/12/2024)",
+            "type": "string"
+          },
+          "tipo": {
+            "description": "Tipo de publicaÃ§Ã£o: 'release' ou 'noticia'",
+            "type": "string",
+            "enum": [
+              "release",
+              "noticia"
+            ]
+          },
+          "destaque": {
+            "description": "Filtrar apenas notÃ­cias em destaque",
+            "type": "boolean"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "noticias": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "titulo": {
+                  "type": "string",
+                  "description": "TÃ­tulo da notÃ­cia ou release"
+                },
+                "tipo": {
+                  "type": "string",
+                  "description": "Tipo de publicaÃ§Ã£o (ex: 'Release' ou 'NotÃ­cia')"
+                },
+                "dataPublicacao": {
+                  "type": "string",
+                  "description": "Data de publicaÃ§Ã£o (formato original da API)"
+                },
+                "editorias": {
+                  "description": "Editoria(s) associada(s) Ã  publicaÃ§Ã£o",
+                  "type": "string"
+                },
+                "produtos": {
+                  "description": "Produtos do IBGE relacionados Ã  publicaÃ§Ã£o",
+                  "type": "string"
+                },
+                "destaque": {
+                  "description": "Indica se a publicaÃ§Ã£o estÃ¡ em destaque",
+                  "type": "boolean"
+                },
+                "introducao": {
+                  "description": "IntroduÃ§Ã£o/resumo da publicaÃ§Ã£o (texto limpo)",
+                  "type": "string"
+                },
+                "link": {
+                  "type": "string",
+                  "description": "URL para a publicaÃ§Ã£o completa"
+                }
+              },
+              "required": [
+                "titulo",
+                "tipo",
+                "dataPublicacao",
+                "link"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Lista de notÃ­cias retornadas"
+          },
+          "total": {
+            "type": "number",
+            "description": "Total de notÃ­cias encontradas na consulta"
+          },
+          "pagina": {
+            "type": "number",
+            "description": "PÃ¡gina atual"
+          },
+          "totalPaginas": {
+            "type": "number",
+            "description": "NÃºmero total de pÃ¡ginas"
+          },
+          "busca": {
+            "description": "Termo de busca aplicado, se houver",
+            "type": "string"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "noticias",
+          "total",
+          "pagina",
+          "totalPaginas",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_sidra_tabelas",
+      "title": "Busca de tabelas SIDRA",
+      "description": "Lists and searches available SIDRA tables.\n\nFeatures:\n- List all SIDRA tables (aggregates)\n- Search by table name\n- Filter by survey (Census, PNAD, GDP, etc.)\n- Shows code and name of each table\n\nSIDRA contains data from various surveys:\n- Demographic Census\n- PNAD ContÃ­nua (employment, income)\n- National Accounts (GDP)\n- Industrial Survey\n- Agricultural Survey\n\nExamples:\n- List tables: (no parameters)\n- Search population tables: busca=\"populaÃ§Ã£o\"\n- Census tables: pesquisa=\"censo\"\n\nThis is step 1 of the SIDRA workflow: find a table code â ibge_sidra_metadados (structure) â ibge_sidra (query).\nFor common data, a wrapper is usually easier: ibge_censo, ibge_indicadores, ibge_comparar, ibge_cidades.\n\nBehavior: read-only and idempotent â a live GET against the public IBGE SIDRA API. Returns a Markdown table.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "busca": {
+            "description": "Termo para buscar no nome das tabelas/agregados",
+            "type": "string"
+          },
+          "pesquisa": {
+            "description": "Filtrar por cÃ³digo ou nome da pesquisa (ex: 'censo', 'pnad', 'pib')",
+            "type": "string"
+          },
+          "limite": {
+            "default": 20,
+            "description": "NÃºmero mÃ¡ximo de resultados (padrÃ£o: 20)",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tabelas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "codigo": {
+                  "type": "string",
+                  "description": "CÃ³digo da tabela/agregado SIDRA"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome da tabela/agregado"
+                },
+                "pesquisa": {
+                  "description": "Pesquisa de origem (cÃ³digo - nome)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "codigo",
+                "nome"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Lista de tabelas SIDRA retornadas"
+          },
+          "total": {
+            "type": "number",
+            "description": "Total de tabelas que correspondem aos critÃ©rios"
+          },
+          "busca": {
+            "description": "Termo de busca aplicado, se houver",
+            "type": "string"
+          },
+          "pesquisa": {
+            "description": "Filtro de pesquisa aplicado, se houver",
+            "type": "string"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "tabelas",
+          "total",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_sidra_metadados",
+      "title": "Metadados de tabela SIDRA",
+      "description": "Returns metadata for a specific SIDRA table.\n\nFeatures:\n- General info (name, survey, subject, periodicity)\n- Available territorial levels\n- Variable list with units\n- Classifications and categories\n- Available periods\n\nUse this tool to understand table structure BEFORE querying data with ibge_sidra.\n\nExamples:\n- Population table metadata: tabela=\"6579\"\n- Census 2022 metadata: tabela=\"9514\"\n- PNAD unemployment: tabela=\"4714\"\n\nUse this after finding a table code (ibge_sidra_tabelas) and before querying with ibge_sidra.\n\nBehavior: read-only and idempotent â a live GET against the public IBGE SIDRA API. Returns Markdown.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "tabela": {
+            "type": "string",
+            "description": "CÃ³digo da tabela/agregado SIDRA (ex: '6579', '9514', '4714')"
+          },
+          "incluir_periodos": {
+            "default": true,
+            "description": "Incluir lista de perÃ­odos disponÃ­veis (padrÃ£o: true)",
+            "type": "boolean"
+          },
+          "incluir_localidades": {
+            "default": false,
+            "description": "Incluir nÃ­veis territoriais disponÃ­veis (padrÃ£o: false)",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "tabela"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "description": "CÃ³digo da tabela/agregado SIDRA"
+          },
+          "nome": {
+            "type": "string",
+            "description": "Nome da tabela"
+          },
+          "url": {
+            "description": "URL da tabela no SIDRA",
+            "type": "string"
+          },
+          "pesquisa": {
+            "description": "Nome da pesquisa de origem",
+            "type": "string"
+          },
+          "assunto": {
+            "description": "Assunto/tema da tabela",
+            "type": "string"
+          },
+          "periodicidade": {
+            "description": "Periodicidade da pesquisa",
+            "type": "object",
+            "properties": {
+              "frequencia": {
+                "description": "FrequÃªncia de coleta (ex: anual, mensal)",
+                "type": "string"
+              },
+              "inicio": {
+                "description": "Ano/perÃ­odo inicial da sÃ©rie",
+                "type": "number"
+              },
+              "fim": {
+                "description": "Ano/perÃ­odo final da sÃ©rie",
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "niveisTerritoriais": {
+            "description": "NÃ­veis territoriais disponÃ­veis para a tabela",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "codigo": {
+                  "type": "string",
+                  "description": "CÃ³digo do nÃ­vel territorial (ex: N1, N3, N6)"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome do nÃ­vel territorial (ex: Brasil, UF, MunicÃ­pio)"
+                }
+              },
+              "required": [
+                "codigo",
+                "nome"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "variaveis": {
+            "description": "VariÃ¡veis da tabela, com unidades e classificaÃ§Ãµes/categorias",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "description": "ID da variÃ¡vel"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome da variÃ¡vel"
+                },
+                "unidade": {
+                  "description": "Unidade de medida da variÃ¡vel",
+                  "type": "string"
+                },
+                "classificacoes": {
+                  "description": "ClassificaÃ§Ãµes aplicÃ¡veis Ã  variÃ¡vel",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "description": "ID da classificaÃ§Ã£o"
+                      },
+                      "nome": {
+                        "type": "string",
+                        "description": "Nome da classificaÃ§Ã£o"
+                      },
+                      "categorias": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "number",
+                              "description": "ID da categoria"
+                            },
+                            "nome": {
+                              "type": "string",
+                              "description": "Nome da categoria"
+                            },
+                            "unidade": {
+                              "description": "Unidade da categoria",
+                              "type": "string"
+                            },
+                            "nivel": {
+                              "description": "NÃ­vel hierÃ¡rquico da categoria",
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "nome"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "Categorias da classificaÃ§Ã£o"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "nome",
+                      "categorias"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "nome"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "periodos": {
+            "description": "PerÃ­odos disponÃ­veis para a tabela (quando incluir_periodos)",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "CÃ³digo do perÃ­odo"
+                },
+                "literais": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "DescriÃ§Ãµes textuais do perÃ­odo"
+                }
+              },
+              "required": [
+                "id",
+                "literais"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "codigo",
+          "nome",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_malhas",
+      "title": "Malhas geogrÃ¡ficas",
+      "description": "Gets geographic meshes (maps) from IBGE in GeoJSON, TopoJSON, or SVG format.\n\nFeatures:\n- Meshes for Brazil, regions, states, municipalities\n- Different resolution levels (internal divisions)\n- Different quality levels\n- Formats: GeoJSON (data), TopoJSON (compact), SVG (image)\n\nLocality types:\n- \"BR\" or \"1\" = Entire Brazil\n- State abbreviation (e.g., \"SP\", \"RJ\")\n- State code (e.g., \"35\" for SP)\n- Municipality code (7 digits)\n\nResolution (internal divisions):\n- 0 = Outline only\n- 2 = States\n- 5 = Municipalities\n\nExamples:\n- Brazil with states: localidade=\"BR\", resolucao=\"2\"\n- SÃ£o Paulo with municipalities: localidade=\"SP\", resolucao=\"5\"\n- SVG format: localidade=\"BR\", formato=\"svg\"\n\nUse a different tool when:\n- Thematic meshes (biomes, Legal Amazon, semi-arid, metropolitan regions) â ibge_malhas_tema\n\nBehavior: read-only and idempotent â a live GET against the public IBGE Malhas API. Returns the mesh in the requested format (GeoJSON, TopoJSON, or SVG).",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "localidade": {
+            "type": "string",
+            "description": "CÃ³digo IBGE ou sigla da localidade (ex: 'BR', 'SP', '35', '3550308')"
+          },
+          "tipo": {
+            "description": "Tipo de divisÃ£o territorial",
+            "type": "string",
+            "enum": [
+              "paises",
+              "regioes",
+              "estados",
+              "mesorregioes",
+              "microrregioes",
+              "municipios",
+              "distritos",
+              "regioes-imediatas",
+              "regioes-intermediarias"
+            ]
+          },
+          "formato": {
+            "default": "geojson",
+            "description": "Formato de saÃ­da (padrÃ£o: geojson)",
+            "type": "string",
+            "enum": [
+              "geojson",
+              "topojson",
+              "svg"
+            ]
+          },
+          "resolucao": {
+            "default": "0",
+            "description": "ResoluÃ§Ã£o/divisÃµes internas:\n0 = Sem divisÃµes internas\n1 = MacrorregiÃµes (apenas para BR)\n2 = Unidades da FederaÃ§Ã£o\n3 = MesorregiÃµes\n4 = MicrorregiÃµes\n5 = MunicÃ­pios",
+            "type": "string",
+            "enum": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ]
+          },
+          "qualidade": {
+            "default": "4",
+            "description": "Qualidade do traÃ§ado: 1=mÃ­nima, 2=baixa, 3=intermediÃ¡ria, 4=mÃ¡xima",
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          "intrarregiao": {
+            "description": "CÃ³digo de regiÃ£o para filtrar (apenas quando localidade=BR)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "localidade"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "localidade": {
+            "type": "string",
+            "description": "CÃ³digo IBGE ou sigla da localidade consultada"
+          },
+          "formato": {
+            "type": "string",
+            "description": "Formato de saÃ­da solicitado (geojson, topojson ou svg)"
+          },
+          "resolucao": {
+            "description": "ResoluÃ§Ã£o/divisÃµes internas solicitada",
+            "type": "string"
+          },
+          "qualidade": {
+            "description": "Qualidade do traÃ§ado solicitada",
+            "type": "string"
+          },
+          "tipo": {
+            "description": "Tipo de divisÃ£o territorial, quando informado",
+            "type": "string"
+          },
+          "intrarregiao": {
+            "description": "CÃ³digo de regiÃ£o usado para filtrar (apenas quando localidade=BR)",
+            "type": "string"
+          },
+          "url": {
+            "description": "URL para download da malha completa",
+            "type": "string"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "localidade",
+          "formato",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_pesquisas",
+      "title": "Pesquisas do IBGE",
+      "description": "Lists available IBGE surveys and their tables.\n\nFeatures:\n- List all IBGE surveys (Census, PNAD, GDP, etc.)\n- Search by name or code\n- Show details and tables of a specific survey\n- Categorize surveys by theme\n\nMain surveys:\n- **Census**: Demographic, Agricultural, MUNIC\n- **PNAD ContÃ­nua**: Employment, income, education\n- **National Accounts**: GDP, investments\n- **Economic Surveys**: Industry, Commerce, Services\n- **Price Indices**: IPCA, INPC\n\nExamples:\n- List all: (no parameters)\n- Search population: busca=\"populaÃ§Ã£o\"\n- PNAD details: detalhes=\"pnad\"\n\nThis lists surveys, not data. To find table codes use ibge_sidra_tabelas; to query data use ibge_sidra (or a wrapper: ibge_censo, ibge_indicadores, ibge_comparar, ibge_cidades).\n\nBehavior: read-only and idempotent â a live GET against the public IBGE SIDRA/Pesquisas API. Returns a Markdown list.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "busca": {
+            "description": "Termo para buscar no nome ou ID da pesquisa",
+            "type": "string"
+          },
+          "detalhes": {
+            "description": "CÃ³digo da pesquisa para ver detalhes e tabelas disponÃ­veis",
+            "type": "string"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "modo": {
+            "type": "string",
+            "enum": [
+              "lista",
+              "detalhes"
+            ],
+            "description": "Modo de consulta que originou este resultado: lista de pesquisas ou detalhes de uma"
+          },
+          "pesquisas": {
+            "description": "Lista de pesquisas (modo lista)",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "CÃ³digo da pesquisa"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome da pesquisa"
+                },
+                "totalTabelas": {
+                  "type": "number",
+                  "description": "Quantidade de tabelas (agregados) da pesquisa"
+                }
+              },
+              "required": [
+                "id",
+                "nome",
+                "totalTabelas"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "description": "Total de pesquisas encontradas (modo lista)",
+            "type": "number"
+          },
+          "busca": {
+            "description": "Termo de busca aplicado, se houver (modo lista)",
+            "type": "string"
+          },
+          "pesquisa": {
+            "description": "Detalhes de uma pesquisa especÃ­fica (modo detalhes)",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "CÃ³digo da pesquisa"
+              },
+              "nome": {
+                "type": "string",
+                "description": "Nome da pesquisa"
+              },
+              "totalTabelas": {
+                "type": "number",
+                "description": "Quantidade de tabelas da pesquisa"
+              },
+              "tabelas": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "CÃ³digo da tabela (agregado)"
+                    },
+                    "nome": {
+                      "type": "string",
+                      "description": "Nome da tabela"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "nome"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Tabelas disponÃ­veis na pesquisa"
+              }
+            },
+            "required": [
+              "id",
+              "nome",
+              "totalTabelas",
+              "tabelas"
+            ],
+            "additionalProperties": false
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "modo",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_censo",
+      "title": "Censo DemogrÃ¡fico",
+      "description": "Queries IBGE Demographic Census data (1970-2022).\n\nSimplified tool to access census data without knowing SIDRA table codes.\n\nAvailable years: 1970, 1980, 1991, 2000, 2010, 2022\n\nAvailable themes:\n- populacao: Resident population\n- alfabetizacao: Literacy rate\n- domicilios: Housing characteristics\n- idade_sexo: Age pyramid\n- religiao: Religion distribution\n- cor_raca: Race/color\n- rendimento: Monthly income\n- educacao: Education level\n- trabalho: Employment\n\nExamples:\n- Population 2022: ano=\"2022\", tema=\"populacao\"\n- Historical series: ano=\"todos\", tema=\"populacao\"\n- Literacy 2010 by state: ano=\"2010\", tema=\"alfabetizacao\", nivel_territorial=\"3\"\n- List tables: tema=\"listar\"\n\nStatistics mode: for largest/smallest/mean/median/distribution/ranking questions over census data (\"which municipality had the largest 2022 population?\") use estatisticas=true â full distribution + top/bottom computed over ALL rows before truncation; agruparPor=\"<column label>\" ranks groups by descending sum. In this mode campos/formato are ignored and registros comes empty.\n\nUse a different tool when:\n- Current real-time Brazil population â ibge_populacao\n- One municipality's current panel (estimate, HDI, GDP) â ibge_cidades\n- Comparing/ranking localities â ibge_comparar\n- An arbitrary SIDRA table â ibge_sidra\n\nBehavior: read-only and idempotent â a live GET against the public IBGE SIDRA API. Returns Markdown plus a typed structuredContent payload.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "ano": {
+            "description": "Ano do censo (1970, 1980, 1991, 2000, 2010, 2022) ou 'todos' para sÃ©rie histÃ³rica",
+            "type": "string",
+            "enum": [
+              "1970",
+              "1980",
+              "1991",
+              "2000",
+              "2010",
+              "2022",
+              "todos"
+            ]
+          },
+          "tema": {
+            "default": "populacao",
+            "description": "Tema dos dados:\n- populacao: PopulaÃ§Ã£o residente\n- alfabetizacao: Taxa de alfabetizaÃ§Ã£o\n- domicilios: CaracterÃ­sticas dos domicÃ­lios\n- idade_sexo: PirÃ¢mide etÃ¡ria\n- religiao: DistribuiÃ§Ã£o por religiÃ£o\n- cor_raca: Cor ou raÃ§a\n- rendimento: Rendimento mensal\n- migracao: MigraÃ§Ã£o\n- educacao: NÃ­vel de instruÃ§Ã£o\n- trabalho: OcupaÃ§Ã£o e trabalho\n- indigenas: PopulaÃ§Ã£o indÃ­gena\n- quilombolas: PopulaÃ§Ã£o quilombola\n- saneamento: Abastecimento de Ã¡gua e esgoto\n- deficiencia: Pessoas com deficiÃªncia\n- nupcialidade: Estado civil\n- fecundidade: Taxa de fecundidade\n- listar: Lista tabelas disponÃ­veis",
+            "type": "string",
+            "enum": [
+              "populacao",
+              "alfabetizacao",
+              "domicilios",
+              "idade_sexo",
+              "religiao",
+              "cor_raca",
+              "rendimento",
+              "migracao",
+              "educacao",
+              "trabalho",
+              "indigenas",
+              "quilombolas",
+              "saneamento",
+              "deficiencia",
+              "nupcialidade",
+              "fecundidade",
+              "listar"
+            ]
+          },
+          "nivel_territorial": {
+            "default": "1",
+            "description": "NÃ­vel territorial (cÃ³digo N): 1=Brasil, 2=RegiÃ£o, 3=UF, 6=MunicÃ­pio",
+            "type": "string"
+          },
+          "localidades": {
+            "default": "all",
+            "description": "CÃ³digos das localidades ou 'all'",
+            "type": "string"
+          },
+          "formato": {
+            "default": "tabela",
+            "description": "Formato de saÃ­da",
+            "type": "string",
+            "enum": [
+              "tabela",
+              "json"
+            ]
+          },
+          "campos": {
+            "description": "Selecionar apenas algumas colunas por rÃ³tulo, separadas por vÃ­rgula (ex: 'Valor,Ano'). Reduz o volume da resposta.",
+            "type": "string"
+          },
+          "estatisticas": {
+            "default": false,
+            "description": "Computa estatÃ­sticas (mÃ­nimo/mÃ¡ximo/mÃ©dia/mediana/desvio-padrÃ£o/percentis) sobre TODOS os registros da consulta, antes da paginaÃ§Ã£o, + ranking top/bottom. Use para 'qual o maior/menor', 'mÃ©dia', 'mediana', 'distribuiÃ§Ã£o', 'ranking'. Quando true, ignora pagina, campos e formato",
+            "type": "boolean"
+          },
+          "agruparPor": {
+            "description": "Com estatisticas=true, agrupa pela coluna informada (rÃ³tulo, ex: 'Unidade da FederaÃ§Ã£o', 'Ano') e ranqueia os grupos por soma decrescente (grupos[0] = maior total), cada grupo com sua mini-distribuiÃ§Ã£o",
+            "type": "string"
+          },
+          "topN": {
+            "default": 10,
+            "description": "Tamanho das listas top/bottom quando estatisticas=true sem agruparPor (padrÃ£o: 10, mÃ¡x: 100)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tema": {
+            "description": "Tema do censo consultado",
+            "type": "string"
+          },
+          "tabela": {
+            "description": "Tabela SIDRA de origem",
+            "type": "string"
+          },
+          "descricao": {
+            "description": "DescriÃ§Ã£o da tabela",
+            "type": "string"
+          },
+          "ano": {
+            "description": "Ano(s) de referÃªncia",
+            "type": "string"
+          },
+          "totalRegistros": {
+            "type": "number",
+            "description": "Total de registros de dados"
+          },
+          "colunas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "RÃ³tulos das colunas, na ordem"
+          },
+          "registros": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "description": "Registros: cada um mapeia rÃ³tulo da coluna -> valor"
+          },
+          "estatisticas": {
+            "type": "object",
+            "properties": {
+              "colunaValor": {
+                "type": "string",
+                "description": "RÃ³tulo da coluna numÃ©rica analisada (sempre 'Valor' no SIDRA)"
+              },
+              "registrosConsiderados": {
+                "type": "number",
+                "description": "Registros com valor numÃ©rico (contam no n)"
+              },
+              "registrosSemValor": {
+                "type": "number",
+                "description": "Registros excluÃ­dos por marcador de ausÃªncia SIDRA ('-', '..', '...', 'X') ou valor nÃ£o numÃ©rico"
+              },
+              "aviso": {
+                "description": "Avisos sobre agrupamento automÃ¡tico, mistura de unidades ou truncamento",
+                "type": "string"
+              },
+              "distribuicao": {
+                "description": "DistribuiÃ§Ã£o do conjunto inteiro (sem agruparPor)",
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "number",
+                    "description": "Registros com valor numÃ©rico considerados"
+                  },
+                  "soma": {
+                    "type": "number"
+                  },
+                  "minimo": {
+                    "type": "number"
+                  },
+                  "maximo": {
+                    "type": "number"
+                  },
+                  "media": {
+                    "type": "number"
+                  },
+                  "mediana": {
+                    "type": "number"
+                  },
+                  "desvioPadrao": {
+                    "type": "number"
+                  },
+                  "percentis": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "percentil": {
+                          "type": "number",
+                          "description": "Percentil (50 = mediana)"
+                        },
+                        "valor": {
+                          "type": "number"
+                        },
+                        "rotulo": {
+                          "type": "string",
+                          "description": "Enunciado por extenso, pronto para citar ao leitor"
+                        }
+                      },
+                      "required": [
+                        "percentil",
+                        "valor",
+                        "rotulo"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "n",
+                  "soma",
+                  "minimo",
+                  "maximo",
+                  "media",
+                  "mediana",
+                  "desvioPadrao",
+                  "percentis"
+                ],
+                "additionalProperties": false
+              },
+              "top": {
+                "description": "Maiores valores, com as colunas de identificaÃ§Ã£o do registro (sem agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "bottom": {
+                "description": "Menores valores (sem agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "agrupadoPor": {
+                "description": "RÃ³tulo da coluna de agrupamento (com agruparPor)",
+                "type": "string"
+              },
+              "totalGrupos": {
+                "description": "Total de grupos existentes antes do teto (com agruparPor)",
+                "type": "number"
+              },
+              "grupos": {
+                "description": "Grupos ordenados por soma decrescente, cada um com sua mini-distribuiÃ§Ã£o (com agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "n": {
+                      "type": "number",
+                      "description": "Registros com valor numÃ©rico considerados"
+                    },
+                    "soma": {
+                      "type": "number"
+                    },
+                    "minimo": {
+                      "type": "number"
+                    },
+                    "maximo": {
+                      "type": "number"
+                    },
+                    "media": {
+                      "type": "number"
+                    },
+                    "mediana": {
+                      "type": "number"
+                    },
+                    "desvioPadrao": {
+                      "type": "number"
+                    },
+                    "percentis": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "percentil": {
+                            "type": "number",
+                            "description": "Percentil (50 = mediana)"
+                          },
+                          "valor": {
+                            "type": "number"
+                          },
+                          "rotulo": {
+                            "type": "string",
+                            "description": "Enunciado por extenso, pronto para citar ao leitor"
+                          }
+                        },
+                        "required": [
+                          "percentil",
+                          "valor",
+                          "rotulo"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "grupo": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "n",
+                    "soma",
+                    "minimo",
+                    "maximo",
+                    "media",
+                    "mediana",
+                    "desvioPadrao",
+                    "percentis",
+                    "grupo"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "colunaValor",
+              "registrosConsiderados",
+              "registrosSemValor"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco estatÃ­stico presente quando estatisticas=true (registros vem vazio nesse modo)"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "totalRegistros",
+          "colunas",
+          "registros",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_indicadores",
+      "title": "Indicadores econÃ´micos e sociais",
+      "description": "Queries IBGE economic and social indicators.\n\nAvailable indicators:\n\n**Economic:**\n- pib: GDP at current prices\n- pib_variacao: GDP variation (%)\n- pib_per_capita: GDP per capita\n- industria: Industrial production\n- comercio: Retail sales\n- servicos: Services volume\n\n**Prices:**\n- ipca: Monthly IPCA\n- ipca_acumulado: 12-month IPCA\n- inpc: Monthly INPC\n\n**Labor:**\n- desemprego: Unemployment rate\n- ocupacao: Employed people\n- rendimento: Average income\n- informalidade: Informality rate\n\n**Population:**\n- populacao: Population estimate\n- densidade: Population density\n\nExamples:\n- GDP: indicador=\"pib\"\n- IPCA last 12 months: indicador=\"ipca\", periodos=\"last 12\"\n- Unemployment by state: indicador=\"desemprego\", nivel_territorial=\"3\"\n- List indicators: indicador=\"listar\"\n\nStatistics mode: for largest/smallest/mean/median/distribution/ranking questions (\"which state has the highest unemployment?\", \"median GDP per capita across states\") use estatisticas=true â full distribution + top/bottom over ALL rows before truncation; agruparPor=\"<column label>\" (e.g. \"Unidade da FederaÃ§Ã£o\", \"Trimestre\") ranks groups by descending sum. In this mode campos/formato are ignored and registros comes empty.\n\nUse a different tool when:\n- Comparing/ranking localities â ibge_comparar\n- Census themes â ibge_censo\n- One municipality's panel â ibge_cidades\n\nBehavior: read-only and idempotent â a live GET against the public IBGE SIDRA API. Returns Markdown plus a typed structuredContent payload.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "indicador": {
+            "description": "Nome do indicador (ex: \"pib\", \"ipca\", \"desemprego\", \"populacao\").\nUse \"listar\" para ver todos os indicadores disponÃ­veis.",
+            "type": "string"
+          },
+          "categoria": {
+            "description": "Filtrar por categoria de indicadores",
+            "type": "string",
+            "enum": [
+              "economico",
+              "precos",
+              "trabalho",
+              "populacao",
+              "agropecuaria",
+              "todos"
+            ]
+          },
+          "nivel_territorial": {
+            "default": "1",
+            "description": "NÃ­vel territorial (cÃ³digo N): 1=Brasil, 2=RegiÃ£o, 3=UF",
+            "type": "string"
+          },
+          "localidades": {
+            "default": "all",
+            "description": "CÃ³digos das localidades ou 'all'",
+            "type": "string"
+          },
+          "periodos": {
+            "default": "last",
+            "description": "PerÃ­odos (ex: '2023', 'last', 'last 4')",
+            "type": "string"
+          },
+          "formato": {
+            "default": "tabela",
+            "description": "Formato de saÃ­da",
+            "type": "string",
+            "enum": [
+              "tabela",
+              "json"
+            ]
+          },
+          "campos": {
+            "description": "Selecionar apenas algumas colunas por rÃ³tulo, separadas por vÃ­rgula (ex: 'Valor,Ano'). Reduz o volume da resposta.",
+            "type": "string"
+          },
+          "estatisticas": {
+            "default": false,
+            "description": "Computa estatÃ­sticas (mÃ­nimo/mÃ¡ximo/mÃ©dia/mediana/desvio-padrÃ£o/percentis) sobre TODOS os registros da consulta, antes da paginaÃ§Ã£o, + ranking top/bottom. Use para 'qual o maior/menor', 'mÃ©dia', 'mediana', 'distribuiÃ§Ã£o', 'ranking'. Quando true, ignora pagina, campos e formato",
+            "type": "boolean"
+          },
+          "agruparPor": {
+            "description": "Com estatisticas=true, agrupa pela coluna informada (rÃ³tulo, ex: 'Unidade da FederaÃ§Ã£o', 'Ano') e ranqueia os grupos por soma decrescente (grupos[0] = maior total), cada grupo com sua mini-distribuiÃ§Ã£o",
+            "type": "string"
+          },
+          "topN": {
+            "default": 10,
+            "description": "Tamanho das listas top/bottom quando estatisticas=true sem agruparPor (padrÃ£o: 10, mÃ¡x: 100)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "indicador": {
+            "description": "Chave do indicador consultado",
+            "type": "string"
+          },
+          "nome": {
+            "description": "Nome do indicador",
+            "type": "string"
+          },
+          "tabela": {
+            "description": "Tabela SIDRA de origem",
+            "type": "string"
+          },
+          "totalRegistros": {
+            "type": "number",
+            "description": "Total de registros de dados"
+          },
+          "colunas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "RÃ³tulos das colunas, na ordem"
+          },
+          "registros": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "description": "Registros: cada um mapeia rÃ³tulo da coluna -> valor"
+          },
+          "estatisticas": {
+            "type": "object",
+            "properties": {
+              "colunaValor": {
+                "type": "string",
+                "description": "RÃ³tulo da coluna numÃ©rica analisada (sempre 'Valor' no SIDRA)"
+              },
+              "registrosConsiderados": {
+                "type": "number",
+                "description": "Registros com valor numÃ©rico (contam no n)"
+              },
+              "registrosSemValor": {
+                "type": "number",
+                "description": "Registros excluÃ­dos por marcador de ausÃªncia SIDRA ('-', '..', '...', 'X') ou valor nÃ£o numÃ©rico"
+              },
+              "aviso": {
+                "description": "Avisos sobre agrupamento automÃ¡tico, mistura de unidades ou truncamento",
+                "type": "string"
+              },
+              "distribuicao": {
+                "description": "DistribuiÃ§Ã£o do conjunto inteiro (sem agruparPor)",
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "number",
+                    "description": "Registros com valor numÃ©rico considerados"
+                  },
+                  "soma": {
+                    "type": "number"
+                  },
+                  "minimo": {
+                    "type": "number"
+                  },
+                  "maximo": {
+                    "type": "number"
+                  },
+                  "media": {
+                    "type": "number"
+                  },
+                  "mediana": {
+                    "type": "number"
+                  },
+                  "desvioPadrao": {
+                    "type": "number"
+                  },
+                  "percentis": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "percentil": {
+                          "type": "number",
+                          "description": "Percentil (50 = mediana)"
+                        },
+                        "valor": {
+                          "type": "number"
+                        },
+                        "rotulo": {
+                          "type": "string",
+                          "description": "Enunciado por extenso, pronto para citar ao leitor"
+                        }
+                      },
+                      "required": [
+                        "percentil",
+                        "valor",
+                        "rotulo"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "n",
+                  "soma",
+                  "minimo",
+                  "maximo",
+                  "media",
+                  "mediana",
+                  "desvioPadrao",
+                  "percentis"
+                ],
+                "additionalProperties": false
+              },
+              "top": {
+                "description": "Maiores valores, com as colunas de identificaÃ§Ã£o do registro (sem agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "bottom": {
+                "description": "Menores valores (sem agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "agrupadoPor": {
+                "description": "RÃ³tulo da coluna de agrupamento (com agruparPor)",
+                "type": "string"
+              },
+              "totalGrupos": {
+                "description": "Total de grupos existentes antes do teto (com agruparPor)",
+                "type": "number"
+              },
+              "grupos": {
+                "description": "Grupos ordenados por soma decrescente, cada um com sua mini-distribuiÃ§Ã£o (com agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "n": {
+                      "type": "number",
+                      "description": "Registros com valor numÃ©rico considerados"
+                    },
+                    "soma": {
+                      "type": "number"
+                    },
+                    "minimo": {
+                      "type": "number"
+                    },
+                    "maximo": {
+                      "type": "number"
+                    },
+                    "media": {
+                      "type": "number"
+                    },
+                    "mediana": {
+                      "type": "number"
+                    },
+                    "desvioPadrao": {
+                      "type": "number"
+                    },
+                    "percentis": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "percentil": {
+                            "type": "number",
+                            "description": "Percentil (50 = mediana)"
+                          },
+                          "valor": {
+                            "type": "number"
+                          },
+                          "rotulo": {
+                            "type": "string",
+                            "description": "Enunciado por extenso, pronto para citar ao leitor"
+                          }
+                        },
+                        "required": [
+                          "percentil",
+                          "valor",
+                          "rotulo"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "grupo": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "n",
+                    "soma",
+                    "minimo",
+                    "maximo",
+                    "media",
+                    "mediana",
+                    "desvioPadrao",
+                    "percentis",
+                    "grupo"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "colunaValor",
+              "registrosConsiderados",
+              "registrosSemValor"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco estatÃ­stico presente quando estatisticas=true (registros vem vazio nesse modo)"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "totalRegistros",
+          "colunas",
+          "registros",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_cnae",
+      "title": "ClassificaÃ§Ã£o CNAE",
+      "description": "Queries CNAE (National Classification of Economic Activities) from IBGE.\n\nCNAE is the official classification for economic activities in Brazil.\n\nHierarchical structure:\n- Section (letter A-U): 21 main categories\n- Division (2 digits): 87 divisions\n- Group (3 digits): 285 groups\n- Class (4-5 digits): 673 classes\n- Subclass (7 digits): 1,332 subclasses\n\nFeatures:\n- Search by CNAE code\n- Search by activity description\n- List by hierarchical level\n- Show complete hierarchy\n\nExamples:\n- Search software: busca=\"software\"\n- Specific code: codigo=\"6201-5/01\"\n- View section: codigo=\"J\"\n- List divisions: nivel=\"divisoes\"\n\nBehavior: read-only and idempotent â a live GET against the public IBGE CNAE API. Returns Markdown.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "codigo": {
+            "description": "CÃ³digo CNAE para buscar (seÃ§Ã£o, divisÃ£o, grupo, classe ou subclasse).\nExemplos:\n- SeÃ§Ã£o: \"A\" (agricultura)\n- DivisÃ£o: \"01\" (agricultura e pecuÃ¡ria)\n- Grupo: \"01.1\" (produÃ§Ã£o de lavouras)\n- Classe: \"01.11\" (cultivo de cereais)\n- Subclasse: \"0111-3/01\" (cultivo de arroz)",
+            "type": "string"
+          },
+          "busca": {
+            "description": "Termo para buscar na descriÃ§Ã£o das atividades (ex: 'software', 'restaurante', 'comÃ©rcio')",
+            "type": "string"
+          },
+          "nivel": {
+            "description": "NÃ­vel hierÃ¡rquico para listar (padrÃ£o: mostra todos os nÃ­veis relevantes)",
+            "type": "string",
+            "enum": [
+              "secoes",
+              "divisoes",
+              "grupos",
+              "classes",
+              "subclasses"
+            ]
+          },
+          "limite": {
+            "default": 20,
+            "description": "NÃºmero mÃ¡ximo de resultados (padrÃ£o: 20)",
+            "type": "number"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "modo": {
+            "type": "string",
+            "enum": [
+              "busca",
+              "codigo",
+              "lista",
+              "estrutura"
+            ],
+            "description": "Modo de resposta que gerou os dados"
+          },
+          "busca": {
+            "description": "Presente no modo de busca por termo",
+            "type": "object",
+            "properties": {
+              "termo": {
+                "type": "string",
+                "description": "Termo pesquisado"
+              },
+              "nivel": {
+                "type": "string",
+                "description": "NÃ­vel hierÃ¡rquico pesquisado (ex: subclasses, classes)"
+              },
+              "total": {
+                "type": "number",
+                "description": "Quantidade de resultados retornados"
+              },
+              "resultados": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "CÃ³digo CNAE da atividade"
+                    },
+                    "descricao": {
+                      "type": "string",
+                      "description": "DescriÃ§Ã£o da atividade"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "descricao"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Atividades encontradas para o termo"
+              }
+            },
+            "required": [
+              "termo",
+              "nivel",
+              "total",
+              "resultados"
+            ],
+            "additionalProperties": false
+          },
+          "codigo": {
+            "description": "Presente no modo de consulta por cÃ³digo",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "CÃ³digo CNAE consultado"
+              },
+              "descricao": {
+                "type": "string",
+                "description": "DescriÃ§Ã£o do cÃ³digo"
+              },
+              "nivel": {
+                "type": "string",
+                "description": "NÃ­vel do cÃ³digo (secao, divisao, grupo, classe ou subclasse)"
+              },
+              "hierarquia": {
+                "description": "Cadeia hierÃ¡rquica do cÃ³digo (do mais geral ao mais especÃ­fico)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "nivel": {
+                      "type": "string",
+                      "description": "NÃ­vel hierÃ¡rquico (SeÃ§Ã£o, DivisÃ£o, Grupo, Classe, Subclasse)"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "CÃ³digo do nÃ­vel"
+                    },
+                    "descricao": {
+                      "type": "string",
+                      "description": "DescriÃ§Ã£o do nÃ­vel"
+                    }
+                  },
+                  "required": [
+                    "nivel",
+                    "id",
+                    "descricao"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "observacoes": {
+                "description": "ObservaÃ§Ãµes/notas explicativas do cÃ³digo",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "descricao",
+              "nivel"
+            ],
+            "additionalProperties": false
+          },
+          "lista": {
+            "description": "Presente no modo de listagem por nÃ­vel",
+            "type": "object",
+            "properties": {
+              "nivel": {
+                "type": "string",
+                "description": "NÃ­vel hierÃ¡rquico listado"
+              },
+              "total": {
+                "type": "number",
+                "description": "Total de registros existentes no nÃ­vel"
+              },
+              "exibidos": {
+                "type": "number",
+                "description": "Quantidade de registros exibidos (limitada por 'limite')"
+              },
+              "registros": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "CÃ³digo CNAE do registro"
+                    },
+                    "descricao": {
+                      "type": "string",
+                      "description": "DescriÃ§Ã£o do registro"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "descricao"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Registros do nÃ­vel listado"
+              }
+            },
+            "required": [
+              "nivel",
+              "total",
+              "exibidos",
+              "registros"
+            ],
+            "additionalProperties": false
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "modo",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_geocodigo",
+      "title": "CÃ³digos geogrÃ¡ficos do IBGE",
+      "description": "Decodes IBGE codes or searches codes by locality name.\n\nFeatures:\n- Decode region, state, municipality, or district codes\n- Search IBGE code by name\n- Show complete geographic hierarchy\n- Return related codes\n\nCode structure:\n- 1 digit: Region (1=North, 2=Northeast, 3=Southeast, 4=South, 5=Central-West)\n- 2 digits: State (11-53)\n- 7 digits: Municipality\n- 9 digits: District\n\nExamples:\n- Decode municipality: codigo=\"3550308\"\n- Decode state: codigo=\"35\"\n- Search by name: nome=\"SÃ£o Paulo\"\n- Municipality in state: nome=\"Campinas\", uf=\"SP\"\n\nThis tool decodes a code's structure and resolves nameâcode at any level.\nUse a different tool when:\n- You only need to list/search municipalities â ibge_municipios\n- You want the full detailed record of one locality â ibge_localidade\n\nBehavior: read-only and idempotent â a live GET against the public IBGE Localidades API. Returns Markdown.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "codigo": {
+            "description": "CÃ³digo IBGE para decodificar.\nFormatos aceitos:\n- 1 dÃ­gito: RegiÃ£o (1-5)\n- 2 dÃ­gitos: UF (11-53)\n- 7 dÃ­gitos: MunicÃ­pio\n- 9 dÃ­gitos: Distrito",
+            "type": "string"
+          },
+          "nome": {
+            "description": "Nome da localidade para encontrar o cÃ³digo IBGE (estado ou municÃ­pio)",
+            "type": "string"
+          },
+          "uf": {
+            "description": "Estado por sigla (SP), nome (SÃ£o Paulo) ou cÃ³digo IBGE (35) para restringir a busca por nome de municÃ­pio",
+            "type": "string"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "regiao",
+              "uf",
+              "municipio",
+              "distrito",
+              "lista"
+            ],
+            "description": "Tipo do resultado: localidade decodificada (regiao/uf/municipio/distrito) ou lista de municÃ­pios encontrados (lista)"
+          },
+          "codigo": {
+            "description": "CÃ³digo IBGE da localidade resolvida (ausente em resultados do tipo lista)",
+            "type": "number"
+          },
+          "nome": {
+            "description": "Nome da localidade resolvida",
+            "type": "string"
+          },
+          "sigla": {
+            "description": "Sigla da regiÃ£o ou UF, quando aplicÃ¡vel",
+            "type": "string"
+          },
+          "regiao": {
+            "description": "Nome da regiÃ£o Ã  qual a UF pertence (apenas tipo uf)",
+            "type": "string"
+          },
+          "regiaoCodigo": {
+            "description": "CÃ³digo IBGE da regiÃ£o Ã  qual a UF pertence (apenas tipo uf)",
+            "type": "number"
+          },
+          "hierarquia": {
+            "description": "Hierarquia geogrÃ¡fica completa, da regiÃ£o ao municÃ­pio/distrito (tipo municipio/distrito)",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nivel": {
+                  "type": "string",
+                  "description": "Nome do nÃ­vel territorial (RegiÃ£o, UF, MunicÃ­pio, etc.)"
+                },
+                "codigo": {
+                  "type": "number",
+                  "description": "CÃ³digo IBGE do nÃ­vel"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome da localidade neste nÃ­vel"
+                }
+              },
+              "required": [
+                "nivel",
+                "codigo",
+                "nome"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "codigoSidra": {
+            "description": "CÃ³digo SIDRA de 6 dÃ­gitos do municÃ­pio (apenas tipo municipio)",
+            "type": "string"
+          },
+          "estados": {
+            "description": "Estados pertencentes Ã  regiÃ£o (apenas tipo regiao)",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "codigo": {
+                  "type": "number",
+                  "description": "CÃ³digo IBGE da UF"
+                },
+                "sigla": {
+                  "type": "string",
+                  "description": "Sigla da UF"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome da UF"
+                }
+              },
+              "required": [
+                "codigo",
+                "sigla",
+                "nome"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "matches": {
+            "description": "MunicÃ­pios encontrados na busca por nome (apenas tipo lista)",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "codigo": {
+                  "type": "number",
+                  "description": "CÃ³digo IBGE (7 dÃ­gitos) do municÃ­pio"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome do municÃ­pio"
+                }
+              },
+              "required": [
+                "codigo",
+                "nome"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "description": "Quantidade de municÃ­pios encontrados na busca por nome (apenas tipo lista)",
+            "type": "number"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "tipo",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_calendario",
+      "title": "CalendÃ¡rio de divulgaÃ§Ãµes",
+      "description": "Queries IBGE release and collection calendar.\n\nFeatures:\n- List upcoming survey releases\n- Filter by product (IPCA, PNAD, GDP, etc.)\n- Filter by period\n- Distinguish releases from field collections\n\nEvent types:\n- **Release**: Publication of survey results\n- **Collection**: Field research period\n\nExamples:\n- Upcoming releases: (no parameters)\n- IPCA releases: produto=\"IPCA\"\n- 2024 calendar: de=\"01/01/2024\", ate=\"31/12/2024\"\n- Field collections: tipo=\"coleta\"\n\nUse a different tool when:\n- Already-published news and releases â ibge_noticias\n\nBehavior: read-only and idempotent â a live GET against the public IBGE CalendÃ¡rio API. Returns a Markdown list.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "de": {
+            "description": "Data inicial no formato DD/MM/AAAA (ex: '01/01/2024')",
+            "type": "string"
+          },
+          "ate": {
+            "description": "Data final no formato DD/MM/AAAA (ex: '31/12/2024')",
+            "type": "string"
+          },
+          "produto": {
+            "description": "Filtrar por produto/pesquisa (ex: 'IPCA', 'PNAD', 'PIB')",
+            "type": "string"
+          },
+          "tipo": {
+            "default": "divulgacao",
+            "description": "Tipo de evento: 'divulgacao' (publicaÃ§Ãµes), 'coleta' (pesquisas de campo), ou 'todos'",
+            "type": "string",
+            "enum": [
+              "divulgacao",
+              "coleta",
+              "todos"
+            ]
+          },
+          "pagina": {
+            "default": 1,
+            "description": "NÃºmero da pÃ¡gina (padrÃ£o: 1)",
+            "type": "number"
+          },
+          "quantidade": {
+            "default": 20,
+            "description": "Quantidade de resultados por pÃ¡gina (padrÃ£o: 20)",
+            "type": "number"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eventos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "description": "Identificador do evento no calendÃ¡rio"
+                },
+                "titulo": {
+                  "type": "string",
+                  "description": "TÃ­tulo do evento"
+                },
+                "produto": {
+                  "type": "string",
+                  "description": "Nome do produto/pesquisa associado"
+                },
+                "dataDivulgacao": {
+                  "type": "string",
+                  "description": "Data/hora de divulgaÃ§Ã£o no formato 'DD/MM/AAAA HH:MM:SS'"
+                },
+                "tipoId": {
+                  "type": "number",
+                  "description": "ID do tipo (1 = divulgaÃ§Ã£o, 2 = coleta)"
+                },
+                "tipo": {
+                  "type": "string",
+                  "description": "DescriÃ§Ã£o do tipo do evento"
+                },
+                "link": {
+                  "description": "Link para mais informaÃ§Ãµes, quando disponÃ­vel",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "titulo",
+                "produto",
+                "dataDivulgacao",
+                "tipoId",
+                "tipo"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Lista de eventos do calendÃ¡rio (divulgaÃ§Ãµes/coletas)"
+          },
+          "total": {
+            "type": "number",
+            "description": "Total de eventos disponÃ­veis para os critÃ©rios"
+          },
+          "pagina": {
+            "description": "PÃ¡gina atual retornada",
+            "type": "number"
+          },
+          "totalPaginas": {
+            "description": "Total de pÃ¡ginas disponÃ­veis",
+            "type": "number"
+          },
+          "produto": {
+            "description": "Filtro de produto aplicado, quando informado",
+            "type": "string"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "eventos",
+          "total",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_comparar",
+      "title": "ComparaÃ§Ã£o entre localidades",
+      "description": "Compares data between localities (municipalities or states).\n\nAvailable indicators:\n- populacao: Current population estimate\n- populacao_censo: Census 2022 population\n- pib: GDP per capita\n- area: Territorial area (kmÂ²)\n- densidade: Population density (inhab/kmÂ²)\n- alfabetizacao: Literacy rate\n- domicilios: Number of households\n\nFeatures:\n- Compare up to 10 localities at once\n- Calculate statistics (max, min, average, variation)\n- Generate ranked output\n- Accept municipality codes (7 digits) or state codes (2 digits)\n\nExamples:\n- Compare capitals: localidades=\"3550308,3304557,4106902\", indicador=\"populacao\"\n- Compare states: localidades=\"35,33,41\", indicador=\"pib\"\n- Area ranking: localidades=\"3550308,3304557\", formato=\"ranking\"\n- List indicators: indicador=\"listar\"\n\nUse this tool ONLY to rank/compare 2â10 localities on one indicator.\nFor a single locality, use ibge_cidades (municipal panel), ibge_censo, or ibge_sidra.\n\nBehavior: read-only and idempotent â a live GET against the public IBGE APIs (SIDRA and Localidades). Returns Markdown plus a typed structuredContent payload.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "localidades": {
+            "type": "string",
+            "description": "CÃ³digos IBGE das localidades separados por vÃ­rgula (ex: \"3550308,3304557,4106902\").\nUse 7 dÃ­gitos para municÃ­pios, 2 dÃ­gitos para UFs."
+          },
+          "indicador": {
+            "default": "populacao",
+            "description": "Indicador para comparaÃ§Ã£o:\n- populacao: Estimativa populacional atual\n- populacao_censo: PopulaÃ§Ã£o do Censo 2022\n- pib: PIB per capita\n- area: Ãrea territorial (kmÂ²)\n- densidade: Densidade demogrÃ¡fica (hab/kmÂ²)\n- alfabetizacao: Taxa de alfabetizaÃ§Ã£o\n- domicilios: NÃºmero de domicÃ­lios\n- listar: Lista indicadores disponÃ­veis",
+            "type": "string",
+            "enum": [
+              "populacao",
+              "populacao_censo",
+              "pib",
+              "area",
+              "densidade",
+              "alfabetizacao",
+              "domicilios",
+              "listar"
+            ]
+          },
+          "formato": {
+            "default": "tabela",
+            "description": "Formato de saÃ­da: tabela, json ou ranking (ordenado)",
+            "type": "string",
+            "enum": [
+              "tabela",
+              "json",
+              "ranking"
+            ]
+          }
+        },
+        "required": [
+          "localidades"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "indicador": {
+            "description": "Indicador comparado",
+            "type": "string"
+          },
+          "nome": {
+            "description": "Nome do indicador",
+            "type": "string"
+          },
+          "tabela": {
+            "description": "Tabela SIDRA de origem",
+            "type": "string"
+          },
+          "formato": {
+            "description": "Formato solicitado",
+            "type": "string"
+          },
+          "localidades": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "codigo": {
+                  "type": "string"
+                },
+                "nome": {
+                  "type": "string"
+                },
+                "valor": {
+                  "type": "number"
+                },
+                "valorTexto": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "codigo",
+                "nome",
+                "valor",
+                "valorTexto"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Localidades comparadas, com o valor do indicador"
+          },
+          "estatisticas": {
+            "description": "EstatÃ­sticas agregadas (quando hÃ¡ ao menos 2 valores positivos)",
+            "type": "object",
+            "properties": {
+              "maior": {
+                "type": "number"
+              },
+              "menor": {
+                "type": "number"
+              },
+              "media": {
+                "type": "number"
+              },
+              "variacaoPct": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "maior",
+              "menor",
+              "media",
+              "variacaoPct"
+            ],
+            "additionalProperties": false
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "localidades",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_malhas_tema",
+      "title": "Malhas temÃ¡ticas",
+      "description": "Gets thematic geographic meshes from IBGE.\n\nAvailable themes:\n- biomas: Brazilian biomes (Amazon, Cerrado, Atlantic Forest, Caatinga, Pampa, Pantanal)\n- amazonia_legal: Legal Amazon area\n- semiarido: Semi-arid region\n- costeiro: Coastal zone\n- fronteira: Border strip\n- metropolitana: Metropolitan regions\n- ride: Integrated Development Regions\n\nBiome codes:\n- 1: Amazon\n- 2: Cerrado\n- 3: Atlantic Forest\n- 4: Caatinga\n- 5: Pampa\n- 6: Pantanal\n\nExamples:\n- All biomes: tema=\"biomas\"\n- Amazon biome: tema=\"biomas\", codigo=\"1\"\n- Legal Amazon: tema=\"amazonia_legal\"\n- Metropolitan regions: tema=\"metropolitana\"\n- With municipalities: tema=\"biomas\", resolucao=\"5\"\n- List themes: tema=\"listar\"\n\nUse a different tool when:\n- Administrative meshes (Brazil/region/state/municipality outlines) â ibge_malhas\n\nBehavior: read-only and idempotent â a live GET against the public IBGE Malhas API. Returns the mesh in the requested format (GeoJSON, TopoJSON, or SVG).",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "tema": {
+            "type": "string",
+            "enum": [
+              "biomas",
+              "amazonia_legal",
+              "semiarido",
+              "costeiro",
+              "fronteira",
+              "metropolitana",
+              "ride",
+              "listar"
+            ],
+            "description": "Tema da malha:\n- biomas: Biomas brasileiros (AmazÃ´nia, Cerrado, etc.)\n- amazonia_legal: Ãrea da AmazÃ´nia Legal\n- semiarido: RegiÃ£o do semiÃ¡rido\n- costeiro: Zona costeira\n- fronteira: Faixa de fronteira\n- metropolitana: RegiÃµes metropolitanas\n- ride: RegiÃµes Integradas de Desenvolvimento\n- listar: Lista temas disponÃ­veis"
+          },
+          "codigo": {
+            "description": "CÃ³digo especÃ­fico do tema (ex: cÃ³digo do bioma, da regiÃ£o metropolitana)",
+            "type": "string"
+          },
+          "formato": {
+            "default": "geojson",
+            "description": "Formato de saÃ­da",
+            "type": "string",
+            "enum": [
+              "geojson",
+              "topojson",
+              "svg"
+            ]
+          },
+          "resolucao": {
+            "default": "0",
+            "description": "0 = Apenas contorno, 5 = Com municÃ­pios",
+            "type": "string",
+            "enum": [
+              "0",
+              "5"
+            ]
+          },
+          "qualidade": {
+            "default": "4",
+            "description": "Qualidade do traÃ§ado: 1=mÃ­nima, 4=mÃ¡xima",
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4"
+            ]
+          }
+        },
+        "required": [
+          "tema"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tema": {
+            "type": "string",
+            "description": "Tema da malha solicitada (ou 'listar')"
+          },
+          "codigo": {
+            "description": "CÃ³digo especÃ­fico do tema, quando informado",
+            "type": "string"
+          },
+          "formato": {
+            "description": "Formato de saÃ­da (geojson, topojson, svg)",
+            "type": "string"
+          },
+          "resolucao": {
+            "description": "ResoluÃ§Ã£o da malha (0 = contorno, 5 = com municÃ­pios)",
+            "type": "string"
+          },
+          "temas": {
+            "description": "Lista de temas disponÃ­veis (somente no modo 'listar')",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tema": {
+                  "type": "string",
+                  "description": "Identificador do tema"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome do tema"
+                },
+                "descricao": {
+                  "type": "string",
+                  "description": "DescriÃ§Ã£o do tema"
+                }
+              },
+              "required": [
+                "tema",
+                "nome",
+                "descricao"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "tema",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_vizinhos",
+      "title": "MunicÃ­pios vizinhos",
+      "description": "Finds nearby/neighboring municipalities.\n\nFeatures:\n- Search by IBGE code (7 digits) or municipality name\n- Returns municipalities in the same mesoregion (proximity approximation)\n- Optionally includes population data\n\nNote: Uses mesoregion as geographic proximity proxy.\nFor exact spatial neighborhood, mesh processing would be required.\n\nExamples:\n- By code: municipio=\"3550308\"\n- By name: municipio=\"Campinas\", uf=\"SP\"\n- With population: municipio=\"3550308\", incluir_dados=true\n\nNote: proximity is approximated by shared mesoregion (not exact spatial adjacency).\nFor listing/searching municipalities, use ibge_municipios.\n\nBehavior: read-only and idempotent â a live GET against the public IBGE Localidades API. Returns a Markdown list.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "municipio": {
+            "type": "string",
+            "description": "CÃ³digo IBGE do municÃ­pio (7 dÃ­gitos) ou nome do municÃ­pio"
+          },
+          "uf": {
+            "description": "Estado por sigla (SP), nome (SÃ£o Paulo) ou cÃ³digo IBGE (35) â obrigatÃ³rio se usar nome do municÃ­pio",
+            "type": "string"
+          },
+          "raio": {
+            "description": "Raio em km para buscar municÃ­pios prÃ³ximos (usa centrÃ³ides)",
+            "type": "number"
+          },
+          "incluir_dados": {
+            "default": false,
+            "description": "Incluir dados populacionais dos vizinhos",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "municipio"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "municipio": {
+            "type": "object",
+            "properties": {
+              "codigo": {
+                "type": "string",
+                "description": "CÃ³digo IBGE do municÃ­pio consultado"
+              },
+              "nome": {
+                "type": "string",
+                "description": "Nome do municÃ­pio consultado"
+              }
+            },
+            "required": [
+              "codigo",
+              "nome"
+            ],
+            "additionalProperties": false,
+            "description": "MunicÃ­pio de referÃªncia da consulta"
+          },
+          "vizinhos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "codigo": {
+                  "type": "string",
+                  "description": "CÃ³digo IBGE do municÃ­pio vizinho"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome do municÃ­pio vizinho"
+                },
+                "uf": {
+                  "description": "Sigla da UF do municÃ­pio vizinho",
+                  "type": "string"
+                },
+                "populacao": {
+                  "description": "PopulaÃ§Ã£o do municÃ­pio vizinho (apenas quando incluir_dados=true)",
+                  "type": "number"
+                }
+              },
+              "required": [
+                "codigo",
+                "nome"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Lista de municÃ­pios prÃ³ximos (mesma mesorregiÃ£o)"
+          },
+          "total": {
+            "type": "number",
+            "description": "Quantidade de municÃ­pios prÃ³ximos encontrados"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "municipio",
+          "vizinhos",
+          "total",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_datasaude",
+      "title": "Indicadores de saÃºde",
+      "description": "Queries Brazil health indicators, served through IBGE's SIDRA (some originally produced by DataSUS, e.g. mortality and births).\n\nMortality and Birth:\n- mortalidade_infantil: Infant mortality rate\n- nascidos_vivos: Live births by location\n- obitos: Deaths by residence\n- obitos_causas: Deaths by cause (ICD-10)\n\nDemographic Indicators:\n- esperanca_vida: Life expectancy at birth\n- fecundidade: Fertility rate\n\nSanitation:\n- saneamento_agua: Water supply\n- saneamento_esgoto: Sewage system\n\nHealth Coverage:\n- plano_saude: Health insurance coverage\n- autoavaliacao_saude: Self-rated health status\n\nTerritorial levels: 1=Brazil, 2=Region, 3=State, 6=Municipality\n\nExamples:\n- Infant mortality: indicador=\"mortalidade_infantil\"\n- Life expectancy by state: indicador=\"esperanca_vida\", nivel_territorial=\"3\"\n- Deaths in SP: indicador=\"obitos\", nivel_territorial=\"3\", localidade=\"35\"\n- List indicators: indicador=\"listar\"\n\nStatistics mode: for largest/smallest/mean/median/distribution/ranking questions (\"which state has the highest infant mortality?\", \"median life expectancy across states\") use estatisticas=true â full distribution + top/bottom over ALL rows before truncation; agruparPor=\"<column label>\" ranks groups by descending sum. In this mode campos/formato are ignored and registros comes empty.\n\nUse a different tool when:\n- A single municipality's general panel (which also includes infant mortality) â ibge_cidades\n- Population/demographic counts (not health-specific) â ibge_censo or ibge_sidra\n\nBehavior: read-only and idempotent â a live GET against the public IBGE SIDRA API. Returns Markdown plus a typed structuredContent payload.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "indicador": {
+            "type": "string",
+            "description": "Indicador de saÃºde. DisponÃ­veis:\n- mortalidade_infantil: Taxa de mortalidade infantil\n- esperanca_vida: EsperanÃ§a de vida ao nascer\n- nascidos_vivos: Nascidos vivos\n- obitos: Ãbitos por local de residÃªncia\n- obitos_causas: Ãbitos por causas (CID-10)\n- fecundidade: Taxa de fecundidade\n- saneamento_agua: Abastecimento de Ã¡gua\n- saneamento_esgoto: Esgotamento sanitÃ¡rio\n- plano_saude: Cobertura de plano de saÃºde\n- listar: Lista indicadores disponÃ­veis"
+          },
+          "nivel_territorial": {
+            "default": "1",
+            "description": "NÃ­vel territorial (cÃ³digo N): 1=Brasil, 2=RegiÃ£o, 3=UF, 6=MunicÃ­pio",
+            "type": "string"
+          },
+          "localidade": {
+            "default": "all",
+            "description": "CÃ³digo da localidade ou 'all'",
+            "type": "string"
+          },
+          "periodo": {
+            "default": "last",
+            "description": "PerÃ­odo: 'last', 'all', ou ano especÃ­fico",
+            "type": "string"
+          },
+          "formato": {
+            "default": "tabela",
+            "description": "Formato de saÃ­da",
+            "type": "string",
+            "enum": [
+              "tabela",
+              "json"
+            ]
+          },
+          "campos": {
+            "description": "Selecionar apenas algumas colunas por rÃ³tulo, separadas por vÃ­rgula (ex: 'Valor,Ano'). Reduz o volume da resposta.",
+            "type": "string"
+          },
+          "estatisticas": {
+            "default": false,
+            "description": "Computa estatÃ­sticas (mÃ­nimo/mÃ¡ximo/mÃ©dia/mediana/desvio-padrÃ£o/percentis) sobre TODOS os registros da consulta, antes da paginaÃ§Ã£o, + ranking top/bottom. Use para 'qual o maior/menor', 'mÃ©dia', 'mediana', 'distribuiÃ§Ã£o', 'ranking'. Quando true, ignora pagina, campos e formato",
+            "type": "boolean"
+          },
+          "agruparPor": {
+            "description": "Com estatisticas=true, agrupa pela coluna informada (rÃ³tulo, ex: 'Unidade da FederaÃ§Ã£o', 'Ano') e ranqueia os grupos por soma decrescente (grupos[0] = maior total), cada grupo com sua mini-distribuiÃ§Ã£o",
+            "type": "string"
+          },
+          "topN": {
+            "default": 10,
+            "description": "Tamanho das listas top/bottom quando estatisticas=true sem agruparPor (padrÃ£o: 10, mÃ¡x: 100)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "indicador"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "indicador": {
+            "description": "Chave do indicador de saÃºde consultado",
+            "type": "string"
+          },
+          "nome": {
+            "description": "Nome do indicador",
+            "type": "string"
+          },
+          "fonte": {
+            "description": "Fonte do dado",
+            "type": "string"
+          },
+          "totalRegistros": {
+            "type": "number",
+            "description": "Total de registros de dados"
+          },
+          "colunas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "RÃ³tulos das colunas, na ordem"
+          },
+          "registros": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "description": "Registros: cada um mapeia rÃ³tulo da coluna -> valor"
+          },
+          "estatisticas": {
+            "type": "object",
+            "properties": {
+              "colunaValor": {
+                "type": "string",
+                "description": "RÃ³tulo da coluna numÃ©rica analisada (sempre 'Valor' no SIDRA)"
+              },
+              "registrosConsiderados": {
+                "type": "number",
+                "description": "Registros com valor numÃ©rico (contam no n)"
+              },
+              "registrosSemValor": {
+                "type": "number",
+                "description": "Registros excluÃ­dos por marcador de ausÃªncia SIDRA ('-', '..', '...', 'X') ou valor nÃ£o numÃ©rico"
+              },
+              "aviso": {
+                "description": "Avisos sobre agrupamento automÃ¡tico, mistura de unidades ou truncamento",
+                "type": "string"
+              },
+              "distribuicao": {
+                "description": "DistribuiÃ§Ã£o do conjunto inteiro (sem agruparPor)",
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "number",
+                    "description": "Registros com valor numÃ©rico considerados"
+                  },
+                  "soma": {
+                    "type": "number"
+                  },
+                  "minimo": {
+                    "type": "number"
+                  },
+                  "maximo": {
+                    "type": "number"
+                  },
+                  "media": {
+                    "type": "number"
+                  },
+                  "mediana": {
+                    "type": "number"
+                  },
+                  "desvioPadrao": {
+                    "type": "number"
+                  },
+                  "percentis": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "percentil": {
+                          "type": "number",
+                          "description": "Percentil (50 = mediana)"
+                        },
+                        "valor": {
+                          "type": "number"
+                        },
+                        "rotulo": {
+                          "type": "string",
+                          "description": "Enunciado por extenso, pronto para citar ao leitor"
+                        }
+                      },
+                      "required": [
+                        "percentil",
+                        "valor",
+                        "rotulo"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "n",
+                  "soma",
+                  "minimo",
+                  "maximo",
+                  "media",
+                  "mediana",
+                  "desvioPadrao",
+                  "percentis"
+                ],
+                "additionalProperties": false
+              },
+              "top": {
+                "description": "Maiores valores, com as colunas de identificaÃ§Ã£o do registro (sem agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "bottom": {
+                "description": "Menores valores (sem agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "agrupadoPor": {
+                "description": "RÃ³tulo da coluna de agrupamento (com agruparPor)",
+                "type": "string"
+              },
+              "totalGrupos": {
+                "description": "Total de grupos existentes antes do teto (com agruparPor)",
+                "type": "number"
+              },
+              "grupos": {
+                "description": "Grupos ordenados por soma decrescente, cada um com sua mini-distribuiÃ§Ã£o (com agruparPor)",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "n": {
+                      "type": "number",
+                      "description": "Registros com valor numÃ©rico considerados"
+                    },
+                    "soma": {
+                      "type": "number"
+                    },
+                    "minimo": {
+                      "type": "number"
+                    },
+                    "maximo": {
+                      "type": "number"
+                    },
+                    "media": {
+                      "type": "number"
+                    },
+                    "mediana": {
+                      "type": "number"
+                    },
+                    "desvioPadrao": {
+                      "type": "number"
+                    },
+                    "percentis": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "percentil": {
+                            "type": "number",
+                            "description": "Percentil (50 = mediana)"
+                          },
+                          "valor": {
+                            "type": "number"
+                          },
+                          "rotulo": {
+                            "type": "string",
+                            "description": "Enunciado por extenso, pronto para citar ao leitor"
+                          }
+                        },
+                        "required": [
+                          "percentil",
+                          "valor",
+                          "rotulo"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "grupo": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "n",
+                    "soma",
+                    "minimo",
+                    "maximo",
+                    "media",
+                    "mediana",
+                    "desvioPadrao",
+                    "percentis",
+                    "grupo"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "colunaValor",
+              "registrosConsiderados",
+              "registrosSemValor"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco estatÃ­stico presente quando estatisticas=true (registros vem vazio nesse modo)"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "totalRegistros",
+          "colunas",
+          "registros",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_paises",
+      "title": "Dados de paÃ­ses",
+      "description": "Queries international country data via IBGE.\n\nFeatures:\n- List all countries (following UN M49 methodology)\n- Country details (area, languages, currency, location)\n- Search countries by name\n- Filter by region/continent\n\nAvailable regions: americas, europa, africa, asia, oceania\n\nCountry codes: Use ISO-ALPHA-2 (e.g., BR, US, AR, PT, JP)\n\nExamples:\n- List all: tipo=\"listar\"\n- Brazil details: tipo=\"detalhes\", pais=\"BR\"\n- Search: tipo=\"buscar\", busca=\"Argentina\"\n- Americas countries: tipo=\"listar\", regiao=\"americas\"\n- Available indicators: tipo=\"indicadores\"\n\nBehavior: read-only and idempotent â a live GET against the public IBGE PaÃ­ses API. Returns Markdown.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "tipo": {
+            "default": "listar",
+            "description": "Tipo de consulta: listar (todos), detalhes (de um paÃ­s), indicadores, buscar",
+            "type": "string",
+            "enum": [
+              "listar",
+              "detalhes",
+              "indicadores",
+              "buscar"
+            ]
+          },
+          "pais": {
+            "description": "CÃ³digo ISO-ALPHA-2 do paÃ­s (ex: BR, US, AR) ou cÃ³digo M49",
+            "type": "string"
+          },
+          "busca": {
+            "description": "Termo de busca para filtrar paÃ­ses pelo nome",
+            "type": "string"
+          },
+          "indicadores": {
+            "description": "IDs dos indicadores separados por | (ex: 77819|77820)",
+            "type": "string"
+          },
+          "regiao": {
+            "description": "Filtrar por regiÃ£o/continente: americas, europa, africa, asia, oceania",
+            "type": "string"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "listar",
+              "buscar",
+              "detalhes",
+              "indicadores"
+            ],
+            "description": "Modo de consulta que originou este resultado"
+          },
+          "paises": {
+            "description": "Lista de paÃ­ses (modos listar/buscar). Limitada aos 50 primeiros na exibiÃ§Ã£o",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "codigo": {
+                  "type": "string",
+                  "description": "CÃ³digo ISO-ALPHA-2 do paÃ­s (ou '-' se ausente)"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome do paÃ­s"
+                },
+                "regiao": {
+                  "type": "string",
+                  "description": "Nome da regiÃ£o/continente (ou '-' se ausente)"
+                },
+                "subRegiao": {
+                  "type": "string",
+                  "description": "Nome da sub-regiÃ£o (ou '-' se ausente)"
+                }
+              },
+              "required": [
+                "codigo",
+                "nome",
+                "regiao",
+                "subRegiao"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "description": "Total de paÃ­ses encontrados (modos listar/buscar)",
+            "type": "number"
+          },
+          "busca": {
+            "description": "Termo de busca aplicado, se houver",
+            "type": "string"
+          },
+          "regiao": {
+            "description": "Filtro de regiÃ£o/continente aplicado, se houver",
+            "type": "string"
+          },
+          "pais": {
+            "description": "Detalhes de um paÃ­s especÃ­fico (modo detalhes)",
+            "type": "object",
+            "properties": {
+              "nome": {
+                "type": "string",
+                "description": "Nome do paÃ­s"
+              },
+              "m49": {
+                "type": "number",
+                "description": "CÃ³digo M49 do paÃ­s"
+              },
+              "isoAlpha2": {
+                "type": "string",
+                "description": "CÃ³digo ISO-ALPHA-2"
+              },
+              "isoAlpha3": {
+                "type": "string",
+                "description": "CÃ³digo ISO-ALPHA-3"
+              },
+              "regiao": {
+                "description": "Nome da regiÃ£o/continente",
+                "type": "string"
+              },
+              "subRegiao": {
+                "description": "Nome da sub-regiÃ£o",
+                "type": "string"
+              },
+              "regiaoIntermediaria": {
+                "description": "Nome da regiÃ£o intermediÃ¡ria",
+                "type": "string"
+              },
+              "areaTotalKm2": {
+                "description": "Ãrea territorial total em kmÂ²",
+                "type": "number"
+              },
+              "linguas": {
+                "description": "LÃ­nguas faladas no paÃ­s",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "moedas": {
+                "description": "Unidades monetÃ¡rias do paÃ­s",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "CÃ³digo da unidade monetÃ¡ria"
+                    },
+                    "nome": {
+                      "type": "string",
+                      "description": "Nome da unidade monetÃ¡ria"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "nome"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "historico": {
+                "description": "Texto histÃ³rico sobre o paÃ­s",
+                "type": "string"
+              },
+              "indicadores": {
+                "description": "Indicadores principais com o valor mais recente disponÃ­vel",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "indicador": {
+                      "type": "string",
+                      "description": "Nome do indicador"
+                    },
+                    "valor": {
+                      "type": "string",
+                      "description": "Valor mais recente do indicador"
+                    },
+                    "ano": {
+                      "type": "string",
+                      "description": "Ano de referÃªncia do valor"
+                    }
+                  },
+                  "required": [
+                    "indicador",
+                    "valor",
+                    "ano"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "nome",
+              "m49",
+              "isoAlpha2",
+              "isoAlpha3"
+            ],
+            "additionalProperties": false
+          },
+          "indicadores": {
+            "description": "Indicadores disponÃ­veis para consulta de paÃ­ses (modo indicadores)",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number",
+                  "description": "ID do indicador na API do IBGE"
+                },
+                "nome": {
+                  "type": "string",
+                  "description": "Nome do indicador"
+                },
+                "alias": {
+                  "type": "string",
+                  "description": "Apelido amigÃ¡vel do indicador"
+                }
+              },
+              "required": [
+                "id",
+                "nome",
+                "alias"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "tipo",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ibge_cidades",
+      "title": "Panorama municipal (Cidades@)",
+      "description": "Queries municipal indicators from IBGE (similar to Cidades@ portal).\n\nFeatures:\n- General overview of a municipality (population, HDI, GDP, etc.)\n- Query specific indicators\n- Historical indicator data over years\n- List available surveys and indicators\n\nAvailable indicators: populacao, area, densidade, pib_per_capita, idh,\nescolarizacao, mortalidade, salario_medio, receitas, despesas\n\nExamples:\n- SÃ£o Paulo overview: tipo=\"panorama\", municipio=\"3550308\"\n- Population history: tipo=\"historico\", municipio=\"3550308\", indicador=\"populacao\"\n- View surveys: tipo=\"pesquisas\"\n- Available indicators: tipo=\"indicador\"\n\nThis tool is the panel for a SINGLE municipality (Cidades@).\nUse a different tool when:\n- Real-time Brazil population â ibge_populacao\n- Census themes / historical series â ibge_censo\n- Comparing multiple municipalities â ibge_comparar\n- A macro indicator time series â ibge_indicadores\n\nBehavior: read-only and idempotent â a live GET against the public IBGE APIs (Cidades@/agregados). Returns Markdown plus a typed structuredContent payload.",
+      "inputSchema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "tipo": {
+            "default": "panorama",
+            "description": "Tipo de consulta: panorama (resumo geral), indicador (especÃ­fico), pesquisas (listar), historico",
+            "type": "string",
+            "enum": [
+              "panorama",
+              "indicador",
+              "pesquisas",
+              "historico"
+            ]
+          },
+          "municipio": {
+            "description": "CÃ³digo IBGE do municÃ­pio (7 dÃ­gitos)",
+            "type": "string"
+          },
+          "uf": {
+            "description": "CÃ³digo ou sigla da UF para filtrar (ex: 35 ou SP)",
+            "type": "string"
+          },
+          "indicador": {
+            "description": "ID do indicador ou nome para busca",
+            "type": "string"
+          },
+          "pesquisa": {
+            "description": "ID da pesquisa para filtrar indicadores",
+            "type": "string"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "description": "Tipo de consulta (panorama, indicador, pesquisas, historico)"
+          },
+          "municipio": {
+            "description": "CÃ³digo IBGE do municÃ­pio",
+            "type": "string"
+          },
+          "nome": {
+            "description": "Nome do municÃ­pio/indicador",
+            "type": "string"
+          },
+          "indicadores": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nome": {
+                  "type": "string"
+                },
+                "valor": {
+                  "type": "string"
+                },
+                "ano": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "nome",
+                "valor"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Indicadores retornados (vazio para respostas de catÃ¡logo)"
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Fonte oficial do dado (API do IBGE consultada)"
+              },
+              "source_url": {
+                "type": "string",
+                "description": "URL canÃ´nica que reproduz a consulta"
+              },
+              "data_vintage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "PerÃ­odo de referÃªncia do dado segundo a fonte; null se a fonte nÃ£o expÃµe"
+              },
+              "retrieved_at": {
+                "type": "string",
+                "description": "Instante real da extraÃ§Ã£o no upstream (ISO-8601, horÃ¡rio de BrasÃ­lia)"
+              },
+              "citation": {
+                "type": "string",
+                "description": "CitaÃ§Ã£o pronta para uso"
+              },
+              "license": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Regime legal do dado"
+              }
+            },
+            "required": [
+              "source",
+              "source_url",
+              "data_vintage",
+              "retrieved_at",
+              "citation",
+              "license"
+            ],
+            "additionalProperties": false,
+            "description": "Bloco de proveniÃªncia (contrato v1.0): fonte, URL, perÃ­odo, extraÃ§Ã£o e licenÃ§a"
+          },
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URLs canÃ´nicas das fontes desta resposta (lista de atribuiÃ§Ã£o)"
+          }
+        },
+        "required": [
+          "tipo",
+          "indicadores",
+          "provenance",
+          "attribution"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

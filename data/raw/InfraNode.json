@@ -1,0 +1,848 @@
+{
+  "name": "InfraNode",
+  "source_url": "https://mcp.infranode.dev/mcp",
+  "fetched_at": "2026-08-10T05:50:23+00:00",
+  "description": "Keyless open data for 84 German cities: 12 lean read-only MCP tools covering 67 data types.",
+  "github_stars": 11,
+  "tools": [
+    {
+      "name": "get_city",
+      "title": "City Base Data",
+      "description": "Get base data for a German city (population, area, coordinates).\n\nSourced from Wikidata. Read-only. Useful as a first lookup to confirm a city\nexists and get its core attributes. For a broader question about the city\n(what data is available at all) use ``get_city_overview`` instead.\n",
+      "inputSchema": {
+        "properties": {
+          "slug": {
+            "description": "City identifier, e.g. 'berlin' or 'hamburg'. Resolved leniently: the German name with or without umlauts, any casing, a common English exonym or short form also works (MÃ¼nchen/munich/munchen -> muenchen, cologne -> koeln, frankfurt -> frankfurt-am-main). An unknown name returns 404 with a 'Meintest du ...?' suggestion. list_cities gives the canonical slugs.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "get_city_overview",
+      "title": "City Overview",
+      "description": "Get a ONE-CALL overview of everything InfraNode knows about a German city.\n\nStart here for any city question. Returns: the city's base data, a CATALOG of\nall 82 available data types (weather, air quality, public transit, trains,\ntraffic, charging, parking, solar, energy, demographics, taxes, accidents,\ntourism, heritage, trees, population density, playgrounds, post boxes and many\nmore), each with its coverage status and the exact tool to call next (for most\ndata types that is ``get_city_resource(slug, resource=<type>)``), plus a small\nlive highlights snapshot (current weather, air quality and train departures).\nData types not yet covered for this city show where they ARE available so you\ncan pivot. InfraNode keeps adding data and cities, so the catalog grows over\ntime. Read-only.\n",
+      "inputSchema": {
+        "properties": {
+          "slug": {
+            "description": "City identifier, e.g. 'berlin' or 'hamburg'. Resolved leniently: the German name with or without umlauts, any casing, a common English exonym or short form also works (MÃ¼nchen/munich/munchen -> muenchen, cologne -> koeln, frankfurt -> frankfurt-am-main). An unknown name returns 404 with a 'Meintest du ...?' suggestion. list_cities gives the canonical slugs.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "get_city_resource",
+      "title": "City Data by Type",
+      "description": "Fetch ANY per-city data type by its key (generic accessor, 82 data types).\n\nOne tool for the whole breadth of InfraNode: live data (air, traffic, transit\nstops, parking, charging, water-level, flood, sharing, fuel-prices, icu-live,\nwebcams, station-departures/-arrivals/stations, ...), statistics\n(demographics, unemployment, tourism, accidents, crime-stats, indicators,\nland-values, tax-rates, insolvencies, ...), multi-year TIME SERIES\n(``sustainability``: SDG indicators per municipality, one value per year from\n2006 to 2023, so trends can be answered without stitching snapshots),\ninfrastructure and environment\n(solar, solar-roofs, district-heating, energy, heritage, tree-cadastre,\nplaygrounds, public-toilets, markets, education, ...) and more. Discover the\nvalid keys and per-city coverage with ``get_city_overview(slug)`` or the\n``infranode://catalog`` resource; the ``resource`` enum lists every key.\nUncovered types return ``source_status=\"not_covered\"`` (plus where they ARE\navailable), never an error. Read-only.\n",
+      "inputSchema": {
+        "properties": {
+          "slug": {
+            "description": "City identifier, e.g. 'berlin' or 'hamburg'. Resolved leniently: the German name with or without umlauts, any casing, a common English exonym or short form also works (MÃ¼nchen/munich/munchen -> muenchen, cologne -> koeln, frankfurt -> frankfurt-am-main). An unknown name returns 404 with a 'Meintest du ...?' suggestion. list_cities gives the canonical slugs.",
+            "type": "string"
+          },
+          "resource": {
+            "description": "Data type key to fetch, exactly as listed by get_city_overview / the infranode://catalog resource (the 'type' field), e.g. 'charging', 'parking', 'demographics', 'solar', 'district-heating'.",
+            "enum": [
+              "accidents",
+              "air",
+              "air-uba",
+              "base",
+              "bathing-water",
+              "bike-counts",
+              "bike-parking",
+              "business-registrations",
+              "care",
+              "charging",
+              "charging-status",
+              "childcare",
+              "civil-protection-warnings",
+              "construction",
+              "council-papers",
+              "crime-stats",
+              "demographics",
+              "district-heating",
+              "drinking-water",
+              "education",
+              "education-stats",
+              "election",
+              "energy",
+              "events",
+              "fire-danger",
+              "flood",
+              "fuel-prices",
+              "geo",
+              "government-offices",
+              "health",
+              "heritage",
+              "holidays",
+              "hospitals-atlas",
+              "icu-live",
+              "indicators",
+              "insolvencies",
+              "integration",
+              "labour-market",
+              "land-values",
+              "markets",
+              "mobility-points",
+              "municipal-finance",
+              "office-wait-times",
+              "overview",
+              "parcel-lockers",
+              "park-and-ride",
+              "parking",
+              "parking-onstreet",
+              "playgrounds",
+              "pollen-uv",
+              "population-density",
+              "population-structure",
+              "population-trend",
+              "post-boxes",
+              "post-offices",
+              "power-load",
+              "power-price",
+              "public-tenders",
+              "public-toilets",
+              "public-wifi",
+              "recycling-centres",
+              "road-events",
+              "sharing",
+              "social-situation",
+              "solar",
+              "solar-roofs",
+              "station-arrivals",
+              "station-departures",
+              "station-facilities",
+              "stations",
+              "sustainability",
+              "tax-rates",
+              "tourism",
+              "traffic",
+              "transit",
+              "tree-cadastre",
+              "unemployment",
+              "vehicle-registrations",
+              "water-level",
+              "weather",
+              "weather-warnings",
+              "webcams"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "resource"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "air_quality",
+      "title": "Air Quality",
+      "description": "Get official air quality for a German city (PM10, NO2 and more).\n\nSourced from the Umweltbundesamt (UBA). Read-only. For live nearest-station\nhourly readings use ``get_city_resource(slug, resource='air')`` instead.\n",
+      "inputSchema": {
+        "properties": {
+          "slug": {
+            "description": "City identifier, e.g. 'berlin' or 'hamburg'. Resolved leniently: the German name with or without umlauts, any casing, a common English exonym or short form also works (MÃ¼nchen/munich/munchen -> muenchen, cologne -> koeln, frankfurt -> frankfurt-am-main). An unknown name returns 404 with a 'Meintest du ...?' suggestion. list_cities gives the canonical slugs.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "weather",
+      "title": "Weather",
+      "description": "Get current weather observations for a German city.\n\nSourced from the Deutscher Wetterdienst (DWD): temperature, wind,\nprecipitation and related fields. Read-only, current conditions only (not a\nforecast). For warnings use ``get_city_resource(slug,\nresource='weather-warnings')``. For a broader question about the city (not\njust weather) use ``get_city_overview`` instead, which already includes a\nlive weather highlight.\n",
+      "inputSchema": {
+        "properties": {
+          "slug": {
+            "description": "City identifier, e.g. 'berlin' or 'hamburg'. Resolved leniently: the German name with or without umlauts, any casing, a common English exonym or short form also works (MÃ¼nchen/munich/munchen -> muenchen, cologne -> koeln, frankfurt -> frankfurt-am-main). An unknown name returns 404 with a 'Meintest du ...?' suggestion. list_cities gives the canonical slugs.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "pois",
+      "title": "Points of Interest",
+      "description": "Get points of interest in a German city, filtered by type.\n\nSourced from OpenStreetMap. Read-only.\n",
+      "inputSchema": {
+        "properties": {
+          "slug": {
+            "description": "City identifier, e.g. 'berlin' or 'hamburg'. Resolved leniently: the German name with or without umlauts, any casing, a common English exonym or short form also works (MÃ¼nchen/munich/munchen -> muenchen, cologne -> koeln, frankfurt -> frankfurt-am-main). An unknown name returns 404 with a 'Meintest du ...?' suggestion. list_cities gives the canonical slugs.",
+            "type": "string"
+          },
+          "type": {
+            "description": "POI type from the API allowlist, one of: hospital, school, pharmacy, restaurant, police, kindergarten.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "type"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "station_board_departures",
+      "title": "Station Board: Departures",
+      "description": "Get live departures for ANY railway station by its EVA number.\n\nCovers all train categories including local/regional (S/RB/RE) and long\ndistance, with real-time delays, cancellations and disruption messages. Get\nthe EVA from ``get_city_resource(slug, resource='stations')``. Read-only.\n",
+      "inputSchema": {
+        "properties": {
+          "eva": {
+            "description": "Station EVA number (digits only) from get_city_resource(slug, resource='stations'), e.g. '8011160' (Berlin Hbf).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "eva"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "station_board_arrivals",
+      "title": "Station Board: Arrivals",
+      "description": "Get live arrivals for ANY railway station by its EVA number.\n\nMirror of ``station_board_departures`` for arriving trains (all categories,\nreal-time delays, disruption messages). Get the EVA from\n``get_city_resource(slug, resource='stations')``. Read-only.\n",
+      "inputSchema": {
+        "properties": {
+          "eva": {
+            "description": "Station EVA number (digits only) from get_city_resource(slug, resource='stations'), e.g. '8000105' (Frankfurt Hbf).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "eva"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "transit_departures",
+      "title": "Transit Departures",
+      "description": "Get live public-transport departures with real-time delays for a stop.\n\nSourced from GTFS-RT/HVV/VGN. Unlike the static stop list\n(``get_city_resource(slug, resource='transit')``), this returns minute-fresh\ndepartures including delay for ONE stop. A ``stop_id`` is required: fetch the\ncity's transit stops first to discover valid stop IDs, then pass one here.\nRead-only.\n",
+      "inputSchema": {
+        "properties": {
+          "slug": {
+            "description": "City identifier, e.g. 'berlin' or 'hamburg'. Resolved leniently: the German name with or without umlauts, any casing, a common English exonym or short form also works (MÃ¼nchen/munich/munchen -> muenchen, cologne -> koeln, frankfurt -> frankfurt-am-main). An unknown name returns 404 with a 'Meintest du ...?' suggestion. list_cities gives the canonical slugs.",
+            "type": "string"
+          },
+          "stop_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Required stop ID to fetch departures for. Discover a city's stop IDs with get_city_resource(slug, resource='transit') first (each stop carries its id). Format: DELFI 'de:<AGS>:<id>' or a numeric gtfs.de stop id. NOTE: this is NOT the trip_stop_id (nor its deprecated alias stop_id) from station_departures/station_arrivals, whose value identifies one stop of one train run (e.g. '-1203677609210685804-2607251113-13'); passing it returns no_data with a corrective note instead of departures."
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "list_cities",
+      "title": "List Cities",
+      "description": "List all covered cities (slug, federal state, population, coverage).\n\nTakes no arguments. Call this first to discover valid city slugs before\ninvoking any city-scoped tool. Read-only.\n",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "sources",
+      "title": "Data Sources",
+      "description": "List all data sources with license, attribution and availability.\n\nTakes no arguments. Shows which upstream sources InfraNode bundles and\nwhether each is currently active. Read-only.\n",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "compare",
+      "title": "Compare Cities",
+      "description": "Compare ONE resource across MULTIPLE cities in a single response.\n\nFans the resource out over the listed cities and returns a per-city\n``source_status`` (ok/disabled/no_data/error/not_found), so a missing or\nfailing city source does not spoil the whole answer. Read-only.\n",
+      "inputSchema": {
+        "properties": {
+          "resource": {
+            "description": "Resource to compare. Supported: 'weather' (DWD), 'air' (UBA air quality), 'indicators' (INKAR socioeconomic indicators incl. unemployment rate and EV charging coverage), 'demographics', 'unemployment', 'tourism', 'charging-status' (live EV charging occupancy, aggregates only) and 'weather-warnings' (official DWD warning level per city).",
+            "type": "string"
+          },
+          "cities": {
+            "description": "Comma-separated list of city slugs, e.g. 'berlin,koeln,hamburg' (max. 28 cities).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resource",
+          "cities"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "ToolMeta": {
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_status": {
+                "type": "string"
+              },
+              "cache_status": {
+                "type": "string"
+              },
+              "correlation_id": {
+                "type": "string"
+              },
+              "license": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "properties": {
+          "data": {},
+          "meta": {
+            "$ref": "#/$defs/ToolMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    }
+  ]
+}

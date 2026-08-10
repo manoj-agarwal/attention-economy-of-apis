@@ -1,0 +1,1452 @@
+{
+  "name": "STRING Database",
+  "source_url": "https://mcp.string-db.org/",
+  "fetched_at": "2026-08-10T05:51:59+00:00",
+  "description": "Protein interaction, enrichment, annotation, homology, and PPI network queries.",
+  "github_stars": 5,
+  "tools": [
+    {
+      "name": "string_resolve_proteins",
+      "title": "STRING: Resolves protein identifiers to metadata",
+      "description": "Maps one or more protein identifiers to their corresponding STRING metadata, including:\ngene symbol, description, sequence, domains, species, and internal STRING ID.\n\nThis method is useful for translating raw identifiers into readable, annotated protein entries.\n\nExample input: \"TP53%0dSMO\"",
+      "inputSchema": {
+        "properties": {
+          "proteins": {
+            "description": "Required. One or more input protein identifiers (gene symbols, UniProt IDs, etc.), separated by carriage return (%0d). Example: TP53%0dSMO",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Optional. NCBI taxonomy ID (e.g. 9606 for human) or STRING genome ID (e.g. STRG0AXXXXX for uploaded genomes).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "show_sequence": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "0",
+                      "1"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Include sequences when set to 1. Use only if the user requests sequence data."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "proteins"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_interactions_query_set",
+      "title": "STRING: Get interactions within query set",
+      "description": "Retrieves the interactions between the query proteins.\nUse this method only when you specifically need to list the interactions between all proteins in your query set.\nIf user asks for 'physical' or 'complex' use 'physical' network type.\n\n- For a **single protein**, the network includes that protein and its top 10 most likely interaction partners, plus all interactions among those partners.\n- For **multiple proteins**, the network includes all direct interactions between them.\n- If the user refers to \"physical interactions\", \"complexes\", or \"binding\", set the network type to \"physical\".\n- STRING does not store or report information about self-interactions/homomers; if asked, explain the limitation.\n\nIf few or no interactions are returned, consider reducing the `required_score`.\n\nFor large query sets (>50 proteins), consider increasing the `required_score` (e.g. â¥700) \nto focus on high-confidence interactions and avoid overly dense networks.\n\n- Expand the names of score sources:  \n    `nscore` (neighborhood), `fscore` (fusion), `pscore` (phylogenetic profile),  \n    `ascore` (coexpression), `escore` (experimental), `dscore` (database), `tscore` (text-mining)",
+      "inputSchema": {
+        "properties": {
+          "proteins": {
+            "description": "Required. One or more protein identifiers, separated by carriage return (%0d). Example: SMO%0dTP53",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Optional. NCBI taxonomy ID (e.g. 9606 for human) or STRING genome ID (e.g. STRG0AXXXXX for uploaded genomes).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "required_score": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maximum": 1000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Minimum confidence score for an interaction. Omit unless a confidence threshold is requested or a broader/narrower threshold is needed."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "network_type": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "functional",
+                      "physical"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Omit for STRING default functional associations. Set physical only for binding, complex, or co-complex questions."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "extend_network": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Number of additional proteins to add to the network based on their connectivity. Default is 10 for a single protein query and 0 for multiple proteins. Set only if the user asks to add, extend, include a neighborhood, or show connecting proteins."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "proteins"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_all_interaction_partners",
+      "title": "STRING: Get all interaction partners for proteins",
+      "description": "Retrieves all interaction partners for one or more proteins from STRING.\n\nThis tool returns all known interactions between your query protein(s) and **any other proteins in the STRING database**.\n\n- Use this when asking **âWhat does TP53 interact with?â**\n- It differs from the `network` tool, which only shows interactions **within the input set** or a limited extension of it.\n- If the user refers to \"physical interactions\", \"complexes\", or \"binding\", set the network type to \"physical\".\n\nYou can filter for strong interactions using `required_score`.\n\n- Evidence scores:  \n    `nscore` (neighborhood), `fscore` (fusion), `pscore` (phylogenetic profile),  \n    `ascore` (coexpression), `escore` (experimental), `dscore` (database), `tscore` (text mining)",
+      "inputSchema": {
+        "properties": {
+          "identifiers": {
+            "description": "Required. One or more protein identifiers, separated by carriage return (%0d). Example: TP53%0dSMO",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Optional. NCBI taxonomy ID (e.g. 9606 for human) or STRING genome ID (e.g. STRG0AXXXXX for uploaded genomes). Only set when required.",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "required_score": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maximum": 1000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Minimum interaction score to include. Omit unless a confidence threshold is requested or a broader/narrower threshold is needed."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "network_type": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "functional",
+                      "physical"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Omit for STRING default functional associations. Set physical only for binding, complex, or co-complex questions."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "identifiers"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_visual_network",
+      "title": "STRING: Get interaction network image (image URL)",
+      "description": "Retrieves a URL to a **STRING interaction network image** for one or more proteins.\n\n- For a single protein: includes the protein and its top 10 most likely interactors.\n- For multiple proteins: includes all known interactions **within the query set**.\n- If the user asks for \"physical interactions\", \"complexes\", or \"binding\", set `network_type` to \"physical\".\n\nThe input may include one numeric value per protein, such as fold change, effect size, or score.\nThese values are visualized as colored halos around the nodes, allowing overlay of protein-level measurements on the network.\n\nExample:\nPTEN 2.1\nSMO -1.3\n\nIf numeric values are provided:\n- positive values are shown in blue\n- negative values are shown in red\n- larger absolute values produce stronger halo intensity\n\nIf the user provides numeric values together with the proteins, preserve them in the query.\n\nIf few or no interactions are shown, consider lowering `required_score`.\n\nFor large queries (>100 proteins):\n- use `network_flavor=\"confidence\"`\n- increase `required_score` (e.g. 700)\n\nAlways ask if the user also wants a link to the interactive STRING network page.\n\nInput parameters should match those used in related STRING tools (e.g. `string_interactions_query_set`), unless otherwise specified.",
+      "inputSchema": {
+        "properties": {
+          "proteins": {
+            "description": "Required. One or more protein IDs, optionally followed by one numeric value per protein. Example:\nPTEN 0.234\nSMO -3.445\nUse newline (%0d) between entries. Tabs and spaces are accepted as separators.",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Required. NCBI/STRING taxon (e.g. 9606 for human, or STRG0AXXXXX).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "extend_network": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Add specified number of nodes to the network, based on their scores. Default: 0, or 10 for single protein queries."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "required_score": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maximum": 1000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Threshold of significance to include an interaction. Omit for STRING default filtering. Set only when a threshold is requested or a broader/narrower threshold is needed."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "network_type": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "functional",
+                      "physical"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Omit for STRING default functional associations. Set physical only for binding, complex, or co-complex questions."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "network_flavor": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "evidence",
+                      "confidence"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Edge style. Omit for STRING default evidence styling. Set only when the user asks for evidence or confidence edge display."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "hide_disconnected_nodes": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Hide proteins not connected to any other protein when set to 1. Set only if the user asks to hide disconnected or unconnected proteins."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "center_node_labels": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Center protein names on nodes when set to 1. Set only if the user asks to center labels."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "do_not_show_structures": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Remove small protein structure previews from inside the node bubbles when set to 1. Set only if the user asks to remove or hide structure previews."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "proteins"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_network_clustering",
+      "title": "STRING: Perform network clustering",
+      "description": "Performs **network clustering** on a STRING interaction network and returns both a **network image URL**\nand details about each detected cluster.\n\nUse the same parameters as in the network creation step to ensure consistency.\nIf the network already contains disconnected subgraphs, the resulting number of clusters may differ from the requested value.\n\nDashed lines represent connections between clusters, while solid lines indicate interactions within clusters.\n\nNotes:\n  - For small queries (â¤5 proteins), the `required_score` parameter is automatically lowered to 0.\n  - If only a single cluster is produced, try increasing `required_score`, adjusting the inflation parameter,\n    or switching to `kmeans` for small, highly interconnected networks.",
+      "inputSchema": {
+        "properties": {
+          "proteins": {
+            "description": "Required. One or more protein identifiers (optionally with values). Example:\nPTEN 0.234\nSMO -3.445\nSeparate entries with newline (%0d). Numeric values (e.g. expression data) can be provided after identifiers.",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Required. NCBI/STRING taxonomy ID (e.g. 9606 for human, or STRG0AXXXXX for uploaded genomes).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "extend_network": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Add specified number of additional nodes to the network based on their interaction scores. Default: 0, or 10 for single-protein queries."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "required_score": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maximum": 1000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Minimum interaction confidence score. Omit for STRING default filtering. Set only when a threshold is requested or a broader/narrower threshold is needed."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "network_type": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "functional",
+                      "physical"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Omit for STRING default functional associations. Set physical only for binding, complex, or co-complex questions."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "clustering_algorithm": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "MCL",
+                      "kmeans"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. MCL identifies densely connected subnetworks based on connectivity flow. kmeans partitions proteins into a fixed number of clusters. If omitted, the server uses MCL."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "clustering_parameter": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "minimum": 1,
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Controls clustering granularity. For MCL: inflation parameter 1.0-10.0, default 3.0; higher values produce more, smaller clusters. For kmeans: number of clusters, integer >=2, default 3."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "network_flavor": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "evidence",
+                      "confidence"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Edge display style. Omit for STRING default evidence styling. Set only when the user asks for evidence or confidence edge display."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "hide_disconnected_nodes": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Hide unconnected nodes when set to 1. Set only if the user asks to hide disconnected or unconnected proteins."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "center_node_labels": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Center protein labels on nodes when set to 1. Set only if the user asks to center labels."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "proteins"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_network_link",
+      "title": "STRING: Get interactive network link (web UI)",
+      "description": "Retrieves a stable URL to an interactive STRING network for one or more proteins.\n\n- For a single protein: includes the protein and its top 10 most likely interactors.\n- For multiple proteins: includes all known interactions **within the query set**.\n- If the user asks for \"physical interactions\", \"complexes\", or \"binding\", set `network_type` to \"physical\".\n\nThe input may include one numeric value per protein, such as fold change, effect size, or score.\nThese values are visualized as colored halos around the nodes, allowing overlay of protein-level measurements on the network.\n\nExample:\nPTEN 2.1\nSMO -1.3\n\nIf numeric values are provided:\n- positive values are shown in blue\n- negative values are shown in red\n- larger absolute values produce stronger halo intensity\n\nIf the user provides numeric values together with the proteins, preserve them in the query.\n\nIf few or no interactions are shown, consider lowering `required_score`.\n\nFor large queries (>100 proteins):\n- use `network_flavor=\"confidence\"`\n- increase `required_score` (e.g. 700)\n\nAlways display the link as a markdown hyperlink (hide the raw URL).\n\nInput parameters should match those used in related STRING tools unless otherwise specified.",
+      "inputSchema": {
+        "properties": {
+          "proteins": {
+            "description": "Required. One or more protein IDs, optionally followed by one numeric value per protein. Example:\nPTEN 0.234\nSMO -3.445\nUse newline (%0d) between entries. Tabs and spaces are accepted as separators.",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Required. NCBI/STRING taxon (e.g. 9606 for human, or STRG0AXXXXX).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "extend_network": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Add white nodes to network, based on scores. Default: 0."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "required_score": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maximum": 1000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Threshold of significance to include an interaction. Omit for STRING default filtering. Set only when a threshold is requested or a broader/narrower threshold is needed."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "network_flavor": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "evidence",
+                      "confidence"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Edge style. Omit for STRING default evidence styling. Set only when the user asks for evidence or confidence edge display."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "network_type": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "functional",
+                      "physical"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Omit for STRING default functional associations. Set physical only for binding, complex, or co-complex questions."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "hide_disconnected_nodes": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Hide proteins not connected to any other protein when set to 1. Set only if the user asks to hide disconnected or unconnected proteins."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "proteins"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_homology",
+      "title": "STRING: Get homologs in specified target species",
+      "description": "Retrieves pairwise protein similarity scores (SmithâWaterman bit scores) for the query proteins.  \n\n- If no target species (`species_b`) is provided, results are intra-species (within the query species).  \n- To retrieve homologs in other species or clades (e.g. vertebrates, yeast, plants), specify one or more NCBI taxon IDs in `species_b`.  \n- Multiple target species are supported; ask the user to clarify if needed.  \n- Always report species names together with their taxon IDs.  \n- Bit scores < 50 are not reported.  \n- Results are truncated to the top 50 proteins per input protein.",
+      "inputSchema": {
+        "properties": {
+          "proteins": {
+            "description": "Required. One or more protein identifiers, separated by %0d. Example: SMO%0dTP53",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Required. NCBI/STRING taxon (e.g. 9606 for human, or STRG0AXXXXX for uploaded genomes).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "species_b": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. One or more NCBI taxon IDs for target species, separated by comma (e.g. 9606,7227,4932 for human, fly, and yeast)."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "proteins"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_interaction_evidence",
+      "title": "STRING: Get links to interaction evidence pages",
+      "description": "Retrieves direct links to STRING evidence pages for proteinâprotein interaction pairs.\n\nUse this tool only when a STRING evidence page/link is needed. To determine whether\nan interaction is supported, use `string_interactions_query_set`.\n\nIt returns URLs linking to STRINGâs evidence pages, which display the underlying data sources \n(experimental results, publications, and curated databases) supporting each predicted interaction.  \nA URL can be generated even for unsupported pairs; the URL is not itself an interaction verdict.\n\nParameters:\n- **identifier_a**: Query protein identifier (Protein A)\n- **identifiers_b**: One or more target protein identifiers (Protein B), separated by `%0d`\n- **species**: NCBI taxonomy ID (e.g. `9606` for human or `10090` for mouse)\n\nTypical user questions that should trigger this tool:\n- \"Can you show me the STRING evidence for this interaction?\"\n- \"Show me the details supporting this interaction.\"\n- \"What supports the interaction between TP53 and MDM2?\"\n- \"Where can I find the STRING evidence for this pair?\"",
+      "inputSchema": {
+        "properties": {
+          "identifier_a": {
+            "description": "Required. Protein A identifier.",
+            "type": "string"
+          },
+          "identifiers_b": {
+            "description": "Required. One or more protein B identifiers, separated by %0d.",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Required. NCBI/STRING taxon (e.g. 9606 for human, or STRG0AXXXXX for uploaded genomes).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "identifier_a",
+          "identifiers_b"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_enrichment",
+      "title": "STRING: Functional enrichment analysis",
+      "description": "This tool retrieves functional enrichment for a set of proteins using STRING.\n\n- If queried with a single protein, the tool expands the query to include the proteinâs 10 most likely interactors; enrichment is performed on this set, not the original single protein.\n- For two or more proteins, enrichment is performed on the exact input set.\n- When calling related tools, use the same input parameters unless otherwise specified.\n- Focus summaries on the top categories and most relevant terms for the results. Always report FDR for each claim.\n- Report FDR as a human-readable value (e.g. 2.3e-5 or 0.023).\n- IMPORTANT: Remember to suggest showing an enrichment graph for a specific category of user interest (e.g., GO, KEGG)\n- Very large responses are capped while preserving category diversity.\n- Use `expand_category` to return only one category with expanded term coverage and per-term gene details.\n- If a row has `preferredNames_omitted: true`, do not infer which proteins are in that term from the returned rows.\n  Use `string_functional_annotation` with the same proteins/species and `detail_for_term` set to the exact term ID.\n\nOutput fields (per enriched term):\n  - category: Term category (e.g., GO Process, KEGG pathway)\n  - term: Enriched term (GO ID, domain, or pathway)\n  - number_of_genes: Number of input genes with this term\n  - number_of_genes_in_background: Number of background genes with this term\n  - ncbiTaxonId: NCBI taxon ID\n  - preferredNames: Canonical protein names, only when the full per-term list is short enough to show\n  - proteinCount: Number of proteins matching this term\n  - preferredNames_omitted: True when the gene list was omitted instead of showing a misleading partial list\n  - p_value: Raw p-value\n  - fdr: False Discovery Rate (B-H corrected p-value)\n  - description: Description of the enriched term\n\nResponse metadata:\n  - input_gene_name_mapping: Only included when displayed gene lists contain submitted identifiers that differ\n    from STRING preferred names.\n  - category_summary: Total and returned term counts per category; use `expand_category` for categories\n    where `truncated` is true or where the user wants deeper category-specific detail.\n  - truncated_categories / omitted_categories: Categories with terms not shown in the current response.",
+      "inputSchema": {
+        "properties": {
+          "proteins": {
+            "description": "Required. One or more protein identifiers, separated by %0d. Example: SMO%0dTP53",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. NCBI/STRING taxon (e.g. 9606 for human, or STRG0AXXXXX). Use only when required."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "expand_category": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Return only this enrichment category with expanded term coverage and a larger per-term gene-list cutoff. Use a category from metadata.category_summary, e.g. Process, KEGG, PMID, NetworkNeighborAL, or Keyword."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "proteins"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_functional_annotation",
+      "title": "STRING: Retrieve functional annotations for proteins",
+      "description": "This tool retrieves curated functional annotations for a set of proteins.\n\nEach input protein is mapped to known biological terms from ontologies, pathway databases, tissues, compartments and domains â such as Gene Ontology (GO), KEGG, and UniProt Keywords.\n\n- Use this when the user asks what a protein does, where it's localized, expressed, or which pathways it participates in.\n- Keep the output short and focused by highlighting a few diverse and specific annotations for each protein.\n- This tool does not perform statistical enrichment â use the enrichment tool for that.\n\nOutput fields (per protein):\n  - stringId: STRING protein identifier\n  - preferredName: Gene name or alias\n  - annotation: Functional description or keyword\n  - category: Source category (e.g. GO, KEGG, Keyword)\n  - term: Functional term or ID",
+      "inputSchema": {
+        "properties": {
+          "identifiers": {
+            "description": "Separate multiple protein queries by %0d. e.g. SMO%0dTP53",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Required. NCBI/STRING taxon (e.g. 9606 for human, or STRG0AXXXXX for uploaded genomes).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "detail_for_term": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Exact functional term ID to return with the full list of matching input proteins. Use this when a previous result says a protein list was shortened, omitted, or replaced with 'many'."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "identifiers"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_enrichment_image_url",
+      "title": "STRING: Get enrichment result figure (image URL)",
+      "description": "Retrieves the STRING enrichment figure image *URL* for a set of proteins.\n    ",
+      "inputSchema": {
+        "properties": {
+          "identifiers": {
+            "description": "Required. Protein identifiers, separated by %0d. Example: SMO%0dTP53",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Required. NCBI/STRING taxon (e.g. 9606 for human, or STRG0AXXXXX).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "category": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "Process",
+                      "Function",
+                      "Component",
+                      "Keyword",
+                      "KEGG",
+                      "RCTM",
+                      "HPO",
+                      "MPO",
+                      "DPO",
+                      "WPO",
+                      "ZPO",
+                      "FYPO",
+                      "Pfam",
+                      "SMART",
+                      "InterPro",
+                      "PMID",
+                      "NetworkNeighborAL",
+                      "COMPARTMENTS",
+                      "TISSUES",
+                      "DISEASES",
+                      "WikiPathways"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Term category for enrichment. If omitted, STRING uses Process. Use Process/Function/Component for GO, KEGG for KEGG pathways, RCTM for Reactome, and PMID for publications."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "group_by_similarity": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maximum": 1,
+                    "minimum": 0.1,
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Group similar terms on the plot. Default: no grouping."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "color_palette": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "mint_blue",
+                      "lime_emerald",
+                      "green_blue",
+                      "peach_purple",
+                      "straw_navy",
+                      "yellow_pink"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Color palette for FDR. If omitted, STRING uses mint_blue."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "number_of_terms_shown": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Max number of terms shown on plot. Default: 10."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "x_axis": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "signal",
+                      "strength",
+                      "FDR",
+                      "gene_count"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. X-axis variable/order. If omitted, STRING uses signal."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "identifiers"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_ppi_enrichment",
+      "title": "STRING: Proteinâprotein interaction (PPI) enrichment",
+      "description": "This tool tests if your network is enriched in protein-protein interactions compared to the background proteome-wide distribution (i.e., if your proteins are more functionally connected than expected by chance).\n\n- The enrichment is assessed using the actual observed edges versus expected edges in a random network of the same size.\n- The p-value reflects the likelihood that your observed number of interactions would occur by chance.\n- Report the p-value as a human-readable value (e.g. 2.3e-5 or 0.023).\n\nWhen calling related tools use the same input parameters unless otherwise specified.\n\nOutput fields:\n  - number_of_nodes: Number of proteins in your network\n  - number_of_edges: Number of observed edges/interactions\n  - average_node_degree: Mean degree (average number of interactions per node)\n  - local_clustering_coefficient: Average clustering coefficient in the network\n  - expected_number_of_edges: Expected number of edges in a random network of the same size\n  - p_value: p-value for network enrichment (smaller = more enriched)\n\nExample identifiers: \"SMO%0dTP53\"",
+      "inputSchema": {
+        "properties": {
+          "identifiers": {
+            "description": "Required. One or more protein identifiers, separated by %0d. Example: SMO%0dTP53",
+            "type": "string"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "description": "Required. NCBI/STRING taxon (e.g. 9606 for human, or STRG0AXXXXX for uploaded genomes).",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "required_score": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maximum": 1000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Minimum interaction confidence score. Omit unless a confidence threshold is requested or a broader/narrower threshold is needed."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "identifiers"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_proteins_for_term",
+      "title": "STRING: Retrieve proteins associated with a functional term",
+      "description": "Retrieve proteins annotated with a functional term or descriptive text in a single species.  \nYou can query for tissues, compartments, diseases, processes, pathways, and domains.  \n\nIMPORTANT: For cross-species comparisons, run this tool separately for each species.  \nSelect relevant model organisms to search or ask user to provide the selection.\nThe results reflect annotation depth within each category; use caution when interpreting.\n\nIf no results are found, try simplifying the query.  \nFor tissue queries, follow BRENDA tissue nomenclature and omit the word \"tissue\"  \n(e.g. use \"skin\" instead of \"skin tissue\").\n\nOutput fields:\n  - category: Source database of the matched functional term\n              (e.g. GO, KEGG, Reactome, Pfam, InterPro).\n  - term: Exact identifier for the functional term.\n  - description: The free text description of the term.\n  - proteinCount: Number of proteins annotated with that term\n  - preferredNames: Full protein-name list when `detail_for_term` is set\n  - stringIds: STRING protein identifiers when returned\n  - preferredNames_omitted: True when a row omits the protein-name list\n  - stringIds_omitted: True when STRING identifiers are omitted",
+      "inputSchema": {
+        "properties": {
+          "term_text": {
+            "description": "Required. Functional term identifier (GO, KEGG, Reactome, etc.) or descriptive free text (e.g. 'hsa05218', 'Melanoma', 'GO:0008543', 'Fibroblast growth factor').",
+            "type": "string"
+          },
+          "species": {
+            "default": "9606",
+            "description": "NCBI/STRING taxonomy ID. This tool only supports one species per call. It cannot return results across multiple species or identify the species with the most/fewest proteins. For such questions, run this tool separately for each species and then compare the results. Default is 9606 (human). Examples: 10090 for mouse, or STRG0AXXXXX for uploaded genomes.",
+            "type": "string"
+          },
+          "detail_for_term": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Exact term ID to return as one full protein-name list."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "term_text"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_sequence_search",
+      "title": "STRING: Search proteins by amino acid sequence",
+      "description": "Searches the STRING database using **amino acid sequences** to identify matching proteins.\n\n- Accepts a single sequence or multiple sequences in FASTA format.\n- Returns the most similar STRING protein(s) for the specified species, based on sequence similarity.\n- Use this when the protein identifier is unknown or unresolvable by `string_resolve_proteins`.",
+      "inputSchema": {
+        "properties": {
+          "sequences": {
+            "description": "One or more protein sequences in plain or FASTA format.For multiple sequences, use standard FASTA headers (lines beginning with '>'). Only amino acid sequences are supported â nucleotide sequences are not accepted.",
+            "type": "string"
+          },
+          "species": {
+            "default": 9606,
+            "description": "Required. NCBI or STRING taxonomy ID. You can query with a clade or species. eg.g 2 for bacteria, 7742 for vertebrates, 511145 for E. coli",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sequences"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_query_species",
+      "title": "STRING: Query species and clades in STRING",
+      "description": "Search for species or clades available in STRING by free-text query\nand return their NCBI taxonomy IDs.\n\n- Use this when the user asks which species or clades are present in STRING,\n  or when you need the correct NCBI taxon ID to pass to other tools.\n- use this to resolve NCBI taxons IDs to their scientific names.\n- Accepts up to 100 taxon IDs separated by `%0d`.\n- The results are limited to the top 50 matches per query.\n- When the user asks for a species list, do not list clades.\n- If the requested species cannot be matched (i.e. the correct species is not present\n  in the results), **immediately invoke the 'string_help' tool with topic='missing_species'**.",
+      "inputSchema": {
+        "properties": {
+          "species_text": {
+            "description": "Required. One species/clade search term or multiple NCBI taxon IDs separated by carriage return (%0d). Examples: 'human', 'mouse', 'vertebrates', '511145', or '9598%0d10090'. For multiple queries, use taxon IDs rather than free-text names.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "species_text"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_create_file",
+      "title": "STRING: Create a downloadable STRING result file",
+      "description": "Creates a downloadable file for STRING-derived results.\n\nUse this tool when the user explicitly asks to download, save, export,\nor receive a file containing STRING data, tables, protein lists,\nenrichment results, networks, etc.\n\nWhen a response would otherwise include a publication-style or supplementary\nresult table, or another table clearly intended for reuse outside chat,\nmention that a downloadable TSV/CSV file can be generated on request. Ask\nwhether they want the file, unless they already requested it. Do not create\nthe file until the user asks for it.\n\nDo not store unrelated data or full conversation transcripts.",
+      "inputSchema": {
+        "properties": {
+          "filename": {
+            "description": "Required. Suggested output filename with a safe extension such as .tsv, .csv, .json, .md, or .txt. Match content to the extension; prefer .tsv for reusable tabular STRING data. Use a concise name that reflects the STRING analysis result, for example string-enrichment.tsv.",
+            "type": "string"
+          },
+          "content": {
+            "description": "Required STRING-derived file content. For .tsv/.csv: one rectangular table, one header row, matching delimiter, no Markdown/prose/repeated headers/multiple tables. Use one row per entity, edge, cluster member, annotation, or enrichment term. Use bare numeric scores/FDR/p-values; put interpretation and caveats in chat or .md/.txt.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename",
+          "content"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "string_help",
+      "title": "STRING: Help / FAQ",
+      "description": "Provides explanatory text for STRING features and limitations.\n\nUse this tool when the user question involves:\n  - What is STRING is or how to use the tool (how_to_use_string, cytoscape)\n  - functionality not available via MCP tools (e.g. GSEA, regulatory networks, large datasets).\n  - meaning of the lines in the network (line_colors)",
+      "inputSchema": {
+        "properties": {
+          "topic": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "gsea",
+                      "large_input",
+                      "cytoscape",
+                      "scores",
+                      "missing_proteins",
+                      "missing_species",
+                      "proteome_annotation",
+                      "regulatory_networks",
+                      "how_to_use_string",
+                      "line_colors",
+                      "version_and_citation"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional. Help topic to display. If omitted, returns the available topics."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    }
+  ]
+}

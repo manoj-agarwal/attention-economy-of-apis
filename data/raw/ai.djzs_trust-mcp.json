@@ -1,0 +1,123 @@
+{
+  "name": "ai.djzs/trust-mcp",
+  "source_url": "https://mcp.djzs.ai/mcp",
+  "fetched_at": "2026-08-10T02:47:15+00:00",
+  "registry_description": "Deterministic pre-execution audit for trading agents. PASS/WAIT/FAIL, reproducible verdict_hash.",
+  "tools": [
+    {
+      "name": "query_pol_certificates",
+      "title": "Query DJZS ProofOfLogic Certificates",
+      "description": "Query immutable ProofOfLogic certificates stored on Irys Datachain by DJZS Protocol. USE THIS TOOL when you need to verify audit history for an agent or project before delegating work, check FAIL verdicts, or retrieve certificates by Irys tx ID. DO NOT use for on-chain trust scores â use query_agent_trust for those.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "targetSystem": {
+            "description": "Project name or wallet address",
+            "type": "string"
+          },
+          "verdict": {
+            "description": "Filter by verdict",
+            "type": "string",
+            "enum": [
+              "PASS",
+              "FAIL"
+            ]
+          },
+          "tier": {
+            "description": "Filter by tier",
+            "type": "string",
+            "enum": [
+              "micro",
+              "founder",
+              "treasury"
+            ]
+          },
+          "limit": {
+            "default": 20,
+            "description": "Number of results",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "from_ms": {
+            "description": "Window start (epoch ms). Default path auto-narrows (14d then 3d) to stay under the mainnet index timeout; pass an explicit value to reach older certificates (used as-is).",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "to_ms": {
+            "description": "Window end (epoch ms). Defaults to now + 1h.",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "query_agent_trust",
+      "title": "Query DJZS Agent Trust Score",
+      "description": "Query an agent's DJZS trust score, aggregated on-chain (Base mainnet) from its audit history and indexed via the DJZS subgraph. USE BEFORE delegating work, releasing escrow, or executing agent transactions. Returns totalAudits, pass/fail counts, failRate, latest verdict/risk, and DJZS-S01/DJZS-X01 flag counts. HALT if failRate > 0.3 or DJZS-S01/DJZS-X01 fired more than once.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "agentAddress": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "description": "Agent wallet address (0x-prefixed)"
+          }
+        },
+        "required": [
+          "agentAddress"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "verify_pm_trade",
+      "description": "Deterministic pre-execution audit of a prediction-market trade thesis. Extracts the reasoning, audits it against the calibrated DJZS-M taxonomy (M01 narrative/resolution gap, M02 falsification absent, M03 probability unsourced, M04 consensus-as-edge advisory), and returns PASS->PROCEED, FAIL, or WAIT->HALT with flagged defects and a reproducible verdict_hash. Audit before act. Paid tool: 2 USDC per audit via x402.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "intent": {
+            "type": "string",
+            "minLength": 10,
+            "description": "Free-text prediction-market trade thesis to audit"
+          },
+          "target_system": {
+            "description": "Optional agent/project identifier; becomes the Target-System tag on the anchored PoL certificate",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "agent_address": {
+            "description": "Optional agent wallet (0x). If set, this audit updates that agent's on-chain DJZS trust score",
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$"
+          }
+        },
+        "required": [
+          "intent"
+        ]
+      },
+      "annotations": {
+        "title": "Verify Prediction-Market Trade Thesis (DJZS pre-execution audit)"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "agents-x402/paymentRequired": true,
+        "agents-x402/priceUSD": 2
+      }
+    }
+  ]
+}

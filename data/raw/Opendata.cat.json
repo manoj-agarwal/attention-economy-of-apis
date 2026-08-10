@@ -1,0 +1,259 @@
+{
+  "name": "Opendata.cat",
+  "source_url": "https://opendata.cat/api/mcp",
+  "fetched_at": "2026-08-10T05:48:40+00:00",
+  "description": "Search and query 2,800+ datasets from Catalan public institutions including the Generalitat and Barcelona councils.",
+  "github_stars": 21,
+  "tools": [
+    {
+      "name": "search_datasets",
+      "description": "Search datasets by free text. IMPORTANT: check server instructions first — many common queries have a direct dataset_id you can use with query_dataset without searching. Only use search_datasets when you don't know which dataset you need.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search text in Catalan or Spanish. Examples: 'qualitat aire', 'pressupostos municipals', 'transport públic', 'residus', 'educació', 'rodalies'."
+          },
+          "portal": {
+            "type": "string",
+            "description": "Filter results to a single portal.",
+            "enum": [
+              "generalitat",
+              "barcelona",
+              "diba",
+              "aoc",
+              "reus",
+              "girona",
+              "fgc",
+              "idescat",
+              "renfe",
+              "ine",
+              "ree",
+              "sepe",
+              "cnmc",
+              "cora",
+              "catalonica"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "description": "Filter by thematic category. Examples: 'Medi Ambient', 'Educació', 'Salut', 'Economia', 'Transport', 'Seguretat'. Use list_categories to see all available categories."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of results to return. Min 1, max 100. Default 20.",
+            "default": 20
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "get_dataset_info",
+      "description": "Get complete metadata for a dataset: fields with types and descriptions, API endpoint, license, available formats and last update. Call after search_datasets to get full details of a specific dataset.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "description": "Unique dataset identifier in 'portal:id' format. Obtained from search_datasets results. Examples: 'generalitat:gn9e-3qhr', 'barcelona:qualitat-de-laire', 'renfe:vehicle-positions-gtfsrt'."
+          }
+        },
+        "required": [
+          "dataset_id"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "list_dataset_fields",
+      "description": "List fields of a dataset with name, data type and description. Call before query_dataset to know which fields and filters are available.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "description": "Unique dataset identifier in 'portal:id' format. Obtained from search_datasets results."
+          }
+        },
+        "required": [
+          "dataset_id"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "query_dataset",
+      "description": "Query real data from a dataset. Check instructions for featured dataset_ids and NOTES section for common filter patterns (municipal budgets, contracts, weather, energy, fuel prices).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "description": "Unique dataset identifier in 'portal:id' format. Obtained from search_datasets results."
+          },
+          "filters": {
+            "type": "object",
+            "description": "Key-value filters where the key is the field name and the value is the filter value. Examples: {\"municipi\": \"Barcelona\"}, {\"any\": \"2024\"}, {\"NOM_ENS\": \"Ajuntament de Tiana\"}. Use list_dataset_fields to know valid field names.",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "search": {
+            "type": "string",
+            "description": "Free text search within dataset data. Works with Socrata ($q) and CKAN (q). For Diba and CIDO, use specific filters."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Number of rows to return. Min 1, max 100. Default 20. Use offset for pagination.",
+            "default": 20
+          },
+          "offset": {
+            "type": "number",
+            "description": "Number of rows to skip for pagination. Default 0. Combine with limit to navigate large results.",
+            "default": 0
+          }
+        },
+        "required": [
+          "dataset_id"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "list_portals",
+      "description": "List all 13 indexed open data portals with dataset counts. Catalan portals (Generalitat, Barcelona, Diba, AOC, Reus, Girona, FGC, Idescat, Renfe) + Spanish national sources with Catalonia focus (INE statistics, REE energy, SEPE employment, CNMC fuel prices). No parameters required.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "list_categories",
+      "description": "List all dataset categories and themes with counts per portal. Great first step to discover what data types are available before searching with search_datasets. Returns total datasets, count per portal and category list with counts. No parameters required.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "related_datasets",
+      "description": "Find related datasets from OTHER portals. Great for discovering complementary data: if you're looking at air quality from Generalitat, it may suggest traffic data from Barcelona or emissions from AOC. Relations are computed by thematic similarity across portals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "description": "Dataset ID to find related datasets for. Obtained from search_datasets."
+          }
+        },
+        "required": [
+          "dataset_id"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "search_radioteca",
+      "description": "Search radio shows, episodes and people indexed at radioteca.cat (Catalan radio archive, ~485K documents from Catalunya Ràdio, RAC1, Catalunya Música, iCat, Catalunya Informació, RTVE, Cadena SER, ara.cat). Searches across episode titles, descriptions (which include a detailed summary of what was said), program name and subheading. Returns episodes (~473K), programs (~3K) and people (~9K). IMPORTANT: always cite radioteca.cat as the source and include the absolute 'url' in your reply for traceability — never paraphrase without linking.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free text in Catalan or Spanish. Searches title, description (contains episode summary), program and subheading. Examples: 'visita papa', 'eleccions municipals', 'crisi habitatge', 'Albert Serra cinema'."
+          },
+          "publisher": {
+            "type": "string",
+            "description": "Filter by broadcaster.",
+            "enum": [
+              "Catalunya Ràdio",
+              "RAC1",
+              "Catalunya Música",
+              "iCat",
+              "Catalunya Informació",
+              "RTVE",
+              "Cadena SER",
+              "ara.cat"
+            ]
+          },
+          "year": {
+            "type": "string",
+            "description": "Filter by year (4 digits, e.g. '2025'). NOTE: only year-level filtering is indexed; for a specific day, use the broader year filter and look at the URL path (radioteca URLs include /YYYY/MM/DD/) or the 'subheading' field which often contains the date."
+          },
+          "type": {
+            "type": "string",
+            "description": "Filter by document type.",
+            "enum": [
+              "Episode",
+              "Program",
+              "Person"
+            ]
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum results. Min 1, max 50. Default 10.",
+            "default": 10
+          },
+          "offset": {
+            "type": "number",
+            "description": "Pagination offset. Default 0.",
+            "default": 0
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    }
+  ]
+}

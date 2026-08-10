@@ -1,0 +1,124 @@
+{
+  "name": "FitLLM",
+  "source_url": "https://fitllm.run/api/mcp",
+  "fetched_at": "2026-08-10T05:50:53+00:00",
+  "description": "Exact VRAM and KV-cache fit calculations for LLMs on GPUs, multi-GPU rigs, and Macs — read-only MCP access.",
+  "github_stars": 7,
+  "tools": [
+    {
+      "name": "check_llm_fit",
+      "title": "Check if an LLM fits on hardware",
+      "description": "Check whether a specific local LLM fits in the memory of a specific GPU or Apple Silicon Mac. Returns fits/tight/won't-fit verdict with the full memory breakdown (weights, KV cache, overhead), max context, and a concrete fix if it doesn't fit. Use this whenever a user asks anything like \"can I run <model> on my <GPU/Mac>?\", \"will <model> fit in <N>GB?\", or \"what do I need to run <model>?\". Architecture-aware math (MLA, sliding-window, hybrid attention, MoE) â more accurate than rule-of-thumb estimates.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "LLM name, fuzzy â e.g. \"GLM-4.7-Flash\", \"gpt-oss-20b\", \"gemma 31b\""
+          },
+          "gpu": {
+            "type": "string",
+            "description": "GPU name, fuzzy â e.g. \"RTX 4090\", \"RX 7900 XTX\", \"A100 80GB\". Multi-GPU rigs: join with + â e.g. \"RTX 5090 + RTX 3090\" (VRAM pools across cards). Provide gpu OR mac_ram_gb."
+          },
+          "gpu_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "description": "Number of identical copies of the gpu (e.g. gpu=\"RTX 3090\", gpu_count=2 for a 2Ã3090 rig). Default 1."
+          },
+          "mac_ram_gb": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 2048,
+            "description": "Apple Silicon unified memory in GB â e.g. 16, 64, 512. Provide gpu OR mac_ram_gb."
+          },
+          "quant": {
+            "type": "string",
+            "description": "Weight quantization. GPU: Q4_K_M(default)/Q5_K_M/Q6_K/Q8_0/FP16. Mac: 4/8(default)/16 (bits)."
+          },
+          "context_tokens": {
+            "type": "integer",
+            "minimum": 1024,
+            "description": "Context length in tokens (default 8192)"
+          },
+          "kv_bits": {
+            "type": "number",
+            "enum": [
+              16,
+              8,
+              4
+            ],
+            "description": "KV-cache quantization bits (default 16 = F16)"
+          }
+        },
+        "required": [
+          "model"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "idempotentHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "what_fits_on_hardware",
+      "title": "What LLMs fit on this hardware",
+      "description": "Rank which popular local LLMs fit on a given GPU or Apple Silicon Mac (at ~4-bit quantization, 8K context) â models that fit come first, biggest first, with max context each. Use when a user asks \"what can I run on my <GPU/Mac/N GB>?\", \"best local model for my machine?\", or gives hardware without naming a model.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gpu": {
+            "type": "string",
+            "description": "GPU name, fuzzy. Multi-GPU rigs: join with + (e.g. \"RTX 5090 + RTX 3090\"). Provide gpu OR mac_ram_gb."
+          },
+          "gpu_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "description": "Number of identical copies of the gpu. Default 1."
+          },
+          "mac_ram_gb": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 2048,
+            "description": "Apple Silicon unified memory GB. Provide gpu OR mac_ram_gb."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "idempotentHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_supported",
+      "title": "List supported models & hardware",
+      "description": "List the built-in model names and hardware names this fit-checker knows (for mapping user wording to exact names). Any public HuggingFace model also works via fitllm.run.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "idempotentHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

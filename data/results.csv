@@ -1,5 +1,95 @@
 name,source_url,fetched_at,n_tools,catalog_tokens,median_tool_tokens,largest_tool_tokens,pct_params_described,any_enum_constraint,longest_description_chars,count_method
-ac.tandem/docs-mcp,https://tandem.ac/mcp,2026-08-10T02:28:20+00:00,13,1717,130,211,100.0,True,126,tiktoken:o200k_base
+.FAF Context,https://mcpaas.live/mcp,2026-08-10T05:51:44+00:00,19,2087,79,292,100.0,False,575,tiktoken:o200k_base
+Agent Utils,https://agent-utils-mcp.onrender.com/mcp,2026-08-10T05:51:47+00:00,18,1818,94,180,0.0,False,73,tiktoken:o200k_base
+Agentic Mermaid,https://agentic-mermaid.dev/mcp,2026-08-10T05:50:09+00:00,9,44144,318,13291,100.0,True,14965,tiktoken:o200k_base
+Aiden Coffee Brewer,https://aidenmcp.ravenhoward.org/mcp,2026-08-10T05:51:53+00:00,13,3292,137,607,50.0,False,664,tiktoken:o200k_base
+Apple Developer Documentation (RAG),https://mcp.apple-rag.com,2026-08-10T05:47:20+00:00,2,255,127,162,100.0,False,223,tiktoken:o200k_base
+Banco,https://api.mcp.ai/banco,2026-08-10T05:48:46+00:00,19,7126,233,1130,0.0,True,4173,tiktoken:o200k_base
+Bilig WorkPaper,https://bilig.proompteng.ai/mcp,2026-08-10T05:48:14+00:00,8,3458,228,1204,100.0,False,205,tiktoken:o200k_base
+Bullga,https://mcp.bullga.ai/mcp,2026-08-10T05:50:38+00:00,44,13806,180,4947,0.0,False,335,tiktoken:o200k_base
+BuyWhere,https://mcp.buywhere.ai/mcp,2026-08-10T05:51:06+00:00,8,1948,216,563,100.0,True,409,tiktoken:o200k_base
+ChangeThisFile,https://changethisfile.com/mcp,2026-08-10T05:52:03+00:00,7,1569,268,310,100.0,False,417,tiktoken:o200k_base
+Chia Health,https://mcp.chia.health/,2026-08-10T05:51:38+00:00,34,8504,204,689,100.0,False,2047,tiktoken:o200k_base
+CleanSlice,https://mcp.cleanslice.org/mcp,2026-08-10T05:48:44+00:00,4,560,88,326,100.0,True,233,tiktoken:o200k_base
+Cloudflare Documentation,https://docs.mcp.cloudflare.com/sse,2026-08-10T05:46:48+00:00,2,426,212,354,0.0,False,538,tiktoken:o200k_base
+CometChat Docs,https://mcp.cometchat.com/mcp,2026-08-10T05:48:05+00:00,3,500,150,204,100.0,False,358,tiktoken:o200k_base
+Context Awesome,https://www.context-awesome.com/api/mcp,2026-08-10T05:47:51+00:00,2,553,276,318,100.0,False,931,tiktoken:o200k_base
+ContrastCyber,https://api.contrastcyber.com/mcp/,2026-08-10T05:48:18+00:00,55,28457,455,1788,100.0,True,2138,tiktoken:o200k_base
+Convalytics,https://api.convalytics.dev/mcp,2026-08-10T05:51:08+00:00,15,3156,240,371,84.8,False,536,tiktoken:o200k_base
+Dali,https://dali.getlulu.dev/mcp,2026-08-10T05:50:39+00:00,16,3461,179,578,21.1,False,1659,tiktoken:o200k_base
+Dice Rolling,https://dice-rolling-mcp.vercel.app/mcp,2026-08-10T05:50:46+00:00,4,489,96,214,100.0,False,90,tiktoken:o200k_base
+Drillr,https://gateway.drillr.ai/mcp/data,2026-08-10T05:51:10+00:00,9,4087,394,674,88.9,True,1758,tiktoken:o200k_base
+EN Diagram,https://api.endiagram.com/mcp,2026-08-10T05:50:40+00:00,7,1998,294,477,100.0,False,729,tiktoken:o200k_base
+Ejentum Self-Inspect,https://api.ejentum.com/self-inspect-mcp,2026-08-10T05:50:53+00:00,1,268,266,266,100.0,False,764,tiktoken:o200k_base
+Emailens,https://emailens.dev/api/mcp,2026-08-10T05:51:11+00:00,9,1597,177,281,100.0,True,291,tiktoken:o200k_base
+EstNLTK,https://estonian-mcp.fly.dev/mcp,2026-08-10T05:49:58+00:00,26,10317,424,582,100.0,False,1363,tiktoken:o200k_base
+Exa Web Search,https://mcp.exa.ai/mcp,2026-08-10T05:46:43+00:00,2,489,244,292,100.0,False,566,tiktoken:o200k_base
+Excalidraw,https://mcp.excalidraw.com/mcp,2026-08-10T05:46:43+00:00,5,485,82,177,40.0,False,158,tiktoken:o200k_base
+Fedlex Connector,https://mcp.fedlex-connector.ch/,2026-08-10T05:51:11+00:00,4,678,167,232,100.0,True,389,tiktoken:o200k_base
+FitLLM,https://fitllm.run/api/mcp,2026-08-10T05:50:53+00:00,3,943,277,556,100.0,True,509,tiktoken:o200k_base
+Flaim,https://api.flaim.app/mcp,2026-08-10T05:50:41+00:00,10,8979,870,1672,100.0,True,1710,tiktoken:o200k_base
+Flow Studio,https://mcp.flowstudio.app/mcp,2026-08-10T05:48:30+00:00,33,6836,171,845,90.3,True,1053,tiktoken:o200k_base
+Fortytwo Prime,https://mcp.fortytwo.network/mcp,2026-08-10T05:51:46+00:00,1,104,102,102,100.0,False,37,tiktoken:o200k_base
+Foura,https://mcp.foura.ai/mcp,2026-08-10T05:52:11+00:00,4,8030,2126,2462,100.0,False,711,tiktoken:o200k_base
+Freeport Nostr,https://nostr-mcp.trinh.uk/mcp,2026-08-10T05:48:51+00:00,6,1843,254,578,65.8,True,442,tiktoken:o200k_base
+GoldenMatch,https://goldenmatch-mcp-production.up.railway.app/mcp/,2026-08-10T05:47:19+00:00,77,9570,108,345,59.1,True,483,tiktoken:o200k_base
+Gread,https://api.gread.dev/mcp,2026-08-10T05:47:53+00:00,5,761,135,246,100.0,False,118,tiktoken:o200k_base
+HefestoAI,https://hefestoai.narapallc.com/api/mcp-protocol,2026-08-10T05:51:15+00:00,4,187,46,67,100.0,False,60,tiktoken:o200k_base
+Hono Docs,https://hono-docs-mcp.yusukebe.workers.dev/mcp,2026-08-10T05:50:20+00:00,2,169,84,88,100.0,False,72,tiktoken:o200k_base
+Hugging Face,https://huggingface.co/mcp,2026-08-10T05:47:07+00:00,4,4329,992,1984,100.0,True,2789,tiktoken:o200k_base
+Hyades,https://hyades-mcp.apg.workers.dev/mcp,2026-08-10T05:48:25+00:00,1,8390,8388,8388,100.0,False,21926,tiktoken:o200k_base
+IBGE Brazil,https://ibge.sidneybissoli.com/mcp,2026-08-10T05:51:14+00:00,22,31451,1285,2895,100.0,True,2104,tiktoken:o200k_base
+InfraNode,https://mcp.infranode.dev/mcp,2026-08-10T05:50:23+00:00,12,4430,329,880,100.0,True,1027,tiktoken:o200k_base
+Justice Libre,https://justicelibre.org/mcp,2026-08-10T05:51:14+00:00,31,13488,372,873,0.0,False,2141,tiktoken:o200k_base
+Kapruka,https://mcp.kapruka.com/mcp,2026-08-10T05:48:36+00:00,8,6808,768,1452,0.0,False,2615,tiktoken:o200k_base
+KernelCAD,https://mcp.kernelcad.com/mcp,2026-08-10T05:50:03+00:00,45,27898,526,1447,92.0,True,2112,tiktoken:o200k_base
+Kiwi Flight Search,https://mcp.kiwi.com,2026-08-10T05:50:24+00:00,2,4730,2364,4450,100.0,True,2074,tiktoken:o200k_base
+Klever VM,https://mcp.klever.org/mcp,2026-08-10T05:48:24+00:00,16,3264,182,418,100.0,True,388,tiktoken:o200k_base
+Labelhead Artist Momentum,https://labelhead-mcp-public-production.up.railway.app/mcp,2026-08-10T05:46:36+00:00,3,426,121,218,100.0,True,392,tiktoken:o200k_base
+Lawyerd,https://mcp.lawyerd.net/takedown,2026-08-10T05:48:47+00:00,4,1712,444,524,100.0,False,689,tiktoken:o200k_base
+Lenny's Podcast,https://lenny-mcp.onrender.com/mcp,2026-08-10T05:48:06+00:00,3,250,79,120,100.0,False,268,tiktoken:o200k_base
+Math Learning,https://math-mcp.fastmcp.app/mcp,2026-08-10T05:51:40+00:00,17,6098,360,495,100.0,False,448,tiktoken:o200k_base
+Medical Terminologies,https://medical-terminologies-mcp.sidneybissoli.workers.dev/mcp,2026-08-10T05:50:54+00:00,31,23241,682,1913,100.0,True,1589,tiktoken:o200k_base
+Metagraphed,https://api.metagraph.sh/mcp,2026-08-10T05:50:18+00:00,230,300631,1067,10544,100.0,True,2115,tiktoken:o200k_base
+NsLookup.io,https://mcp.nslookup.io/mcp,2026-08-10T05:48:38+00:00,23,3994,137,495,100.0,True,455,tiktoken:o200k_base
+Nucleus,https://relay.nucleusos.dev/mcp,2026-08-10T05:52:09+00:00,28,12150,360,1394,49.2,False,5146,tiktoken:o200k_base
+OASDiff,https://api.oasdiff.com/mcp,2026-08-10T05:46:56+00:00,4,702,180,197,100.0,False,572,tiktoken:o200k_base
+Oh My Posh,https://ohmyposh.dev/api/mcp,2026-08-10T05:46:39+00:00,2,221,110,112,100.0,True,145,tiktoken:o200k_base
+Opendata.cat,https://opendata.cat/api/mcp,2026-08-10T05:48:40+00:00,8,1603,138,419,100.0,True,541,tiktoken:o200k_base
+OptionsAhoy,https://optionsahoy.com/mcp,2026-08-10T05:51:52+00:00,8,34114,3603,7836,100.0,True,4053,tiktoken:o200k_base
+OrchestKit,https://orchestkit.yonyon.ai/api/mcp,2026-08-10T05:47:10+00:00,2,276,138,142,100.0,False,202,tiktoken:o200k_base
+Package Version Check,https://package-version-check-mcp.onrender.com/mcp,2026-08-10T05:50:55+00:00,4,2053,439,993,100.0,False,1276,tiktoken:o200k_base
+Parlay,https://mcp.parlay.run/mcp,2026-08-10T05:51:27+00:00,6,1556,210,469,20.0,True,738,tiktoken:o200k_base
+Payram Helper,https://mcp.payram.com/mcp,2026-08-10T05:47:17+00:00,52,13936,230,656,95.7,True,480,tiktoken:o200k_base
+Pine Script,https://pinescript-mcp.fly.dev/mcp,2026-08-10T05:51:28+00:00,10,1830,184,250,100.0,False,467,tiktoken:o200k_base
+PreClick,https://preclick.ai/mcp,2026-08-10T05:51:30+00:00,6,1129,186,239,100.0,False,391,tiktoken:o200k_base
+Prompts.chat,https://prompts.chat/api/mcp,2026-08-10T05:48:21+00:00,10,1881,162,320,100.0,True,332,tiktoken:o200k_base
+Pyth Network,https://mcp.pyth.network/mcp,2026-08-10T05:47:08+00:00,5,2101,423,581,100.0,True,929,tiktoken:o200k_base
+Recruiting Reports,https://two026-recruiting-reports.onrender.com/mcp,2026-08-10T05:48:34+00:00,6,714,110,206,100.0,False,304,tiktoken:o200k_base
+RevoGrid,https://mcp.rv-grid.com,2026-08-10T05:46:51+00:00,4,612,142,208,0.0,True,84,tiktoken:o200k_base
+Riksdag & Regering,https://riksdag-regering-ai.onrender.com/mcp,2026-08-10T05:48:26+00:00,32,4202,109,532,85.6,True,95,tiktoken:o200k_base
+SODAX Builders,https://builders.sodax.com/mcp,2026-08-10T05:50:31+00:00,40,7956,156,799,99.1,True,1404,tiktoken:o200k_base
+STRING Database,https://mcp.string-db.org/,2026-08-10T05:51:59+00:00,17,8669,460,946,29.0,False,2307,tiktoken:o200k_base
+Service Public France,https://mcp-service-public.nhaultcoeur.workers.dev/mcp,2026-08-10T05:51:49+00:00,38,9365,254,524,100.0,True,566,tiktoken:o200k_base
+SheetsData,https://mcp.sheetsdata.com/mcp,2026-08-10T05:50:29+00:00,12,7962,698,1093,100.0,True,3445,tiktoken:o200k_base
+Sonatype,https://mcp.guide.sonatype.com/mcp,2026-08-10T05:47:30+00:00,3,663,196,273,100.0,False,522,tiktoken:o200k_base
+Source Library,https://sourcelibrary.org/api/mcp,2026-08-10T05:50:07+00:00,15,5620,326,706,76.0,True,2107,tiktoken:o200k_base
+StealThis,https://mcp.stealthis.dev/mcp,2026-08-10T05:51:45+00:00,5,427,67,151,100.0,True,173,tiktoken:o200k_base
+StudioMCPHub,https://studiomcphub.com/mcp,2026-08-10T05:51:31+00:00,27,4682,142,461,100.0,True,326,tiktoken:o200k_base
+SwapWizard,https://mcp.swapwizard.xyz/mcp,2026-08-10T05:50:51+00:00,11,5366,453,1498,100.0,True,2955,tiktoken:o200k_base
+Synapse Layer,https://forge.synapselayer.org/api/mcp,2026-08-10T05:50:08+00:00,13,1870,124,355,100.0,True,153,tiktoken:o200k_base
+Tandem,https://tandem.ac/mcp,2026-08-10T05:47:24+00:00,13,1717,130,211,100.0,True,126,tiktoken:o200k_base
+TextArtTools,https://mcp.textarttools.com/,2026-08-10T05:51:19+00:00,7,610,87,177,100.0,True,87,tiktoken:o200k_base
+Tick,https://tick-mcp-production.up.railway.app/mcp,2026-08-10T05:52:04+00:00,2,261,130,155,100.0,False,501,tiktoken:o200k_base
+TickDB,https://mcp.tickdb.ai,2026-08-10T05:47:01+00:00,13,1502,125,171,0.0,False,311,tiktoken:o200k_base
+Transloadit,https://api2.transloadit.com/mcp,2026-08-10T05:47:31+00:00,7,2711,313,660,0.0,True,118,tiktoken:o200k_base
+UK Legal Research,https://uk-legal-mcp.fly.dev/mcp,2026-08-10T05:50:25+00:00,35,31191,812,3954,100.0,True,1184,tiktoken:o200k_base
+VARRD,https://app.varrd.com/mcp,2026-08-10T05:48:29+00:00,9,3186,210,701,100.0,True,1999,tiktoken:o200k_base
+WHOIS,https://whois.ddnsip.cn/mcp,2026-08-10T05:47:50+00:00,2,208,104,117,100.0,False,213,tiktoken:o200k_base
+WordPress Trac,https://mcp-server-wporg-trac-staging.a8cai.workers.dev/mcp,2026-08-10T05:50:01+00:00,5,563,114,153,100.0,True,110,tiktoken:o200k_base
+World Monitor,https://worldmonitor.app/mcp,2026-08-10T05:46:37+00:00,60,36361,537,1714,100.0,True,120,tiktoken:o200k_base
+XCatcher,https://xcatcher.top/mcp,2026-08-10T05:50:37+00:00,17,4651,260,655,100.0,True,1193,tiktoken:o200k_base
+Zooza,https://mcp.zooza.app/mcp,2026-08-10T05:51:33+00:00,30,18465,530,1341,60.7,True,4131,tiktoken:o200k_base
 agency.goji/goji,https://mcp.goji.agency/mcp,2026-08-10T02:28:22+00:00,9,1463,138,357,62.5,True,355,tiktoken:o200k_base
 ai.aarna/atars-mcp,https://mcp.aarna.ai/mcp,2026-08-10T02:28:25+00:00,18,5220,262,492,0.0,False,1231,tiktoken:o200k_base
 ai.adoraads/beauty,https://mcp.adoraads.ai/beauty,2026-08-10T02:28:27+00:00,6,1877,274,574,100.0,True,593,tiktoken:o200k_base
@@ -24,7 +114,6 @@ ai.arclan/registry,https://arclan.ai/mcp,2026-08-10T02:28:58+00:00,4,1126,282,42
 ai.argushq/enforcement-database,https://argushq.ai/api/mcp,2026-08-10T02:28:59+00:00,5,618,123,148,100.0,False,170,tiktoken:o200k_base
 ai.artidrop/artidrop,https://artidrop.ai/mcp,2026-08-10T02:29:02+00:00,4,740,142,392,100.0,True,458,tiktoken:o200k_base
 ai.auralogs/auralogs,https://mcp.auralogs.ai/mcp,2026-08-10T02:29:07+00:00,7,705,71,199,0.0,True,238,tiktoken:o200k_base
-ai.auteng/docs,https://auteng.ai/mcp/docs,2026-08-10T02:29:08+00:00,7,1844,281,373,0.0,False,734,tiktoken:o200k_base
 ai.auteng/mcp,https://auteng.ai/mcp,2026-08-10T02:29:09+00:00,7,1844,281,373,0.0,False,734,tiktoken:o200k_base
 ai.autonomad/travel,https://mcp.autonomad.ai/mcp,2026-08-10T02:29:10+00:00,8,2479,230,848,45.5,True,3115,tiktoken:o200k_base
 ai.aviado/health,https://aviado.ai/api/mcp,2026-08-10T02:29:17+00:00,9,1477,146,249,100.0,True,649,tiktoken:o200k_base
@@ -40,7 +129,6 @@ ai.boolsai/signals,https://signals.boolsai.ai/mcp,2026-08-10T02:29:32+00:00,12,1
 ai.borealhost/mcp,https://borealhost.ai/mcp/,2026-08-10T02:29:34+00:00,144,26711,158,998,0.0,False,2594,tiktoken:o200k_base
 ai.bowmark/bowmark,https://api.bowmark.ai/mcp,2026-08-10T02:29:35+00:00,2,2279,1139,1485,100.0,False,4824,tiktoken:o200k_base
 ai.bringyour/bringyour,https://bringyour.ai/mcp,2026-08-10T02:30:07+00:00,7,752,97,202,100.0,False,317,tiktoken:o200k_base
-ai.buywhere/catalog-api,https://mcp.buywhere.ai/mcp,2026-08-10T02:30:11+00:00,8,1948,216,563,100.0,True,409,tiktoken:o200k_base
 ai.byteask/embedded-docs,https://mcp.byteask.ai/mcp,2026-08-10T02:30:13+00:00,3,1175,208,815,0.0,False,2508,tiktoken:o200k_base
 ai.cabrini/market-data,https://cabrini.ai/mcp,2026-08-10T02:30:14+00:00,15,4010,298,442,100.0,False,281,tiktoken:o200k_base
 ai.canaryusers/canaryusers,https://www.canaryusers.ai/api/mcp,2026-08-10T02:30:18+00:00,3,459,82,299,100.0,True,915,tiktoken:o200k_base
@@ -63,9 +151,13 @@ ai.dataecho/mcp,https://dataecho.ai/mcp,2026-08-10T02:30:55+00:00,26,2391,75,403
 ai.datamerge/mcp,https://mcp.datamerge.ai,2026-08-10T02:30:58+00:00,23,5308,184,541,91.0,True,607,tiktoken:o200k_base
 ai.demanddiscovery/mcp,https://mcp.demanddiscovery.ai/api/mcp,2026-08-10T02:31:04+00:00,10,9213,660,2502,100.0,False,4580,tiktoken:o200k_base
 ai.deskcrew/agentic,https://deskcrew.ai/api/mcp,2026-08-10T02:31:06+00:00,4,506,119,195,4.8,False,332,tiktoken:o200k_base
+ai.djzs/trust-mcp,https://mcp.djzs.ai/mcp,2026-08-10T02:47:15+00:00,3,816,295,325,100.0,True,417,tiktoken:o200k_base
 ai.dreamlit/mcp,https://mcp.dreamlit.ai/mcp,2026-08-10T02:31:53+00:00,11,42863,3680,5640,100.0,True,690,tiktoken:o200k_base
-ai.drillr/drillr,https://gateway.drillr.ai/mcp/data,2026-08-10T02:31:54+00:00,9,4087,394,674,88.9,True,1758,tiktoken:o200k_base
 ai.dripmetrics/mcp,https://mcp.dripmetrics.ai/mcp,2026-08-10T02:31:54+00:00,6,1342,213,359,100.0,True,345,tiktoken:o200k_base
 ai.duvera/gateway,https://app.duvera.ai/mcp,2026-08-10T02:31:58+00:00,52,4766,88,194,100.0,False,255,tiktoken:o200k_base
 ai.dynamicfeed/dynamic-feed,https://dynamicfeed.ai/mcp,2026-08-10T02:31:59+00:00,94,27092,262,658,0.0,False,2163,tiktoken:o200k_base
 ai.echoloc/company-technographics,https://api.echoloc.ai/mcp,2026-08-10T02:32:00+00:00,3,449,129,209,25.0,True,253,tiktoken:o200k_base
+bm.md,https://bm.md/mcp,2026-08-10T05:47:00+00:00,4,1381,197,803,100.0,True,99,tiktoken:o200k_base
+deBridge,https://agents.debridge.com/mcp,2026-08-10T05:48:20+00:00,5,865,136,337,100.0,False,85,tiktoken:o200k_base
+htmldrop,https://htmldrop.link/mcp,2026-08-10T05:50:21+00:00,1,248,246,246,100.0,False,232,tiktoken:o200k_base
+pg-aiguide,https://mcp.tigerdata.com/docs,2026-08-10T05:46:55+00:00,2,3075,1537,2247,100.0,True,8836,tiktoken:o200k_base

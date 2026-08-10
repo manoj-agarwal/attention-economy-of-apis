@@ -1,0 +1,54 @@
+{
+  "name": "Lenny's Podcast",
+  "source_url": "https://lenny-mcp.onrender.com/mcp",
+  "fetched_at": "2026-08-10T05:48:06+00:00",
+  "description": "Provides searchable access to Lenny's Podcast transcripts for product management insights, using FlexSearch for fast full-text search across topics like pricing strategies, growth tactics, and product leadership advice.",
+  "github_stars": 35,
+  "tools": [
+    {
+      "name": "search_transcripts",
+      "description": "Search across all of Lenny's Podcast transcripts for insights on a topic. Returns relevant excerpts from episodes with guest names. Use this to find what product leaders and experts have said about specific topics like pricing, growth, product management, hiring, etc.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The search query - use keywords related to the topic you want insights on"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of results to return (default: 10)"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "get_episode",
+      "description": "Get the full transcript for a specific episode by guest name. Use this when you want to dive deeper into a specific conversation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "guest": {
+            "type": "string",
+            "description": "The name of the guest (e.g., 'Shreyas Doshi', 'Julie Zhuo')"
+          }
+        },
+        "required": [
+          "guest"
+        ]
+      }
+    },
+    {
+      "name": "list_episodes",
+      "description": "List all available episodes/guests in Lenny's Podcast archive. Use this to see what guests and topics are available to search.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  ]
+}

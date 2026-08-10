@@ -1,25 +1,31 @@
 #!/usr/bin/env python3
-"""Collect tool catalogs from public MCP servers listed in the official registry.
+"""Collect tool catalogs from the most popular public MCP servers.
 
-Usage: python 01_collect_catalogs.py [max_servers]
+Usage:
+  python 01_collect_catalogs.py [max_servers]
+  python 01_collect_catalogs.py [max_servers] --retry-failed
 
-For every registry entry that advertises a remote endpoint, performs the MCP
-handshake (initialize -> notifications/initialized -> tools/list) over the
-streamable-HTTP transport and saves the raw tool list to data/raw/.
+Fetches the full server index from PulseMCP, sorts by github_stars
+descending, and attempts the MCP handshake (initialize ->
+notifications/initialized -> tools/list) over the streamable-HTTP
+transport for the top N servers. Saves raw tool lists to data/raw/.
 Every attempt (success or failure) is appended to data/collect_log.csv.
+
+Resume-safe: servers whose raw file already exists in data/raw/ are skipped.
+
+--retry-failed re-attempts only servers whose most recent log status is "error".
 """
+import argparse
 import csv
 import json
 import re
-import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
 
-REGISTRY = "https://registry.modelcontextprotocol.io/v0/servers"
-PAGE_LIMIT = 100
+PULSEMCP_API = "https://api.pulsemcp.com/v0beta/servers"
 PROTOCOL_VERSION = "2025-06-18"
 USER_AGENT = "catalog-cost-study/0.1 (research; put-your-contact-here)"
 TIMEOUT = 20
@@ -33,46 +39,59 @@ def now_iso():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def get_registry_pages(max_servers):
-    """Yield deduped server entries from the registry, defensively parsed."""
-    seen = set()
-    cursor = None
-    yielded = 0
+def get_pulsemcp_top(max_servers):
+    """Fetch all servers from PulseMCP, yield top N by github_stars."""
     session = requests.Session()
     session.headers["User-Agent"] = USER_AGENT
-    while yielded < max_servers:
-        params = {"limit": PAGE_LIMIT}
-        if cursor:
-            params["cursor"] = cursor
-        resp = session.get(REGISTRY, params=params, timeout=TIMEOUT)
+    all_servers = []
+    offset = 0
+    page_size = 200
+    print("Fetching PulseMCP server index...", end="", flush=True)
+    while True:
+        resp = session.get(PULSEMCP_API,
+                           params={"count_per_page": page_size, "offset": offset},
+                           timeout=30)
+        if resp.status_code == 410:
+            time.sleep(1)
+            offset += page_size
+            continue
         resp.raise_for_status()
         data = resp.json()
-        entries = data.get("servers") or data.get("data") or []
-        if not entries:
-            return
-        for entry in entries:
-            # Entries may be flat, or nested under a "server" key.
-            srv = entry.get("server", entry) if isinstance(entry, dict) else {}
-            name = srv.get("name") or entry.get("name")
-            if not name or name in seen:
-                continue
-            seen.add(name)
-            yield {"name": name, "entry": srv}
-            yielded += 1
-            if yielded >= max_servers:
-                return
-        meta = data.get("metadata") or data.get("meta") or {}
-        cursor = meta.get("next_cursor") or meta.get("nextCursor")
-        if not cursor:
-            return
+        batch = data.get("servers") or []
+        if not batch:
+            break
+        all_servers.extend(batch)
+        if len(all_servers) % 2000 < page_size:
+            print(f" {len(all_servers)}", end="", flush=True)
+        if not data.get("next"):
+            break
+        offset += page_size
+        time.sleep(0.3)
+    print(f" {len(all_servers)} total.")
+
+    with_remotes = [s for s in all_servers if first_remote_url(s)]
+    with_remotes.sort(key=lambda s: s.get("github_stars") or 0, reverse=True)
+    top_stars = (with_remotes[0].get("github_stars") or 0) if with_remotes else 0
+    cut_stars = (with_remotes[min(max_servers, len(with_remotes)) - 1].get("github_stars") or 0) if with_remotes else 0
+    print(f"Servers with remotes: {len(with_remotes)}.  "
+          f"Top {max_servers} by github_stars (range {top_stars} -> {cut_stars}).")
+
+    seen = set()
+    for srv in with_remotes[:max_servers]:
+        name = srv.get("name")
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        yield {"name": name, "entry": srv}
 
 
 def first_remote_url(srv):
     """Return (url, transport_type) for the first advertised remote, else None."""
     for remote in srv.get("remotes") or []:
-        url = remote.get("url")
+        url = remote.get("url") or remote.get("url_direct")
         if url:
-            ttype = remote.get("type") or remote.get("transport_type") or ""
+            ttype = (remote.get("type") or remote.get("transport_type")
+                     or remote.get("transport") or "")
             return url, ttype
     return None
 
@@ -171,17 +190,51 @@ def safe_filename(name):
     return re.sub(r"[^A-Za-z0-9._-]", "_", name)[:180]
 
 
+def load_failed_servers():
+    """Return names of servers whose most recent log status is 'error'."""
+    if not LOG_PATH.exists():
+        return set()
+    latest = {}
+    with LOG_PATH.open(encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            latest[row["name"]] = row["status"]
+    return {name for name, status in latest.items() if status == "error"}
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("max_servers", nargs="?", type=int, default=250,
+                        help="top N most-popular servers to attempt (default: 250)")
+    parser.add_argument("--retry-failed", action="store_true",
+                        help="re-attempt only servers whose most recent log status is 'error'")
+    return parser.parse_args()
+
+
 def main():
-    max_servers = int(sys.argv[1]) if len(sys.argv) > 1 else 250
+    args = parse_args()
+    retry_set = load_failed_servers() if args.retry_failed else None
+    if args.retry_failed:
+        print(f"Retry-failed mode: {len(retry_set)} servers to re-attempt")
+
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     new_log = not LOG_PATH.exists()
-    ok = fail = skipped = 0
+    ok = fail = skipped = resumed = 0
     with LOG_PATH.open("a", newline="", encoding="utf-8") as logf:
         log = csv.writer(logf)
         if new_log:
             log.writerow(["fetched_at", "name", "url", "status", "n_tools", "error"])
-        for item in get_registry_pages(max_servers):
+        for item in get_pulsemcp_top(args.max_servers):
             name, srv = item["name"], item["entry"]
+
+            if retry_set is not None and name not in retry_set:
+                continue
+
+            raw_path = RAW_DIR / f"{safe_filename(name)}.json"
+            if raw_path.exists():
+                resumed += 1
+                continue
+
             remote = first_remote_url(srv)
             if not remote:
                 skipped += 1
@@ -191,7 +244,8 @@ def main():
             try:
                 tools = mcp_tools_list_with_retry(url)
                 out = {"name": name, "source_url": url, "fetched_at": now_iso(),
-                       "registry_description": srv.get("description", ""),
+                       "description": srv.get("short_description") or "",
+                       "github_stars": srv.get("github_stars"),
                        "tools": tools}
                 path = RAW_DIR / f"{safe_filename(name)}.json"
                 path.write_text(json.dumps(out, ensure_ascii=False, indent=2),
@@ -205,7 +259,7 @@ def main():
                               f"{type(exc).__name__}: {exc}"[:300]])
                 print(f"FAIL {name}  {type(exc).__name__}")
             time.sleep(SLEEP_BETWEEN_SERVERS)
-    print(f"\nDone. collected={ok} failed={fail} skipped_no_remote={skipped}")
+    print(f"\nDone. collected={ok} failed={fail} skipped_no_remote={skipped} resumed={resumed}")
     print(f"Raw catalogs in {RAW_DIR}/, full log in {LOG_PATH}")
     if ok < 100:
         print("CHECKPOINT: under 100 catalogs — remember the Saturday-lunch pivot rule.")

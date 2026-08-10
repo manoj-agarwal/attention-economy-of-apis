@@ -1,0 +1,60 @@
+{
+  "name": "HefestoAI",
+  "source_url": "https://hefestoai.narapallc.com/api/mcp-protocol",
+  "fetched_at": "2026-08-10T05:51:15+00:00",
+  "description": "Pre-commit code quality guardian that detects semantic drift in AI-generated code.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "name": "pricing",
+      "description": "Get HefestoAI pricing information",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "install",
+      "description": "Get installation instructions for HefestoAI",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "compare",
+      "description": "Compare HefestoAI with other code quality tools",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "description": "Tool to compare with (sonarqube, snyk, github-advanced-security, semgrep, claude-code-security)"
+          }
+        }
+      }
+    },
+    {
+      "name": "analyze",
+      "description": "Analyze a code snippet for quality issues and semantic drift",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code snippet to analyze"
+          },
+          "language": {
+            "type": "string",
+            "description": "Programming language (python, javascript, etc)"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      }
+    }
+  ]
+}

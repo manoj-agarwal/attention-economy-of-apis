@@ -1,0 +1,63 @@
+{
+  "name": "htmldrop",
+  "source_url": "https://htmldrop.link/mcp",
+  "fetched_at": "2026-08-10T05:50:21+00:00",
+  "description": "Turns HTML, Markdown, PDF, or image artifacts into shareable links with expiry, purpose-built for AI agents.",
+  "github_stars": 11,
+  "tools": [
+    {
+      "name": "publish_html",
+      "description": "Publish an HTML or markdown artifact (or fetch a remote HTML page) and get a shareable URL. Markdown is rendered into a clean reader page. Useful for sharing reports, dashboards, visualizations, or any document produced by an agent.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "html": {
+            "type": "string",
+            "description": "HTML content to publish. Provide one of html, markdown, or url."
+          },
+          "markdown": {
+            "type": "string",
+            "description": "Markdown content to publish; rendered into a styled reader page. Provide one of html, markdown, or url."
+          },
+          "url": {
+            "type": "string",
+            "description": "URL of an HTML page to fetch and publish. Provide one of html, markdown, or url."
+          },
+          "title": {
+            "type": "string",
+            "description": "Optional page title for the published artifact."
+          },
+          "ttl_days": {
+            "type": "number",
+            "description": "Optional custom TTL in days. Anonymous tier defaults to 7 days."
+          },
+          "password": {
+            "type": "string",
+            "description": "Optional password protection for the artifact."
+          },
+          "owner_key": {
+            "type": "string",
+            "description": "Optional owner key for higher limits and ownership."
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "html"
+            ]
+          },
+          {
+            "required": [
+              "markdown"
+            ]
+          },
+          {
+            "required": [
+              "url"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

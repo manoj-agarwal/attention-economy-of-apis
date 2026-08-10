@@ -1,0 +1,53 @@
+{
+  "name": "Hono Docs",
+  "source_url": "https://hono-docs-mcp.yusukebe.workers.dev/mcp",
+  "fetched_at": "2026-08-10T05:50:20+00:00",
+  "description": "Search and retrieve Hono framework documentation via Algolia search and markdown content fetching.",
+  "github_stars": 11,
+  "tools": [
+    {
+      "name": "search",
+      "description": "Search Hono documentation",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "limit": {
+            "default": 5,
+            "description": "Number of results",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "docs",
+      "description": "Get Hono documentation content. Returns llms.txt if no path is provided.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "path": {
+            "description": "Documentation path (e.g., docs/concepts/motivation)",
+            "type": "string"
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "name": "Dice Rolling",
+  "source_url": "https://dice-rolling-mcp.vercel.app/mcp",
+  "fetched_at": "2026-08-10T05:50:46+00:00",
+  "description": "Provides advanced dice rolling capabilities for tabletop gaming and RPGs with support for standard notation, advantage/disadvantage mechanics, exploding dice, reroll mechanics, keep/drop highest/lowest, success counting, and special dice types including fudge dice and percentile dice.",
+  "github_stars": 8,
+  "tools": [
+    {
+      "name": "search",
+      "description": "Search dice rolling documentation, guides, and examples",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query to find relevant dice rolling information, examples, or notation help"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "fetch",
+      "description": "Retrieve detailed content for a specific dice rolling topic by ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the dice rolling topic to fetch (from search results)"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "dice_roll",
+      "description": "Roll dice using standard notation. IMPORTANT: For D&D advantage use '2d20kh1' (NOT '2d20')",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "notation": {
+            "type": "string",
+            "description": "Dice notation. Examples: \"1d20+5\" (basic), \"2d20kh1\" (advantage), \"2d20kl1\" (disadvantage), \"4d6kh3\" (stats), \"3d6!\" (exploding), \"4d6r1\" (reroll 1s), \"5d10>7\" (successes)"
+          },
+          "label": {
+            "type": "string",
+            "description": "Optional label e.g., \"Attack roll\", \"Fireball damage\""
+          },
+          "verbose": {
+            "type": "boolean",
+            "description": "Show detailed breakdown of individual dice results"
+          }
+        },
+        "required": [
+          "notation"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "dice_validate",
+      "description": "Validate and explain dice notation without rolling",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "notation": {
+            "type": "string",
+            "description": "Dice notation to validate and explain. Examples: \"2d20kh1+5\", \"4d6kh3\", \"8d6\", \"1d%\""
+          }
+        },
+        "required": [
+          "notation"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

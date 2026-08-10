@@ -1,0 +1,79 @@
+{
+  "name": "Labelhead Artist Momentum",
+  "source_url": "https://labelhead-mcp-public-production.up.railway.app/mcp",
+  "fetched_at": "2026-08-10T05:46:36+00:00",
+  "description": "Trending hip-hop artist momentum scores across four cultural dimensions.",
+  "github_stars": 74683,
+  "tools": [
+    {
+      "name": "get_trending_artists",
+      "description": "Returns the current list of trending hip-hop and rap artists ranked by LabelHead's composite momentum score. Each artist is scored across three dimensions: Acceleration (30-day streaming/social velocity), Cultural Gravity (press velocity, playlist adds, sync placements), and Longevity (catalog depth and retention). Use this to identify which artists are building genuine momentum right now.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 10,
+            "description": "Number of artists to return (max 10, default 10)"
+          },
+          "min_composite": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Minimum composite score filter (0â100)"
+          },
+          "momentum_label": {
+            "type": "string",
+            "enum": [
+              "Rising",
+              "Steady",
+              "Cooling",
+              "Breakout"
+            ],
+            "description": "Filter by momentum label"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_scoring_explainer",
+      "description": "Returns a detailed explanation of LabelHead's three-dimensional artist scoring methodology. Use this when you need to understand how composite scores are calculated, what each dimension measures, and how to interpret momentum labels.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "check_artist_momentum",
+      "description": "Look up the current momentum score and signals for a specific artist by name. Returns the full three-dimensional score breakdown and notable signals driving their momentum.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "artist_name": {
+            "type": "string",
+            "description": "Artist name to look up (e.g. 'Doechii', 'Kendrick Lamar', 'GloRilla')"
+          }
+        },
+        "required": [
+          "artist_name"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

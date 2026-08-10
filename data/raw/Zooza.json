@@ -1,0 +1,2031 @@
+{
+  "name": "Zooza",
+  "source_url": "https://mcp.zooza.app/mcp",
+  "fetched_at": "2026-08-10T05:51:33+00:00",
+  "description": "Class scheduling, attendance tracking, and booking management for activity businesses.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "name": "get_terminology",
+      "title": "Look up Zooza terminology",
+      "description": "Search the Zooza domain glossary. Returns canonical term names, definitions, cross-language synonyms, disambiguation rules, and AI guidance notes. No Zooza API call is made â purely local lookup against the compiled glossary. Use this to resolve ambiguous user input before calling operational tools. Examples: query=\"hodina\" â Session; query=\"kurz\", language=\"sk\" â Programme; category=\"product-hierarchy\" â all hierarchy terms; empty call â full index.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Term, synonym, or keyword to look up. Matched against canonical_en, synonyms, deprecated terms, and intent_keywords (all languages). Case-insensitive substring match."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "sk",
+              "cz",
+              "de",
+              "pl",
+              "ro",
+              "hu",
+              "it",
+              "fr"
+            ],
+            "description": "Restrict intent_keyword matching to this language. Also highlights translations for the given language in the response."
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "product-hierarchy",
+              "programme-types",
+              "bookings",
+              "attendance",
+              "payments",
+              "clients",
+              "communication",
+              "platform",
+              "settings",
+              "scheduling",
+              "client-management"
+            ],
+            "description": "Filter by glossary category."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "explain_data_model",
+      "title": "Explain Zooza data model",
+      "description": "Returns a structured description of Zooza's domain entities â hierarchy, roles, valid field values (enums), parent/child relationships, and disambiguation rules. No Zooza API call is made â purely hardcoded domain knowledge. Call this before any class-creation, booking, or attendance tool to avoid entity confusion. Examples: entity=\"programme\" â registration_type enums; entity=\"booking\" â status values; entity=\"credit\" â make-up / replacement entitlements (the \"unused/expired make-ups\" and \"credits\" concept); empty call â full hierarchy with all entities.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string",
+            "enum": [
+              "programme",
+              "class",
+              "session",
+              "booking",
+              "attendance",
+              "credit",
+              "trainer",
+              "place"
+            ],
+            "description": "Return full detail for this entity only. Omit to get the complete hierarchy summary."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "comms_list_merge_vars",
+      "title": "List Zooza message merge variables",
+      "description": "Returns all valid merge variables for Zooza message templates (email, SMS, WhatsApp). Format: *|VARIABLE_NAME|* (MailChimp-compatible). No Zooza API call â hardcoded from Merge_Vars::merge_vars() in api-v1. Use this BEFORE writing any message template to get correct variable names. Claude must not invent variable names â only variables listed here are valid. Examples: category=\"financial\" â payment and balance vars; medium=\"sms\" â SMS-safe vars with HTML warnings; empty call â full catalogue grouped by category.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "client",
+              "booking",
+              "programme",
+              "session",
+              "financial",
+              "place",
+              "online_meeting",
+              "extra_fields",
+              "system",
+              "notification_urls"
+            ],
+            "description": "Filter by category. Omit to return all variables."
+          },
+          "medium": {
+            "type": "string",
+            "enum": [
+              "email",
+              "sms",
+              "whatsapp"
+            ],
+            "description": "Include medium-specific notes (e.g. HTML variables that do not render in SMS)."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_list_schedule_patterns",
+      "title": "List valid Zooza schedule patterns",
+      "description": "Returns all valid field values for building class schedules and payment plans in Zooza. No Zooza API call â hardcoded from Events_Preview.php and Payment_Schedule.php. Call this BEFORE classes_preview_schedule or classes_commit_class to avoid validation errors. Critical: weekdays must be 3-letter lowercase (mon/tue/wed...), NOT 'monday' or '1'. Critical: until_date and count are mutually exclusive â sending both causes an API error. Examples: domain=\"event_generation\" â cadences, weekdays, time format; domain=\"payment_schedule\" â schedule types and billing frequencies; empty call â both sections.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "enum": [
+              "event_generation",
+              "payment_schedule"
+            ],
+            "description": "Filter to one section. Omit to return both event generation and payment schedule references."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "negotiate_terminology",
+      "title": "Negotiate terminology â build a personalised vocabulary profile",
+      "description": "Free tool â no Zooza API call, no company_id required. Two modes:\n  \"start\" â returns the 8-question interview template for Claude to conduct conversationally.\n  \"build\" â validates answers against the Zooza glossary, returns a TerminologyProfile JSON\n            plus a /remember instruction so Claude saves the profile to memory.\nRun once per user. The saved profile is auto-loaded in every future Zooza session â no\nre-configuration needed. Call get_skill('negotiate-terminology') before starting the interview.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "start",
+              "build"
+            ],
+            "description": "\"start\" â returns the 8-question interview template (call this first, then ask the user the questions conversationally). \"build\" â validates collected answers and returns TerminologyProfile JSON + /remember instruction."
+          },
+          "answers": {
+            "type": "object",
+            "properties": {
+              "locale": {
+                "type": "string",
+                "description": "Primary language code of this business, e.g. 'sk', 'cz', 'en', 'de', 'pl', 'ro', 'hu'."
+              },
+              "programme_term": {
+                "type": "string",
+                "description": "What the user calls a Programme."
+              },
+              "class_term": {
+                "type": "string",
+                "description": "What the user calls a Class."
+              },
+              "session_term": {
+                "type": "string",
+                "description": "What the user calls a Session."
+              },
+              "booking_term": {
+                "type": "string",
+                "description": "What the user calls a Booking."
+              },
+              "trainer_term": {
+                "type": "string",
+                "description": "What the user calls a Trainer / Instructor."
+              },
+              "billing_period_term": {
+                "type": "string",
+                "description": "What the user calls a Billing Period."
+              },
+              "client_term": {
+                "type": "string",
+                "description": "What the user calls a Client / Parent."
+              },
+              "notes": {
+                "type": "string",
+                "description": "Any additional terminology notes or unusual vocabulary."
+              }
+            },
+            "required": [
+              "locale",
+              "programme_term",
+              "class_term",
+              "session_term",
+              "booking_term",
+              "trainer_term",
+              "billing_period_term",
+              "client_term"
+            ],
+            "additionalProperties": false,
+            "description": "Required when action is \"build\". Omit for action \"start\"."
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "whoami",
+      "title": "Who am I?",
+      "description": "Returns the connected user's identity, the companies they can operate on, regional context, and the session's token state. Call ONCE at the start of every conversation.\n\nHow to interpret the response:\n\n- 'status: \"ok\"' â authenticated, at least one company available. Pick a 'company_id' from 'companies' for follow-up calls (ask the user if more than one exists).\n- 'status: \"no_companies\"' â authenticated but no companies linked. Surface 'status_message' verbatim. No other tool will work.\n- 'status: \"invalid_user\"' â account rejected by api-v1. Surface 'status_message' verbatim.\n- 'status: \"api_error\"' â api-v1 unreachable. Surface 'status_message' and suggest retry.\n\nIdentity fields (use these to scope follow-up calls to the calling user):\n- 'identity.user_id' â the caller's Zooza user id. Pass this as 'trainer_id' to filter sessions_find_events / sessions_get_attendance / etc. to the user's OWN data whenever the user says \"my sessions,\" \"my classes today,\" \"what am I teaching tomorrow,\" etc. Without it, sessions_find_events returns ALL company events, not just the caller's.\n- 'identity.email', 'identity.name' â for display only.\n\nRegional context fields (use these to adapt behaviour):\n- 'server_region' â which Zooza installation this token routes to, taken from the JWT 'region' claim: \"eu\" (SK/CZ/DE/RO/HU/IT/PL), \"uk\", \"us\", \"asia\". This is the API-instance region, NOT the company's market region. Null in dev-fallback (no JWT).\n- 'company.region' â the company's MARKET region code (e.g. \"sk\", \"cz\", \"de\", \"en\"). Different axis from 'server_region': one EU instance ('server_region: \"eu\"') serves Slovak, Czech, German, â¦ companies.\n- 'company.locale' â BCP-47 locale for date/number/currency formatting (e.g. \"sk-SK\", \"cs-CZ\", \"en-GB\").\n- 'company.language' â the company's primary language code.\n- 'company.currency' â the company's currency (e.g. \"EUR\", \"CZK\", \"GBP\").\n\nUse 'company.region' and 'company.language' to resolve terminology: a Slovak company saying \"kurz\" means Programme; a Czech company saying \"lekce\" means Session. When region context is available, skip asking the user to clarify language.\n\nBranding (per company in 'companies[].branding'):\n- 'branding.logo' (boolean) and 'branding.primary_color' (#hex or null) report what brand assets were cached for this company. Use 'primary_color' to brand a report artifact you compose for the client; the actual logo image is held server-side and never passes through you. Null branding = fetch failed or nothing configured; default to Zooza styling.\n\nFeedback context (used by the 'feedback-nudge' skill):\n- 'last_feedback_at' â ISO timestamp of the user's last MCP feedback submission, or null if never. Drives the skill's 7-day cool-off on proactive feedback nudges.\n- 'feedback_count' â total submissions to date (0 if never).\n\nTool-list freshness (Zooza has no marketplace auto-update, so proactively spot an out-of-date connector). There are TWO independent staleness signals â check BOTH:\n1. NEW or REMOVED tools â compare 'tool_surface.names' (every tool the live server exposes) against the tools you actually have available in THIS session. Any name in that list you do NOT have = the client is missing newly-added tools.\n2. UPDATED tools (same names, changed behaviour) â compare 'server_version' in this response against the [SURFACE_BUILD: â¦] marker at the very end of THIS tool description. If they differ, the tool DEFINITIONS you currently hold are from an OLDER build even when every tool name still matches â an existing tool's description, inputs, or behaviour changed after the client last connected. (This is why a deploy that only tweaks existing tools is still detectable.)\nIf EITHER signal fires, tell the user once â briefly, not naggingly â that their Zooza tools are out of date, and how to refresh: in Claude Desktop or Claude Code toggle the Zooza connector off then on (or reconnect / reinstall it); a browser client may just need a reload. Do NOT prompt when neither signal fires.\n\nNever surface 'sub' or 'scopes' to the user â diagnostic only.\n\n[SURFACE_BUILD: 0.3.1]",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_find_courses",
+      "title": "Find courses by name",
+      "description": "Search the company's courses by name (substring match) and optionally by registration_type / course_type. Returns a slim list of matches â `{id, name, registration_type, target_audience, price, schedules_count, ...}` â enough to disambiguate, not enough to act. Use this whenever the user names a course in natural language; never demand a raw course_id. Archived courses are excluded by default (pass `include_archived: true` to opt in). Pagination defaults to page 0, page_size 25 (max 200); `truncated: true` is returned when more matches exist than the current page reveals.\n\n`registration_type` business meanings (when filtering, AND when surfacing results to the user â always translate to these terms, never show the raw enum value):\n- `single` â drop-in / per-session: customer books one event at a time.\n- `full2` â full-course enrollment: customer signs up for the entire course/schedule in one go.\n- `open` â open-ended / membership: no fixed enrollment window; customer joins and stays.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "name": {
+            "type": "string"
+          },
+          "registration_type": {
+            "type": "string",
+            "enum": [
+              "single",
+              "full2",
+              "open"
+            ],
+            "description": "Registration model. 'single' = drop-in / per-session booking (customer books one event at a time). 'full2' = full-course enrollment (customer signs up for the entire course at once). 'open' = open-ended / membership (no fixed enrollment window)."
+          },
+          "course_type": {
+            "type": "string"
+          },
+          "include_archived": {
+            "type": "boolean"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_find_classes",
+      "title": "Find classes (schedules) by name",
+      "description": "Search this company's CLASSES â the scheduled groups inside a programme (a \"class\" / \"group\" / \"skupina\"; internally a *schedule*) â by name (substring) and resolve them to a `schedule_id`. Reach for this whenever the user names a specific group rather than a whole programme (\"the NejakÃ© class\", \"the Monday 5pm group\", \"her Wednesday ballet class\"), or whenever a downstream tool needs a `schedule_id` â most importantly `comms_prepare_message` targeting everyone in one class (`audience.schedule_id`). This is the missing middle rung between `classes_find_courses` (finds the PROGRAMME â `course_id`) and `sessions_find_events` (finds individual dated SESSIONS â `event_id`): a class is one recurring group within a programme, made of many sessions. Optionally narrow by `course_id` (classes inside one programme), `trainer_id`, `place_id`, `day` of week, or `registration_type`. Returns a slim list â `{schedule_id, name, course_id, start, end, time, trainer_id, trainer_name, place_id, place_name, capacity, registrations_count, status}` â enough to disambiguate when several classes share a name, never enough to mutate. `course_id` is returned but not the course name (resolve it with `classes_find_courses` if you need it). By default returns active + paused (inactive) classes; pass `include_archived: true` to search archived classes instead. Does NOT create or change classes (that is `classes_preview_schedule` â `classes_commit_class`) and does NOT list a class's sessions (use `sessions_find_events` with the `schedule_id`).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "name": {
+            "type": "string",
+            "description": "Substring match on the class (schedule) name, e.g. \"NejakÃ©\". Case- and accent-insensitive (DB collation utf8mb4_unicode_ci) â \"nejake\" matches \"NejakÃ©\", so you need not reproduce diacritics."
+          },
+          "course_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Only classes inside this programme. Resolve the course_id first with classes_find_courses; never guess it."
+          },
+          "trainer_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Only classes this trainer is assigned to. Resolve with trainers_find."
+          },
+          "place_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Only classes at this venue. Resolve with classes_find_places."
+          },
+          "day": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "Day-of-week the class falls on (its start day): 1=Sunday, 2=Monday, â¦ 7=Saturday (MySQL DAYOFWEEK convention)."
+          },
+          "registration_type": {
+            "type": "string",
+            "enum": [
+              "single",
+              "full2",
+              "open"
+            ],
+            "description": "Filter by the parent course's registration model: 'single' = drop-in / per-session, 'full2' = full-course enrollment, 'open' = open-ended / membership."
+          },
+          "include_archived": {
+            "type": "boolean",
+            "description": "Default false â returns active + paused (inactive) classes. Set true to search ARCHIVED (retired) classes instead."
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "bookings_find",
+      "title": "Find bookings (registrations) and clients",
+      "description": "Find this company's bookings â a client's enrolment in a class (registration; \"prihlÃ¡Å¡ka\"/\"Buchung\") â and resolve them to a `registration_id`, or a client to a `user_id`. Use for \"is X enrolled?\", \"who's in this class?\", \"who hasn't paid?\" (set `payment_status:[\"unpaid\",\"partially_paid\"]`), and \"find client X\". Filter by `search` (loose: name/email/phone) or `name`, by `course_id`/`schedule_id` (resolve via classes_find_courses / classes_find_classes), `user_id`, `status`, `payment_status`, or booking date with `created_from`/`created_to` (the \"new registrations this week\" lever). `distinct:true` returns one row per client (â `user_id`) for person lookups. Chain a result's `registration_id` or `user_id` straight into comms_prepare_message (`audience.registration_id` / `audience.user_id`). Class/programme NAMES aren't returned â resolve the ids via classes_find_* if you need them. Defaults to active enrolments; guest, waitlist, canceled and deleted are excluded unless you pass `status`. Read-only â does not create or change bookings.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "search": {
+            "type": "string",
+            "description": "Broad freetext: matches the enrolled person's or account holder's name, email, phone, or id (substring, accent-insensitive). Best for a loose term. Use `name` instead to match only the enrolled person's name."
+          },
+          "name": {
+            "type": "string",
+            "description": "Enrolled person's name (substring, accent-insensitive). If it draws a blank for a kids' class, try `search` (also matches the account-holder parent)."
+          },
+          "course_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Bookings in this programme. Resolve the id with classes_find_courses; never guess it."
+          },
+          "schedule_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Bookings in this class (schedule). Resolve the id with classes_find_classes; never guess it."
+          },
+          "user_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "All bookings of one client, by their user id."
+          },
+          "status": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "registered",
+                "guest",
+                "waitlist",
+                "canceled",
+                "late",
+                "trial_not_started",
+                "trial_started",
+                "trial_ended",
+                "trial_won",
+                "trial_lost",
+                "auto_unenrolled"
+              ]
+            },
+            "description": "Enrolment statuses to include (piped to the api). Omit â confirmed enrolments only (registered, late, trial_*); guest, waitlist, canceled and deleted are excluded â pass them to widen. `auto_unenrolled` = canceled by the unpaid automation."
+          },
+          "payment_status": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "paid",
+                "unpaid",
+                "partially_paid",
+                "overpaid"
+              ]
+            },
+            "description": "Payment state â the \"who hasn't paid\" lever, e.g. [\"unpaid\",\"partially_paid\"]."
+          },
+          "distinct": {
+            "type": "boolean",
+            "description": "true â one row per CLIENT (deduped by account-holder user_id), person fields only â use to find a person or resolve a name to a single user_id. Default false â one row per booking."
+          },
+          "include_inactive": {
+            "type": "boolean",
+            "description": "Default false. Set true to also include inactive customers."
+          },
+          "created_from": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Only bookings CREATED on/after this date (YYYY-MM-DD, inclusive). The \"new registrations\" lever â e.g. created_from=<Monday> for this week's sign-ups. You supply the literal date; the api does no relative-date parsing."
+          },
+          "created_to": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Only bookings CREATED on/before this date (YYYY-MM-DD, inclusive). Pair with created_from for a window."
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_find_billing_periods",
+      "title": "Find billing periods",
+      "description": "List the company's billing periods, optionally filtered by name. Returns a slim list of `{id, name, active}`. Active periods only by default; pass `include_inactive: true` to see deactivated ones too. Used by the class-management flow when `classes_preview_schedule` warns about a missing `billing_period_id` â the user picks a period from the returned list. Volume is small (typically <30 per company); the tool fetches all and filters MCP-side. No pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "name": {
+            "type": "string"
+          },
+          "include_inactive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "trainers_find_rate_types",
+      "title": "Find trainer rate types (pay rates)",
+      "description": "List the company's trainer rate types â the named pay rates a trainer can be assigned on a class or session (e.g. \"Hourly\", \"Per class\"). Returns a slim list of `{id, name, minutes, type}`, optionally filtered by name. This is the ONLY way to turn a rate the operator names (\"the hourly rate\", \"per-session pay\") into the `trainer_rate_type_id` that classes_prepare_update and sessions_prepare_update need â never guess that id. Trainer rate types are company-level configuration (like billing periods and venues), not a per-trainer attribute, so this is a small flat list, typically a handful per company. No pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "trainers_find",
+      "title": "Find trainers (team members)",
+      "description": "Search the company's team members eligible to be assigned as trainers on classes. Returns a slim `{id, full_name, email, active, virtual}` per match. By default only active team members (owner/member/external_member/assistant/main_member roles) are returned; pass `include_inactive: true` to include former staff. Optional `place_id` / `course_id` filters narrow to trainers associated with a specific venue or course. Used in `class-management` Step 1 to resolve a trainer from the operator's words.\n\n**Virtual trainers** are also included in results (always, regardless of place/course filters â they're system-wide placeholders, not tied to any real venue/course). They have `virtual: true`, a synthetic id (>= 9000000000000), and no email. Pick one whenever the operator says any of: 'we'll decide later', 'no trainer yet', 'TBD', 'unassigned', 'guest', 'external speaker', or similar. Three system virtual trainers ship by default: 'To be decided', 'Trainer unassigned', 'Guest trainer'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "name": {
+            "type": "string"
+          },
+          "place_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "course_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "include_inactive": {
+            "type": "boolean"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_find_places",
+      "title": "Find venues (places) by name or city",
+      "description": "Search the company's venues by name (substring) and/or city. Returns a slim `{id, name, city, street, rooms: [{id, name, capacity}]}` per match. Rooms are inlined because picking a venue is usually followed by picking a room â saves a follow-up call. api-v1 doesn't support server-side filtering on /v1/places, so the MCP fetches up to 1000 places and filters MCP-side; this matches what the app picker does. Pagination defaults to page 0, page_size 25 (max 200).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "name": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "sessions_find_events",
+      "title": "Find events (scheduled sessions)",
+      "description": "List **events** (scheduled sessions of classes) in the caller's company. Use this whenever you need to resolve an `event_id` from natural language (\"my next class,\" \"Monday's ballet,\" \"all swim sessions this week,\" \"Sarah's classes tomorrow\") before chaining into another tool like `sessions_get_attendance` or `sessions_mark_attendance`. With no filters, returns **ALL upcoming scheduled sessions in the company** (closest first) â not just the caller's. Filters cover date window, course, schedule, trainer, place, room, segment, billing period, status, and event-type (over-capacity, substituted, cancelled, etc.). Each returned row includes denormalised names (trainer, place, event-number), the event's date and duration, `capacity`, `free_spots` (remaining places = capacity â going, or null for open/unlimited events â use this to answer \"which sessions still have space\"), and an `attendance_counts` object (`going`, `attended`, `noshow`, `canceled`, `canceled_late`, `waitlist`). Read-only â does not modify events.\n\n**Critical: \"my sessions\" / \"what am I teaching\" / \"my classes today\".** When the user is asking for THEIR OWN sessions (any first-person framing), you MUST pass `trainer_id` matching `whoami.identity.user_id`. Without it, this tool returns every trainer's events in the company â which is almost never what the user meant when they said \"my.\" The only exception: when the caller's role is `member` or `external_member`, the server silently auto-scopes to their assignments anyway; `meta.scoped_to` in the response flags when this has happened.\n\nFilter notes:\n- `trainer_id` matches across FIVE trainer relationships including pre-substitution and schedule-level extras. Treat it as \"events trainer X is connected to,\" not strictly \"events trainer X currently teaches.\"\n- `status` uses raw db terms: `scheduled` (default â only state attendance can be tracked on), `unplanned` (includes cancelled events), `finished`, or `any`.\n- `segment_id=[0]` is a sentinel matching events with NO segment assignment.\n- Counters in `attendance_counts` may be sub-second-stale; for real-time counts on one event, chain into `sessions_get_attendance`. DISPLAYING A CLASS'S TIMETABLE: when the user wants to SEE a class's sessions (e.g. viewing or COPYING a class), render them as a weekly GRID â days across the top (MonâSun), time down the left, like the Zooza app calendar â collapsed to the weekday+time pattern with the run range + session count in a one-line caption; list individual dates only if the user explicitly asks. (Display only â ignore when you are merely resolving an event_id to chain into another tool.)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "minItems": 1
+          },
+          "from": {
+            "type": "string",
+            "description": "YYYY-MM-DD, inclusive lower bound on event date."
+          },
+          "to": {
+            "type": "string",
+            "description": "YYYY-MM-DD, inclusive upper bound on event date."
+          },
+          "date": {
+            "type": "string",
+            "description": "YYYY-MM-DD, exact-day match."
+          },
+          "past": {
+            "type": "boolean",
+            "description": "When true, include events whose date is in the past. Default false. If neither past, from, to, nor date is provided, the tool injects upcoming_events=true (the dashboard default)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "unplanned",
+              "finished",
+              "any"
+            ],
+            "description": "Event lifecycle status. Default \"scheduled\" (matches dashboard; attendance can only be tracked on scheduled events). \"unplanned\" covers cancelled events. \"any\" expands to (scheduled, unplanned)."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "over_capacity",
+              "under_capacity",
+              "custom_replacement",
+              "rescheduled",
+              "substituted",
+              "cancelled"
+            ],
+            "description": "Event-shape filter. \"cancelled\" surfaces events explicitly cancelled (server-side maps to status=unplanned). Other values target dashboard cases: oversold, undersold, ad-hoc replacements, etc."
+          },
+          "schedule_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "course_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "minItems": 1
+              }
+            ]
+          },
+          "trainer_id": {
+            "$ref": "#/properties/course_id"
+          },
+          "place_id": {
+            "$ref": "#/properties/course_id"
+          },
+          "room_id": {
+            "$ref": "#/properties/course_id"
+          },
+          "segment_id": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 1,
+            "description": "Schedule-segment id(s). Pass [0] to match events with NO segment assignment (sentinel)."
+          },
+          "billing_period_id": {
+            "$ref": "#/properties/course_id"
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "date_asc",
+              "date_desc",
+              "event_no_asc",
+              "event_no_desc",
+              "created_asc",
+              "created_desc"
+            ]
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "sessions_get_attendance",
+      "title": "View attendance for one class session",
+      "description": "Read who's enrolled in **one event** (a single session of a class) and their current attendance, so you can show the list and then mark it. Pass an `event_id`; the tool returns each enrolled attendee, their current attendance value (if already marked), and per-row context the LLM needs to mark attendance correctly: `allowed_statuses[]` (the statuses the **current caller** is permitted to set for THIS attendee), `is_trial` / `is_last_trial_session` flags, warnings about cross-company or cascade-sensitive (full2) cases, and â for open-type registrations only â `entrance_voucher` info (how many unused vouchers the attendee has, and whether one is already spent on this event). Use this **before** `sessions_mark_attendance` whenever the user has not already dictated the full list of attendees and marks â typically: \"open attendance for X,\" \"who's enrolled in tomorrow's class,\" \"show me Monday's attendance.\" If the event's course has attendance tracking disabled, the tool returns an `attendance_tracking_disabled` error rather than an empty list. This tool is read-only â it never writes attendance, notes, or summaries.\n\n**Talking to the user â vocabulary.** Zooza's customers are activity brands â dance, swim, language, sport, STEAM schools. Call this **\"attendance,\" \"the attendance list,\" \"the class list,\" or \"who's coming.\"** Don't expose the tool name or use sports/HR jargon (\"roster\") â it reads as foreign to these businesses. When the user asks to \"see attendance\" / \"open the register\" / \"who's in Monday's class,\" just call this tool and render the list directly.\n\n**Attendee vs client (critical for children's-class programmes).** Each row carries TWO people:\n- `attendee` â who actually shows up to the session. Often a child (Zooza data-model name: `customer`). May have `user_id: 0` when they aren't a registered account holder, which is normal for children. `attendee.date_of_birth` is available.\n- `client` â the account holder / payer (Zooza data-model name: `buyer`). Usually the parent. Has a real `user_id`. Contact info (`email`, `phone`) lives on the client when the attendee is a child; copy from client when speaking to / messaging the family.\n- `display_name` â a pre-formatted one-line label. When attendee == client (adult attending themselves), just the one name. When they differ, `attendee_name (client_name)` â e.g. `\"Jozko Jozko (Martin Rapavy)\"`. Use this when listing attendees; the LLM doesn't need to compose it from scratch.\n\nResponse shape notes:\n- `allowed_statuses[]` already factors in the caller's role, `company.trainer_attendance_management`, and the row's cross-company state. Do not propose a status not in this array â refuse locally and explain instead of calling `sessions_mark_attendance` to discover the constraint.\n- `is_last_trial_session` is currently `null` in V1 (derivation requires either a new api-v1 field or extra per-row lookups; deferred). Treat `is_trial=true` as the trigger for caution â a future enrichment will tighten this.\n- `entrance_voucher` is non-null only when `course.registration_type=\"open\"`. Check it before setting `sessions_mark_attendance`'s `use_voucher=true` on a `going` write.\n- `summary` block at the top level surfaces whether this event already has a public / internal session summary (`public_set` / `internal_set`), whether the public one is locked, and whether the caller's role is permitted to write summaries (`writable_by_caller`). After the user has marked attendance, the LLM can use this to offer `sessions_add_summary` as a follow-up when appropriate.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "event_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Target event id (one session of a class). Required."
+          }
+        },
+        "required": [
+          "event_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "sessions_mark_attendance",
+      "title": "Mark per-attendee attendance on one event",
+      "description": "Record per-attendee attendance for **one event** (a single session of a class â e.g. \"Monday Ballet on 2026-06-03 at 09:00\"). Pass an `event_id` and a list of attendees, each with their own attendance value (`attended`, `noshow`, `canceled`, `going`, `ignore`). Each value is set on **that one attendee for that one event**, never on the event as a whole. The tool writes each attendee individually and returns a per-row outcome. Use this **after** you already know the event and the attendees you want to mark â typically because the user dictated them or because you previously called `sessions_get_attendance`. If you don't yet know which event or who's enrolled, call `sessions_find_events` or `sessions_get_attendance` first. This tool does **not** cancel or reschedule the event itself or handle trialist follow-ups â those are separate tools.\n\n**Follow-up chaining.** The response includes a top-level `summary` block with `public_set` / `internal_set` / `writable_by_caller` flags. After a successful mark, if `summary.public_set=false` AND `summary.writable_by_caller=true`, proactively offer the user the option to write a parent-visible recap via `sessions_add_summary`. If `writable_by_caller=false`, don't offer (the caller's role can't write summaries). If `public_set=true`, don't volunteer an update unless asked.\n\n**Trial follow-ups.** A per-row `pending_action: \"trial_followup\"` (with `todo_id`) means that attendee just completed their trial by being marked `attended` â a follow-up (parent feedback + continuing-class recommendation) is now pending. Tell the user it's waiting and offer to handle it; the attendance skill resolves it against the todo. This tool only surfaces the hint â it does not orchestrate the follow-up. If the field is absent, there's nothing pending.\n\nAttendance value semantics:\n- `attended` â attendee was present.\n- `noshow` â attendee did not show up and did not warn.\n- `canceled` â attendee cancelled (admin-recorded). Triggers server-side make-up credit creation automatically when the programme allows it; do not call any other tool to issue credits.\n- `going` â pre-event RSVP / \"planning to attend.\" Restricted for member/receptionist roles under `trainer_attendance_management=\"limited\"`.\n- `ignore` â hide this event from the attendee's history (Zooza-specific; rare).\n\n`use_voucher` is a tentative V1 design: only meaningful when `attendance=\"going\"` AND `course.registration_type=\"open\"`. Check the attendee's `entrance_voucher.unused_entrance_vouchers > 0` (from `sessions_get_attendance`) before setting it to true; the server silently downgrades to cash debt when no voucher is available.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "event_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Target event id (one session of a class). Required."
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "registration_id": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "attendance": {
+                  "type": "string",
+                  "enum": [
+                    "attended",
+                    "noshow",
+                    "canceled",
+                    "going",
+                    "ignore"
+                  ]
+                },
+                "cancellation_reason": {
+                  "type": "string"
+                },
+                "use_voucher": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "registration_id",
+                "attendance"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "description": "Per-attendee marks. At least one item required. Each item targets ONE attendee on the event by registration_id; the attendance value is set per attendee, not on the event as a whole."
+          }
+        },
+        "required": [
+          "event_id",
+          "attendees"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "sessions_add_summary",
+      "title": "Add a session summary",
+      "description": "Write a post-session summary on one event. Two independent fields:\n\n- `public_summary` â visible to attendees / parents via their in-app Zooza feed. Use when the user says \"write a summary for the parents,\" \"send a recap,\" \"note for the families,\" etc. After write, every attendee's Person_Feed gets a `SUMMARY_PUBLIC` entry â parents see it in their client portal.\n- `internal_summary` â admin / team only. Use when the user says \"add a note for the team,\" \"private note,\" \"reminder for next week,\" etc. Not visible to parents.\n\nAt least one of the two must be provided. Both can be written in one call â the tool fans out the two PUTs api-v1 requires (the upstream endpoint dispatches on which field is in the body, so they cannot be combined). The tool checks the caller's role (**owner / assistant only** â trainers (`member`) cannot write summaries) and the event's `summary_public_locked` flag before writing; refuses cleanly when blocked. Returns the post-write state so you can confirm to the user what's now visible to whom.\n\n**Pairs naturally with `sessions_mark_attendance`.** After marking attendance for a session, offer to write a summary (always optional in V1; no api-v1 rule makes it mandatory). Don't volunteer a summary for an event that already has one (`summary.public_set=true` in the sessions_get_attendance / sessions_mark_attendance result) unless the user explicitly asks to update it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "event_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Target event id (one session of a class). Required."
+          },
+          "public_summary": {
+            "type": "string",
+            "maxLength": 4000,
+            "description": "Parent-visible note. Delivered to each attendee's in-app Person_Feed. At least one of public_summary / internal_summary required."
+          },
+          "internal_summary": {
+            "type": "string",
+            "maxLength": 4000,
+            "description": "Admin-only note on the event. Not visible to attendees. At least one of public_summary / internal_summary required."
+          },
+          "override_locked": {
+            "type": "boolean",
+            "description": "When the event's public summary is locked AND the caller is owner, set this true to write anyway. Refused for non-owners regardless."
+          }
+        },
+        "required": [
+          "event_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_preview_schedule",
+      "title": "Preview a class schedule shell",
+      "description": "Resolves a new class's *schedule shell* â the course, venue, trainer, capacity, prices, billing period, and default payment templates â and returns the result alongside any warnings. Performs no writes. Use this first in a class-creation flow to confirm the basic class settings with the user before collecting session dates via `classes_preview_events` and committing via `classes_commit_class`. Defaults are copied from the parent course where the caller hasn't specified them (capacity from `target_audience`, prices from the course's pricing fields). Always surface the `warnings[]` array to the user â entries about `online_registration` and `billing_period_id` are real decisions to confirm, not noise. For lead-collection classes (`schedule_type: lead_collection`), the events step is skipped entirely after this preview.\n\n`name` is OPTIONAL â do NOT pass it unless the user explicitly asked for a custom class name. End-user-facing display is auto-rendered by api-v1 as `{course_name} {class_name} {session_dates}`, so leaving it blank gives users the most informative label by default. Only set `name` when the user says something like 'call it \"Morning Yoga Group A\"'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "course_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "place_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "trainer_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "room_id": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "trainer_rate_type_id": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "schedule_type": {
+            "type": "string",
+            "enum": [
+              "fixed_period",
+              "lead_collection"
+            ],
+            "description": "What kind of class this is. 'fixed_period' = a real class with concrete dates the trainer will run â sessions get created and customers register for them. 'lead_collection' = a pre-launch interest-gathering placeholder (no dates yet); customers can express interest, and the operator converts it to a fixed_period class once dates are decided. For lead_collection, the events step is skipped entirely after preview."
+          },
+          "capacity": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "all_day": {
+            "type": "boolean"
+          },
+          "online_registration": {
+            "type": "boolean"
+          },
+          "unit_price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "registration_fee": {
+            "type": "number",
+            "minimum": 0
+          },
+          "billable_events": {
+            "type": "number",
+            "minimum": 0
+          },
+          "billing_period_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "payment_schedule_template_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            }
+          },
+          "name": {
+            "type": "string",
+            "description": "OPTIONAL â leave unset unless the user explicitly asked for a custom class name. api-v1 auto-renders `{course_name} {class_name} {session_dates}` for end users when name is blank, which is almost always what you want."
+          }
+        },
+        "required": [
+          "course_id",
+          "place_id",
+          "trainer_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_preview_events",
+      "title": "Preview class session dates",
+      "description": "Expands one or more recurrence patterns and/or ad-hoc dates into the concrete list of class sessions, honouring holiday-skip flags. Stateless â performs no writes. Call this once per pattern the user describes during class creation. Accumulate the returned sessions across multiple calls (Claude side) until the user says they're done, then pass the full list to `classes_commit_class`. Each block must carry EXACTLY ONE of `count` (stop after N sessions) or `until_date` (stop on a fixed date) â count mode is preferred when the user says \"X sessions\". A top-level `to_date` acts as a fallback `until_date` for any block that omits both. `place_id` is required so api-v1 can apply the correct subdivision-scoped school-holiday calendar. When you SHOW the expanded sessions to the user, render them as a weekly GRID (days across the top, time down the left â the Zooza app calendar layout): one representative week with the run range + session count in a caption, NOT a flat date list â unless the user explicitly asks to see every date.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "place_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "from_date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "to_date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "weekdays": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "mon",
+                      "tue",
+                      "wed",
+                      "thu",
+                      "fri",
+                      "sat",
+                      "sun"
+                    ]
+                  }
+                },
+                "time_minutes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1439
+                },
+                "duration": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "all_day": {
+                  "type": "boolean"
+                },
+                "cadence": {
+                  "type": "string",
+                  "enum": [
+                    "daily",
+                    "weekly",
+                    "biweekly",
+                    "monthly"
+                  ]
+                },
+                "trainer_id": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 500
+                },
+                "until_date": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              },
+              "required": [
+                "time_minutes",
+                "duration"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "additional_dates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date_string": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "time_minutes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1439
+                },
+                "duration": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "trainer_id": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "date_string",
+                "time_minutes",
+                "duration"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "skip_holidays": {
+            "type": "boolean"
+          },
+          "skip_school_holidays": {
+            "type": "boolean"
+          },
+          "skip_custom_holidays": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "place_id",
+          "from_date"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_commit_class",
+      "title": "Commit a class (schedule + events)",
+      "description": "Writes a class to api-v1 in one shot: creates the schedule, attaches any selected payment templates (bundled inline), and posts the assembled events array. Call this only after the user has confirmed the class shell (from `classes_preview_schedule`) and the full event list (accumulated from one or more `classes_preview_events` calls). For lead-collection classes, pass `events: []`. Returns the created schedule's id and url plus the list of created event ids. If api-v1 silently skips any events (a known quirk), the tool surfaces the mismatch as an error so the caller knows the partial state.\n\n`schedule.name` is OPTIONAL â omit unless the user explicitly asked for a custom class name. api-v1 auto-renders `{course_name} {class_name} {session_dates}` end-user-facing when name is absent.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "schedule": {
+            "type": "object",
+            "properties": {
+              "course_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "course_name": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "place_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "place_name": {
+                "type": "string"
+              },
+              "room_id": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "trainer_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "trainer_rate_type_id": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "capacity": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "duration_minutes": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "all_day": {
+                "type": "boolean"
+              },
+              "online_registration": {
+                "type": "boolean"
+              },
+              "schedule_type": {
+                "type": "string",
+                "enum": [
+                  "fixed_period",
+                  "lead_collection"
+                ],
+                "description": "What kind of class this is. 'fixed_period' = a real class with concrete dates (sessions get created on commit). 'lead_collection' = interest-gathering placeholder (no events; pass events: [])."
+              },
+              "unit_price": {
+                "type": "number",
+                "minimum": 0
+              },
+              "price": {
+                "type": "number",
+                "minimum": 0
+              },
+              "registration_fee": {
+                "type": "number",
+                "minimum": 0
+              },
+              "billable_events": {
+                "type": "number",
+                "minimum": 0
+              },
+              "billing_period_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "course_id",
+              "course_name",
+              "place_id",
+              "place_name",
+              "room_id",
+              "trainer_id",
+              "trainer_rate_type_id",
+              "capacity",
+              "duration_minutes",
+              "all_day",
+              "online_registration",
+              "schedule_type",
+              "unit_price",
+              "price",
+              "registration_fee",
+              "billable_events"
+            ],
+            "additionalProperties": false
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date_string": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "time_minutes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1439
+                },
+                "duration": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "trainer_id": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "date_string",
+                "time_minutes",
+                "duration"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "payment_schedule_template_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "required": [
+          "schedule",
+          "events"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_prepare_update",
+      "title": "Preview a class (schedule) edit",
+      "description": "Preview an edit to one or more existing classes (a \"class\"/\"timetable\" is the recurring group within a programme). Use this to change a class's settings â name, price, registration fee, capacity, billing period, online-registration, status â and/or its instructor, venue, or session duration. Changing instructor/venue/duration forces a `session_scope` choice about existing sessions: \"upcoming\" (this class + its future sessions â usually what people mean), \"all\" (every session incl. past), or \"class_only\" (re-advertise the class but leave existing sessions on their old value â the #1 cause of \"I changed it but the sessions still show the old value\", so only pick it deliberately). This scope is the OPERATOR's call, not yours: when they haven't stated one, PRESENT the three options and their consequences and let them choose â do NOT silently pick a scope and prepare, and do NOT stall. If the operator asks what a cascade edit will do before committing, explain this same taxonomy (in particular that class_only re-advertises the class but leaves existing sessions unchanged). Returns a preview of exactly what changes and how many sessions are affected â nothing is written until you call classes_commit_update with the returned `token`. Handles one class or many at once. To edit specific individual sessions (move one date, change one session's room), use sessions_update instead. To cancel sessions, use the cancellation tools.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "schedule_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "minItems": 1,
+            "description": "One or many class (schedule) ids. Resolve by name with classes_find_classes."
+          },
+          "changes": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "capacity": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "registrations_cap": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "price": {
+                "type": "number",
+                "minimum": 0
+              },
+              "unit_price": {
+                "type": "number",
+                "minimum": 0
+              },
+              "registration_fee": {
+                "type": "number",
+                "minimum": 0
+              },
+              "billing_period_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "online_registration": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "inactive",
+                  "archive"
+                ]
+              },
+              "trainer_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "trainer_rate_type_id": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "duration": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "place_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "room_id": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "course_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              }
+            },
+            "additionalProperties": false,
+            "description": "The fields to change. At least one required."
+          },
+          "session_scope": {
+            "type": "string",
+            "enum": [
+              "class_only",
+              "upcoming",
+              "all"
+            ],
+            "description": "REQUIRED when changing instructor/venue/duration. 'upcoming' = the class + its future sessions (usual); 'all' = every session; 'class_only' = re-advertise the class only, existing sessions keep their old value (warn the operator â usually NOT what they want)."
+          },
+          "confirm_course_change": {
+            "type": "boolean",
+            "description": "REQUIRED true to change changes.course_id â reprogramming a class rewrites ALL its sessions AND all registrations (irreversible). Only set after the operator explicitly asked to move the class to a different programme."
+          }
+        },
+        "required": [
+          "schedule_ids",
+          "changes"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "classes_commit_update",
+      "title": "Apply a previewed class edit",
+      "description": "Applies a class edit previously previewed by classes_prepare_update. Only call this after the operator has seen the preview (field changes + how many sessions the cascade touches) and EXPLICITLY confirmed. Takes the `token` from classes_prepare_update â the changes are frozen in the plan and cannot be altered here; to change anything, call classes_prepare_update again. Returns which classes were updated and how many sessions the cascade rewrote.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Single-use token from classes_prepare_update; expires after 15 minutes."
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "sessions_prepare_update",
+      "title": "Preview edits to specific sessions",
+      "description": "Preview edits to specific individual sessions (events) of a class â reschedule a session's date/time, or change a hand-picked session's instructor, venue/room, block, or duration. Works on one session or a chosen set (pass their event ids). Returns a per-session beforeâafter preview; nothing is written until you call sessions_commit_update with the returned `token`. Optionally set `notify: true` to email enrolled clients about the change. Use this when the user points at particular sessions (\"move next Tuesday's class to Wednesday 5pm\", \"change the room for the July sessions\", \"give Friday's session to Jana\"). To change an attribute across ALL or all upcoming sessions of a class in one go, use classes_update with session_scope instead. To cancel sessions, use the cancellation tools â this tool does not cancel.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "event_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "minItems": 1,
+            "description": "One or many event (session) ids. Resolve with sessions_find_events."
+          },
+          "changes": {
+            "type": "object",
+            "properties": {
+              "reschedule": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "set"
+                      },
+                      "date": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                      },
+                      "time": {
+                        "type": "string",
+                        "pattern": "^\\d{2}:\\d{2}$"
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "date"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "unify_time"
+                      },
+                      "time": {
+                        "type": "string",
+                        "pattern": "^\\d{2}:\\d{2}$"
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "time"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "shift"
+                      },
+                      "days": {
+                        "type": "integer"
+                      },
+                      "minutes": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "mode"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "trainer_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "trainer_rate_type_id": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "place_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "room_id": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "segment": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "description": "Block: existing segment id (int), a new block name (string, auto-created), or 0 to clear."
+              },
+              "duration": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              }
+            },
+            "additionalProperties": false
+          },
+          "notify": {
+            "type": "boolean",
+            "description": "Default false. true emails enrolled clients about the change â confirm intent with the operator first."
+          }
+        },
+        "required": [
+          "event_ids",
+          "changes"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "sessions_commit_update",
+      "title": "Apply previewed session edits",
+      "description": "Applies session edits previously previewed by sessions_prepare_update. Only call after the operator has seen the per-session preview and EXPLICITLY confirmed (and, if notify was set, confirmed that clients will be emailed). Takes the `token` from sessions_prepare_update â the edits are frozen in the plan. Returns which sessions were updated and which api-v1 skipped.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Single-use token from sessions_prepare_update; expires after 15 minutes."
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true,
+        "idempotentHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "comms_list_templates",
+      "title": "List the company's automated email templates",
+      "description": "Lists the automated email templates Zooza sends to this company's clients â registration confirmations, trial follow-ups, cancellation notices, session reminders, loyalty/discount emails, and custom templates. For each template returns its trigger `type`, subject line, and whether the company uses the stock Zooza default or has customized it. Use this to see which automated emails exist, check what has been customized, or look up a template's `type` before previewing or sending it (comms_prepare_message accepts that `type`). This tool only lists email templates â for the merge variables (*|FIRST_NAME|* etc.) usable inside template bodies, use comms_list_merge_vars instead. Read-only; sends nothing. Bodies are full HTML and large â only set include_body when the user asks to see template content.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "type": {
+            "type": "string",
+            "description": "Exact template type, e.g. \"registration_cancellation\" â returns just that template. Omit to browse all."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "all",
+              "default",
+              "customized"
+            ],
+            "description": "Default 'all'. 'customized' = only templates this company has overridden; 'default' = only untouched stock templates."
+          },
+          "include_body": {
+            "type": "boolean",
+            "description": "Default false. When true, includes the full HTML body of each returned template (large â combine with `type`)."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "comms_prepare_message",
+      "title": "Plan an email to clients (no send)",
+      "description": "Plans an email to clients of this company WITHOUT sending anything. Describe the audience (a course/programme, a class schedule, a specific booking, one client, a saved segment, an ad-hoc cohort, or course-level labels) and the content (an existing template `type` from comms_list_templates, or a custom subject + body which may use *|MERGE_VAR|* tags from comms_list_merge_vars). Returns the estimated recipient count, a sample of recipients, the content as it will be sent, warnings (unknown merge tags, zero recipients), and a single-use `token`. Show this plan to the operator and get their explicit confirmation, then call comms_commit_message with the token to actually send. Call comms_prepare_message again with adjusted filters to refine the audience â it is free and repeatable. Resolve names to ids first: classes_find_courses for a course/programme â course_id, classes_find_classes for a class/group by name â schedule_id, sessions_find_events for a single session â event_id; never guess ids. When the operator names an ad-hoc cohort rather than the whole company â \"everyone who hasn't paid\", the unpaid roster, the waitlist, this week's sign-ups â resolve it with bookings_find and pass the resulting registration_id LIST as audience.registration_id. Reserve audience.whole_company for genuinely company-wide sends; do NOT use it as a shortcut for a named subset, or you email far more people than the operator asked for.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Zooza company id to operate against. Optional: if the user has exactly one company, the server defaults to it â you can omit this field. With multiple companies, you MUST specify which; get the id list from `whoami.available_companies[].id`. If the user hasn't indicated which company they mean, ask them before guessing."
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "email"
+            ],
+            "description": "Only 'email' is implemented. WhatsApp is specced and coming â do not promise it yet."
+          },
+          "audience": {
+            "type": "object",
+            "properties": {
+              "course_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "description": "Everyone registered in this course/programme."
+              },
+              "schedule_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "description": "Everyone in this class (schedule)."
+              },
+              "registration_id": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "minItems": 1
+                  }
+                ],
+                "description": "One booking, or a LIST of bookings â pass a single id or an array (e.g. the registration_ids from a bookings_find result set, so you can message an ad-hoc cohort like the unpaid roster without a saved segment)."
+              },
+              "user_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "description": "One client (all their registrations)."
+              },
+              "segment_id": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "description": "A saved registration segment."
+              },
+              "whole_company": {
+                "type": "boolean",
+                "description": "Broadcast to the ENTIRE company â every booking, one email per client. The only audience needing no id. ONLY for genuinely company-wide sends. For a NAMED subset â the unpaid roster, the waitlist, one class â do NOT use this; resolve the cohort with bookings_find and pass its registration_id list to registration_id instead. This can reach a LOT of people, so ALWAYS confirm scope with the operator first, and make the all-vs-active choice explicit (see active_only) â do NOT silently email everyone. Pair with active_only."
+              },
+              "active_only": {
+                "type": "boolean",
+                "description": "Only meaningful with whole_company. true (DEFAULT) = only clients with an ACTIVE (registered) booking â the safe choice. false = literally EVERYONE incl. cancelled/inactive/past clients (spammy) â use only when the operator has explicitly asked for that. When whole_company is set, ASK the operator which they mean and state plainly that the default skips cancelled/inactive people."
+              },
+              "labels": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "description": "Registrations in COURSES labeled with any of these label ids â labels attach at course level, not per person."
+              },
+              "exclude": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "description": "Registration ids to leave out."
+              },
+              "guests": {
+                "type": "boolean",
+                "description": "Default false. Also send to guest registrations (added at send time; not in the count estimate)."
+              },
+              "inactive_customers": {
+                "type": "boolean",
+                "description": "Default false. Include inactive registrations."
+              }
+            },
+            "additionalProperties": false,
+            "description": "Who receives the message. At least one targeting field is required."
+          },
+          "content": {
+            "type": "object",
+            "properties": {
+              "template_type": {
+                "type": "string",
+                "description": "Existing email template type from comms_list_templates, e.g. \"registration_cancellation\"."
+              },
+              "subject": {
+                "type": "string",
+                "description": "Custom email subject; may contain *|MERGE|* tags."
+              },
+              "body": {
+                "type": "string",
+                "description": "Custom email body (HTML or text); may contain *|MERGE|* tags."
+              }
+            },
+            "additionalProperties": false,
+            "description": "EITHER template_type OR subject+body â not both."
+          },
+          "marketing": {
+            "type": "boolean",
+            "description": "REQUIRED. true = promotional content (consent rules apply; say so to the operator). false = operational (schedule changes, payment reminders, session info)."
+          },
+          "schedule_at": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+              },
+              "minute": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+              }
+            },
+            "required": [
+              "date",
+              "hour",
+              "minute"
+            ],
+            "additionalProperties": false,
+            "description": "Omit to send immediately on commit."
+          },
+          "bcc": {
+            "type": "string",
+            "description": "Comma-separated BCC addresses."
+          }
+        },
+        "required": [
+          "channel",
+          "audience",
+          "content",
+          "marketing"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "comms_commit_message",
+      "title": "Send a previously planned message",
+      "description": "Executes a message plan previously created by comms_prepare_message. Only call this after the operator has seen the plan (recipient count, content) and EXPLICITLY confirmed sending. Takes the `token` from comms_prepare_message â the audience and content are frozen in the plan and cannot be changed here; to change anything, call comms_prepare_message again.\n\nMost sends complete in this one call. BUT if the audience is larger than the company's approval threshold, api-v1 creates the job in `pending_approval` and this tool returns `requires_second_confirmation: true` with the recipient count and the job id â and sends NOTHING yet. When that happens: show the operator the exact recipient count and ask a SECOND, explicit confirmation (e.g. \"Send to all 105 clients?\"). ONLY after they explicitly say yes, call comms_commit_message again with the SAME token and `confirm_large_send: true` to release the send. The operator never has to leave the conversation to approve. If they decline, send nothing. Returns the created message job id and status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Single-use token from comms_prepare_message; expires after 15 minutes."
+          },
+          "confirm_large_send": {
+            "type": "boolean",
+            "description": "Set to true ONLY on the SECOND call, after the operator has explicitly confirmed sending to a recipient count that exceeded the approval threshold (the first call returned requires_second_confirmation: true). Never set this on the first call, and never without that explicit second confirmation from the operator."
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "submit_feedback",
+      "title": "Submit feedback to engineering",
+      "description": "Submit user feedback about the Zooza MCP integration to the engineering team. Two paths:\n\n- 'path: \"github\"' â returns a prefilled issue-creation URL on the **public** `zooza-dev/zooza-mcp-server` repo. The user opens it in their browser and files the issue themselves (no MCP-side auth). The body MUST be fully anonymized (no user_id, company_id, company name, user email/name, course/class/event names, customer/client identifiers). The server runs a safety-net regex and will reject the call if obvious identifiers (long numbers, emails) remain.\n- 'path: \"internal\"' â files an issue on the user's behalf in the **private** `zooza-dev/zooza-mcp` repo, recording their authenticated user_id and company_id so engineering can follow up. Use this for users who don't have GitHub or prefer the private channel.\n\nALWAYS show the user the exact 'title' and 'body' and get explicit affirmative confirmation before calling â once invoked with 'path: \"internal\"', the issue is filed and cannot be undone from this tool. The 'feedback-nudge' skill (load via `get_skill name=feedback-nudge`) describes when to proactively offer this tool and how to anonymize properly.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "enum": [
+              "github",
+              "internal"
+            ],
+            "description": "Which feedback channel to use. Decided by asking the user 'do you have a GitHub account?' â yes â 'github' (returns a URL they open themselves), no â 'internal' (server files the issue on their behalf). NEVER surface the 'github'/'internal' labels or the words 'public'/'private' to the user â those are implementation detail. Use 'I have GitHub' / 'I don't have GitHub' as the user-facing option labels."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Short, search-friendly issue title (one line). Becomes the GitHub issue title verbatim."
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Full feedback in markdown. For path='github' MUST be pre-anonymized â strip user_id, company_id, company name, user email/name, course/class/event names, customer/client info. For path='internal' the user/company context is added automatically by the server."
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "bug",
+              "feature_request",
+              "praise",
+              "other"
+            ],
+            "description": "Optional. Drives GitHub labels. Pick the closest match â when in doubt use 'other'."
+          },
+          "related_tool": {
+            "type": "string",
+            "description": "Optional. Snake-case name of the MCP tool the feedback is about (e.g. 'create_class', 'classes_find_courses'). For path='internal' it's embedded in the issue header; for path='github' it's omitted from the URL (mildly fingerprinting)."
+          }
+        },
+        "required": [
+          "path",
+          "title",
+          "body"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "reports_get_data",
+      "title": "Get real report data for a business question",
+      "description": "Return the REAL, pre-aggregated numbers for ONE business question about an activity brand â and the basis for SHOWING it. This is how you show an operator a report / dashboard / chart of their business numbers (occupancy, unpaid, churn, attendance, trials, retention, revenue, \"how are we doing\", per programme / venue / instructor): call this, then COMPOSE a focused report as an ARTIFACT in the conversation that renders in the side panel â do NOT hand the user a link or open a browser page. Views: occupancy, unpaid, churn, attendance, trials, retention, clients_by_location, replacements, summary. Use view=\"replacements\" for ANY question about make-up / replacement credits â \"unused make-ups\", \"expiring make-ups\", \"credits\", \"nÃ¡hrady / nÃ¡hradnÃ© hodiny\", \"are we overloaded on make-ups\", make-up demand vs available slots per programme (this IS the credits report; Zooza HAS make-up credits even though they are not in the business_dashboard views). The result has `headline` (computed key figures), `rows` (chart/table-ready, named, capped), `note` (a data-aware caption), `currency`, and `period`. RULES: every number you show the user MUST come from this result verbatim â never invent, estimate, or recompute figures, and never draw a chart without calling this first. Render charts with inline SVG/CSS â no external CDN or chart library (the artifact sandbox blocks them). If a view returns no rows, say so plainly. Follow get_skill(\"report-compose\").",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "view": {
+            "type": "string",
+            "description": "Question to pull data for. One of: occupancy, unpaid, churn, attendance, trials, retention, clients_by_location, replacements, summary. Default \"summary\"."
+          },
+          "from": {
+            "type": "string",
+            "description": "First month YYYY-MM-01. Both from+to or neither (default: last 6 months)."
+          },
+          "to": {
+            "type": "string",
+            "description": "Last month YYYY-MM-01."
+          },
+          "company_id": {
+            "type": "integer",
+            "description": "Resolved from the session when omitted."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_skill",
+      "title": "Load a skill playbook",
+      "description": "Returns the full markdown playbook for one of the registered skills. Call this BEFORE starting a flow named in the server's instructions â the playbook contains the interview steps, mapping rules, and confirmation pattern for that scenario. Available skills: business-model-validator, class-management, communication, feedback-nudge, negotiate-terminology, report-compose, report-discovery, report-page-new, schedule-optimization.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Exact skill name from the available list."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "name": "deBridge",
+  "source_url": "https://agents.debridge.com/mcp",
+  "fetched_at": "2026-08-10T05:48:20+00:00",
+  "description": "Execute cross-chain and same-chain token swaps, fee estimation, and trade execution across major blockchain networks.",
+  "github_stars": 32,
+  "tools": [
+    {
+      "name": "get_instructions",
+      "description": "Returns the full guide for the deBridge MCP server. CALL THIS FIRST.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "search_tokens",
+      "description": "Search for tokens by name, symbol, or contract address in the deBridge token database",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Token name, symbol, or contract address"
+          },
+          "chainId": {
+            "description": "Filter by chain ID",
+            "type": "string"
+          },
+          "name": {
+            "description": "Filter by token name (partial, case-insensitive)",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Max results (default 10)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_supported_chains",
+      "description": "List all blockchain networks supported by deBridge for cross-chain swaps",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "create_tx",
+      "description": "Create a cross-chain swap transaction via the deBridge DLN protocol",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "srcChainId": {
+            "type": "string",
+            "description": "Source chain ID"
+          },
+          "srcChainTokenIn": {
+            "type": "string",
+            "description": "Token address on source chain"
+          },
+          "srcChainTokenInAmount": {
+            "type": "string",
+            "description": "Amount in smallest units (wei, lamports)"
+          },
+          "dstChainId": {
+            "type": "string",
+            "description": "Destination chain ID"
+          },
+          "dstChainTokenOut": {
+            "type": "string",
+            "description": "Token address on destination chain"
+          },
+          "dstChainTokenOutRecipient": {
+            "type": "string",
+            "description": "Wallet address on destination chain to receive tokens"
+          },
+          "srcChainOrderAuthorityAddress": {
+            "type": "string",
+            "description": "Address on source chain authorized to manage the order"
+          },
+          "dstChainOrderAuthorityAddress": {
+            "type": "string",
+            "description": "Address on destination chain authorized to manage the order"
+          },
+          "dstChainTokenOutAmount": {
+            "description": "Output amount or 'auto' for best quote",
+            "type": "string"
+          },
+          "affiliateFeePercent": {
+            "description": "Affiliate fee percentage",
+            "type": "number"
+          },
+          "affiliateFeeRecipient": {
+            "description": "Wallet address to receive affiliate fees",
+            "type": "string"
+          },
+          "prependOperatingExpenses": {
+            "description": "Whether to prepend estimated operating expenses to the input amount",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "srcChainId",
+          "srcChainTokenIn",
+          "srcChainTokenInAmount",
+          "dstChainId",
+          "dstChainTokenOut",
+          "dstChainTokenOutRecipient",
+          "srcChainOrderAuthorityAddress",
+          "dstChainOrderAuthorityAddress"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "transaction_same_chain_swap",
+      "description": "Create a same-chain token swap transaction via deBridge",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "description": "Chain ID (native or deBridge internal)"
+          },
+          "tokenIn": {
+            "type": "string",
+            "description": "Input token address"
+          },
+          "tokenInAmount": {
+            "type": "string",
+            "description": "Amount in smallest units"
+          },
+          "tokenOut": {
+            "type": "string",
+            "description": "Output token address"
+          },
+          "tokenOutRecipient": {
+            "type": "string",
+            "description": "Address on the source chain to receive target tokens"
+          },
+          "slippage": {
+            "description": "Slippage tolerance or 'auto'",
+            "type": "string"
+          },
+          "tokenOutAmount": {
+            "description": "Expected output amount or 'auto'",
+            "type": "string"
+          },
+          "affiliateFeePercent": {
+            "description": "Affiliate fee percentage",
+            "type": "number"
+          },
+          "affiliateFeeRecipient": {
+            "description": "Wallet address to receive affiliate fees",
+            "type": "string"
+          },
+          "senderAddress": {
+            "description": "Transaction submitter address",
+            "type": "string"
+          },
+          "srcChainPriorityLevel": {
+            "description": "Priority level: 'normal' or 'aggressive' (default: 'normal')",
+            "type": "string"
+          }
+        },
+        "required": [
+          "chainId",
+          "tokenIn",
+          "tokenInAmount",
+          "tokenOut",
+          "tokenOutRecipient"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

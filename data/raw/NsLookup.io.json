@@ -1,0 +1,693 @@
+{
+  "name": "NsLookup.io",
+  "source_url": "https://mcp.nslookup.io/mcp",
+  "fetched_at": "2026-08-10T05:48:38+00:00",
+  "description": "DNS lookups, SSL certificate checks, security scanning, and domain intelligence via nslookup.io.",
+  "github_stars": 21,
+  "tools": [
+    {
+      "name": "dns_lookup",
+      "description": "Look up all common DNS records (A, AAAA, NS, MX, TXT, CNAME, SOA) for a domain. Returns results from a specified DNS server.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to look up (e.g. example.com)"
+          },
+          "server": {
+            "description": "DNS server to query. Default: cloudflare. Use 'authoritative' for the domain's own nameservers.",
+            "type": "string",
+            "enum": [
+              "cloudflare",
+              "cloudflare2",
+              "google",
+              "quad9",
+              "opendns",
+              "authoritative",
+              "southafrica",
+              "australia",
+              "india",
+              "thenetherlands",
+              "canada",
+              "usa",
+              "brazil",
+              "ukraine",
+              "russia"
+            ]
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "dns_record",
+      "description": "Look up a specific DNS record type for a domain. Supports 53 record types including A, AAAA, MX, TXT, CNAME, SOA, PTR, CAA, SRV, DNSKEY, DS, TLSA, HTTPS, SPF, and more.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name (or IP address for PTR lookups) to query (e.g. example.com)"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "A",
+              "AAAA",
+              "AFSDB",
+              "APL",
+              "AXFR",
+              "CAA",
+              "CDNSKEY",
+              "CDS",
+              "CERT",
+              "CNAME",
+              "CSYNC",
+              "DHCID",
+              "DLV",
+              "DNAME",
+              "DNSKEY",
+              "DS",
+              "EUI48",
+              "EUI64",
+              "HINFO",
+              "HIP",
+              "HTTPS",
+              "IPSECKEY",
+              "IXFR",
+              "KEY",
+              "KX",
+              "LOC",
+              "MX",
+              "NAPTR",
+              "NS",
+              "NSEC",
+              "NSEC3",
+              "NSEC3PARAM",
+              "NXT",
+              "OPENPGPKEY",
+              "OPT",
+              "PTR",
+              "RP",
+              "RRSIG",
+              "SIG",
+              "SMIMEA",
+              "SOA",
+              "SPF",
+              "SRV",
+              "SSHFP",
+              "SVCB",
+              "TA",
+              "TKEY",
+              "TLSA",
+              "TSIG",
+              "TXT",
+              "URI",
+              "ZONEMD"
+            ],
+            "description": "DNS record type (e.g. A, MX, TXT, CNAME, SPF, HTTPS, DNSKEY)"
+          },
+          "server": {
+            "description": "DNS server to query. Default: cloudflare. Use 'authoritative' for the domain's own nameservers.",
+            "type": "string",
+            "enum": [
+              "cloudflare",
+              "cloudflare2",
+              "google",
+              "quad9",
+              "opendns",
+              "authoritative",
+              "southafrica",
+              "australia",
+              "india",
+              "thenetherlands",
+              "canada",
+              "usa",
+              "brazil",
+              "ukraine",
+              "russia"
+            ]
+          }
+        },
+        "required": [
+          "domain",
+          "type"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "dns_propagation",
+      "description": "Check DNS propagation for a domain across 18+ global DNS servers (Cloudflare, Google, Quad9, OpenDNS, regional servers, and authoritative nameservers). Shows if DNS changes have propagated worldwide.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to check propagation for (e.g. example.com)"
+          },
+          "recordType": {
+            "type": "string",
+            "enum": [
+              "A",
+              "AAAA",
+              "AFSDB",
+              "APL",
+              "AXFR",
+              "CAA",
+              "CDNSKEY",
+              "CDS",
+              "CERT",
+              "CNAME",
+              "CSYNC",
+              "DHCID",
+              "DLV",
+              "DNAME",
+              "DNSKEY",
+              "DS",
+              "EUI48",
+              "EUI64",
+              "HINFO",
+              "HIP",
+              "HTTPS",
+              "IPSECKEY",
+              "IXFR",
+              "KEY",
+              "KX",
+              "LOC",
+              "MX",
+              "NAPTR",
+              "NS",
+              "NSEC",
+              "NSEC3",
+              "NSEC3PARAM",
+              "NXT",
+              "OPENPGPKEY",
+              "OPT",
+              "PTR",
+              "RP",
+              "RRSIG",
+              "SIG",
+              "SMIMEA",
+              "SOA",
+              "SPF",
+              "SRV",
+              "SSHFP",
+              "SVCB",
+              "TA",
+              "TKEY",
+              "TLSA",
+              "TSIG",
+              "TXT",
+              "URI",
+              "ZONEMD"
+            ],
+            "description": "DNS record type to check (e.g. A, AAAA, MX, NS, TXT, CNAME)"
+          }
+        },
+        "required": [
+          "domain",
+          "recordType"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "webservers",
+      "description": "Get the IP addresses (both IPv4 and IPv6) for a domain by looking up A and AAAA records. Also returns the punycode and unicode domain representations.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to look up IP addresses for (e.g. example.com)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "ssl_certificate",
+      "description": "Check the SSL/TLS certificate for a domain. Returns issuer, expiry date, days until expiry, certificate chain validity, cipher strength, SAN domains, fingerprint, and TLS protocol version.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to check SSL certificate for (e.g. github.com)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "bimi_vmc",
+      "description": "Check BIMI (Brand Indicators for Message Identification) and VMC (Verified Mark Certificate) for a domain. Returns BIMI DNS record status, VMC certificate details, logo URL, trademark info, and expiry.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to check BIMI/VMC for (e.g. google.com)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "security_scan",
+      "description": "Run a security scan on a domain to detect DNS misconfigurations, missing SPF/DKIM/DMARC records, cookie security issues, and other web security vulnerabilities. Returns findings with severity levels (critical, high, medium, low, info).",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to security scan (e.g. example.com)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "uptime_check",
+      "description": "Perform a one-time HTTP uptime check on a URL from a single location. Returns whether the site is up or down, HTTP status code, and response time in milliseconds. For multi-location checks, use uptime_check_multi instead.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Full URL to check (e.g. https://github.com)"
+          },
+          "timeout": {
+            "description": "Timeout in milliseconds (default: 10000)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "uptime_check_multi",
+      "description": "Check if a website is up or down from 7 global locations simultaneously: Amsterdam, Sydney, London, Frankfurt, Delhi, Warsaw, and South Carolina. Returns status, response time, and HTTP status code for each location.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Full URL to check (e.g. https://github.com)"
+          },
+          "timeout": {
+            "description": "Timeout in milliseconds (default: 30000)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "dns_health",
+      "description": "Run a comprehensive DNS health audit on a domain â 39 checks across 7 categories: DNSSEC (chain of trust, algorithms, validation), MX & email (PTR, MTA-STS, redundancy), DNS hygiene (SPF conflicts, wildcards, apex CNAME), TTL & SOA configuration, nameserver setup (diversity, lame delegation, EDNS0), CAA certificates, and operational maturity (security.txt, abuse mailbox). Returns an overall severity-weighted score (0â100) plus per-category scores.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to check DNS health for (e.g. example.com)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "geo_checker",
+      "description": "Check a domain's GEO (Generative Engine Optimization) score â how well the site is optimized for AI search engines like ChatGPT, Gemini, Claude, and Perplexity. Returns three scores (Technical Readiness, Entity Readiness, Answer Readiness), AI crawler access status, structured data analysis, and prioritized recommendations.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to check GEO score for (e.g. github.com)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "rdap_lookup",
+      "description": "Look up registration data (RDAP â the successor to WHOIS) for an IP address, AS number, or domain name. The query type is detected automatically. Returns the owning organization, network range/CIDR, RIR (ARIN, RIPE, APNIC, LACNIC, AFRINIC), country, status, registration/last-changed dates, nameservers, and abuse/registrant contacts, plus the raw RDAP JSON.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "What to look up: an IPv4/IPv6 address (e.g. 8.8.8.8), an AS number (e.g. AS13335 or 13335), or a domain name (e.g. example.com)"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "hosting_report",
+      "description": "Find out who hosts a website. Returns the hosting provider, IP/ASN/network owner, server location, DNS/nameserver provider, CDN or proxy detection (Cloudflare, Fastly, etc.), SSL certificate issuer, and mail servers/provider for a domain in one combined report.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain or URL to build a hosting report for (e.g. github.com). URLs are normalized to a bare hostname."
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "domain_scanner",
+      "description": "Scan a domain's email security posture: SPF, DKIM, DMARC, and BIMI configuration. Returns per-indicator scores and detected issues so you can see how well the domain is protected against spoofing and phishing.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to scan (e.g. example.com)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "dns_change_review",
+      "description": "Review proposed DNS changes BEFORE applying them. Compares a domain's current public DNS with a proposed future state, returns a diff, deterministic rule-based findings (SPF/DMARC/MX/CAA/DNSSEC pitfalls, dangling records, mail breakage, etc.) with suggested fixes, and an overall 0-100 risk score. Stateless â nothing is stored.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain whose current public DNS will be compared against the proposed records (e.g. example.com)"
+          },
+          "records": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Proposed DNS records as BIND zone-file text, e.g. 'example.com. 300 IN MX 10 mail.example.com.'"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "Record type, e.g. A, AAAA, MX, TXT, CNAME, NS, CAA"
+                    },
+                    "name": {
+                      "description": "Record name â subdomain, FQDN, or '@' for the apex (default: '@')",
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string",
+                      "description": "Record value, e.g. '93.184.216.34' or 'v=spf1 include:_spf.google.com ~all'"
+                    },
+                    "ttl": {
+                      "description": "TTL in seconds",
+                      "type": "number"
+                    },
+                    "priority": {
+                      "description": "Priority (MX/SRV records)",
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ]
+                },
+                "description": "Proposed DNS records as a structured array"
+              }
+            ],
+            "description": "The proposed (future) DNS state: either BIND zone-file text or an array of {type, name?, value, ttl?, priority?} records. This is the COMPLETE desired state for the zone â records present now but omitted here are treated as deletions."
+          },
+          "server": {
+            "description": "DNS server to use when fetching the current records. Default: cloudflare.",
+            "type": "string",
+            "enum": [
+              "cloudflare",
+              "cloudflare2",
+              "google",
+              "quad9",
+              "opendns",
+              "authoritative",
+              "southafrica",
+              "australia",
+              "india",
+              "thenetherlands",
+              "canada",
+              "usa",
+              "brazil",
+              "ukraine",
+              "russia"
+            ]
+          }
+        },
+        "required": [
+          "domain",
+          "records"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "bimi_check",
+      "description": "Check only the BIMI (Brand Indicators for Message Identification) DNS record for a domain â faster than bimi_vmc because it skips the VMC certificate download and validation. Returns the BIMI record at default._bimi.<domain>, logo URL, and authority (VMC) URL if declared.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Domain name to check the BIMI record for (e.g. easydmarc.com)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "status_page",
+      "description": "Read a public status page hosted on nslookup.io status pages. Returns the page name, overall status, per-component status and uptime, and active incidents/maintenance. Look up by slug (pages served at hosted.nslookup.io/<slug>) or by the custom domain the page is served on. Provide exactly one of slug or domain.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "slug": {
+            "description": "Status page slug (e.g. 'nslookup-io' for hosted.nslookup.io/nslookup-io)",
+            "type": "string"
+          },
+          "domain": {
+            "description": "Custom domain the status page is served on (e.g. status.acme.com)",
+            "type": "string"
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "my_overview",
+      "description": "Get an account health snapshot for your NsLookup.io monitoring: an aggregated 0-100 health score with per-subsystem breakdown (uptime, SSL, DNS, propagation, VMC, WHOIS) plus your current product limits/quota. Requires sign-in to your NsLookup.io account (or an API token).",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "my_monitors",
+      "description": "List all monitors in your NsLookup.io account across every type â uptime, API, DNS, WHOIS, DNS propagation, SSL certificates, and BIMI/VMC â with their configuration and latest known state. Requires sign-in to your NsLookup.io account (or an API token).",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "my_incidents",
+      "description": "List incidents from your NsLookup.io monitoring (downtime, SSL expiry, DNS changes, propagation issues, VMC problems) â open ones by default, or the full recent history â plus a per-status/per-source summary. Requires sign-in to your NsLookup.io account (or an API token).",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "'open' (default) = unresolved incidents (triggered or acknowledged); 'all' = include resolved history",
+            "type": "string",
+            "enum": [
+              "open",
+              "all"
+            ]
+          },
+          "limit": {
+            "description": "Maximum incidents to return (default 20)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "my_uptime_history",
+      "description": "Get uptime and response-time history for one of your NsLookup.io uptime monitors: availability stats plus hourly buckets over the requested window. Identify the monitor by id or by URL. Requires sign-in to your NsLookup.io account (or an API token).",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "monitorId": {
+            "description": "Monitor id (from my_monitors)",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "url": {
+            "description": "Monitor URL to match instead of an id (e.g. https://example.com)",
+            "type": "string"
+          },
+          "hours": {
+            "description": "History window in hours (default 24)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 720
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "my_dns_changes",
+      "description": "List recent DNS changes detected on your monitored domains, each with its DNS Change Review risk assessment (0-100 risk score, severity counts, added/removed/modified record counts), plus the latest risk per monitor. Requires sign-in to your NsLookup.io account (or an API token).",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "limit": {
+            "description": "Maximum reviews to return (default 10)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "my_certificates",
+      "description": "Get an SSL certificate expiry overview for your monitored domains: per-alert-level counts (ok / warning / critical / expired) and every certificate sorted by soonest expiry, highlighting the ones expiring within 30 days. Requires sign-in to your NsLookup.io account (or an API token).",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

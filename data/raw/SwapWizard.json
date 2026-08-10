@@ -1,0 +1,532 @@
+{
+  "name": "SwapWizard",
+  "source_url": "https://mcp.swapwizard.xyz/mcp",
+  "fetched_at": "2026-08-10T05:50:51+00:00",
+  "description": "DeFi execution for AI agents — token swaps, LP zaps, and AMM routing across 5 EVM chains.",
+  "github_stars": 7,
+  "tools": [
+    {
+      "name": "get_setup_guide",
+      "description": "Returns the complete setup and usage guide for SwapWizard. Call this FIRST before using any other tool. Covers: required configuration (API key, Alchemy RPC URL, private key), how to use poolId correctly, step-by-step operational flows for swap/zap in/zap out/analyze, transaction execution details, and approval rules.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_supported_chains",
+      "description": "Maps to GET /chains. Lists supported EVM chains with chain IDs and native gas tokens: Ethereum, Arbitrum, Base, Polygon, BNB Chain.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "check_api_health",
+      "description": "Maps to GET /health. Returns service availability. Use to confirm the API is responsive before attempting operations.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_supported_dexes",
+      "description": "Returns the AMMs / DEX sources SwapWizard routes across per chain. Each DEX includes its display name and slug (e.g. \"uniswap-v3\") â use the slug as the 'project' filter in search_liquidity_pools to filter pools by protocol.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "description": "EVM chain ID to filter results. If omitted, returns protocols for all supported chains.",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "search_liquidity_pools",
+      "description": "Maps to GET /pools. Discovers liquidity pools across supported AMMs and chains, returning id, poolId, symbol, underlyingTokens (token addresses), fee tier, protocol, dexKind, APY, apyBase (fee-only APY excluding reward emissions), TVL (USD), 24h/7d volume (USD), stablecoin flags, and hooksAddress (custom hook contract for Uniswap V4 / PancakeSwap Infinity pools; null when the pool has no hook â hooks can add custom fees or transfer restrictions). KEY PARAMETERS: Use `trending: true` to get only pools currently trending, optionally with `timeframe` (\"5m\", \"1h\", \"6h\", \"24h\") to select the ranking window â default is 5m. Trending results include `feeAprEstimate`: fee APR (%) annualized from the selected timeframe's volume window over the pool reserve (null outside trending mode or when the fee tier is unknown). NOTE: `feeAprEstimate` extrapolates a short window to a year â for short timeframes on hot pools it can be extreme and short-lived; the `apy` field is the stable 24h-based metric.\n\nMOMENTUM SIGNAL (1h/6h/24h windows, powered by on-chain DEX trade data): each trending pool carries `momentumSignal` â \"entry\" (volume accelerating with healthy LP flow â a pool worth entering), \"watch\" (in the ranking but not yet actionable), or \"exit\" (dying volume or LPs leaving). Supporting fields: `momentumScore` (composite acceleration x size x flow quality), `momentumRatioH1/H6/H24` (volume vs the previous equal window), `momentumTakersH6` (unique traders 6h), `lpMintsH6/lpBurnsH6` and `lpNetFlowH6` (inflow/outflow/flat â are LPs adding or pulling liquidity). The 5m window carries the signal as HOURLY CONTEXT (last hourly cycle, not the last 5 minutes), since 5m is real-time GeckoTerminal data. Each pool also carries `suggestedRangePct`: a suggested concentrated-liquidity range (Â± percent) balancing fee density against time-in-range â ~0.5% for stable pairs, tens of percent for volatile/memecoin pairs â pass it to zap_into_lp_position. To ENTER the hottest profitable pool: `trending: true, timeframe: \"6h\", signal: \"entry\", sortBy: \"signal\", sortOrder: \"desc\"` returns entry-signal pools ranked by APR. (Use timeframe \"6h\" for sustained traction / LP-yield strategies, \"1h\" for faster reaction.) To check whether to EXIT, read `momentumSignal` on list_user_lp_positions instead.\n\nUse `hookless: true` to exclude pools with a custom hook contract. Use `sortBy` (\"apy\", \"tvl\", \"volume1d\", \"volume7d\", \"signal\") with `sortOrder` to control ranking â default is tvl desc. Use `topPerVenue` to limit to top N pools per DEX by APY. Supports filtering by protocol/DEX, tokens, pool type, stablecoin status, and free-text search, with pagination. Required upstream step before zap_into_lp_position. IMPORTANT: The response contains two ID fields â `poolId` (string) must be passed AS-IS to zap_into_lp_position and zap_out_of_lp_position (do NOT construct or modify it), and `id` (number) is used only for analyze_pool.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "EVM chain ID (e.g. 56 for BSC, 1 for Ethereum)"
+          },
+          "project": {
+            "description": "Filter by protocol/DEX name (e.g. uniswap-v3, pancakeswap-v3, aerodrome-v2)",
+            "type": "string"
+          },
+          "dexKind": {
+            "description": "Filter by DEX kind (e.g. UNIV3_SR02)",
+            "type": "string"
+          },
+          "tokens": {
+            "description": "Comma-separated token addresses to filter pools by",
+            "type": "string"
+          },
+          "search": {
+            "description": "Search by symbol or project name",
+            "type": "string"
+          },
+          "poolType": {
+            "description": "Filter by pool type",
+            "type": "string",
+            "enum": [
+              "classic",
+              "concentrated"
+            ]
+          },
+          "hookless": {
+            "description": "If true, exclude pools with a custom hook contract (Uniswap V4 / PancakeSwap Infinity). Hooks can add custom fees or transfer restrictions.",
+            "type": "boolean"
+          },
+          "stableOnly": {
+            "description": "Show only stablecoin pairs",
+            "type": "boolean"
+          },
+          "semiStableOnly": {
+            "description": "Show only pools with exactly one stablecoin",
+            "type": "boolean"
+          },
+          "sortBy": {
+            "description": "Sort field (default: tvl). 'signal' (trending only) groups pools by momentum signal entryâwatchâexit (sortOrder=asc reverses) and within each group by APR descending â i.e. the entry pools with the highest APR first.",
+            "type": "string",
+            "enum": [
+              "apy",
+              "tvl",
+              "volume1d",
+              "volume7d",
+              "signal"
+            ]
+          },
+          "sortOrder": {
+            "description": "Sort direction (default: desc)",
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ]
+          },
+          "signal": {
+            "description": "Filter by momentum signal. Comma-separated list allowed (e.g. 'entry' or 'entry,watch'). Only effective with trending=true. Combine with sortBy=signal&sortOrder=desc to get entry pools ranked by APR.",
+            "type": "string"
+          },
+          "topPerVenue": {
+            "description": "Limit to top N pools per venue by APY",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "trending": {
+            "description": "If true, return only currently trending pools (with momentumSignal and suggestedRangePct on each result)",
+            "type": "boolean"
+          },
+          "timeframe": {
+            "description": "Trending ranking window (default: 5m). Only applies with trending=true. Sent to the API as trendingDuration; also selects the volume window for feeAprEstimate. Use 6h for sustained LP-yield traction, 1h for faster reaction; 5m is real-time GeckoTerminal with the signal as hourly context.",
+            "type": "string",
+            "enum": [
+              "5m",
+              "1h",
+              "6h",
+              "24h"
+            ]
+          },
+          "page": {
+            "description": "Page number, 0-based (default: 0)",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "description": "Results per page, max 200 (default: 50)",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "chainId"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "analyze_pool",
+      "description": "Maps to GET /pools/analyze/:id. Returns real-time momentum data for a specific pool from GeckoTerminal: multi-timeframe volume (5m, 15m, 30m, 1h, 6h), price changes (5mâ24h), buy/sell transaction counts, unique traders (24h), and reserve in USD. Data is cached for 10 minutes; stale entries are refreshed on-demand. Use the numeric id field returned by search_liquidity_pools.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Pool numeric ID (from the id field in search_liquidity_pools response)"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_user_lp_positions",
+      "description": "Maps to GET /positions. Reads all LP positions a wallet holds on a given chain by calling the SwapWizard API, which discovers positions across all supported protocols: Uniswap V2/V3/V4, Aerodrome, Thena, SushiSwap, PancakeSwap, Algebra, Balancer, Curve, and all Solidly forks. Each position includes positionId, nftManager, dexName, liquidityKind, token addresses, amounts, fees, in-range status, APR, and USD values. EXIT SIGNAL: each position also carries `momentumSignal` for its pool â \"exit\" means the pool's volume is dying or LPs are leaving (consider zapping out), \"watch\"/\"entry\" mean momentum is still alive. When `momentumSignal` is ABSENT, the pool has dropped out of the momentum ranking (momentum exhausted) â also a reason to review and likely exit the position. `momentumScore` is the composite strength. Use this to drive exit decisions, mirroring the entry signal from search_liquidity_pools. The API uses Alchemy's NFT APIs for optimal position discovery â pass an Alchemy RPC URL via rpcUrl for fastest results. Without an Alchemy key, the API falls back to on-chain scanning which may be slower and newly created positions may take longer to appear. IMPORTANT: Always call this BEFORE zap_out_of_lp_position â pass the returned positionId, nftManager, dexName, and liquidityKind directly to zap_out_of_lp_position.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "EVM chain ID"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Wallet address to query positions for"
+          },
+          "rpcUrl": {
+            "description": "Custom RPC endpoint URL. If the URL is from Alchemy, the API auto-extracts the key for accelerated NFT-based position discovery.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "chainId",
+          "owner"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_swap_quote",
+      "description": "Maps to POST /quote. Returns the best swap quote across all integrated DEX protocols, with router, callData, value, price impact, route summary, and gas estimate in one response. Surplus and positive slippage are returned to the user in the same transaction. Supports an optional affiliateCode (registered affiliate wallet address) forwarded to the API so the affiliate fee is paid on-chain to that address. Supports an excludePositions parameter that prices the swap excluding the caller's own LP position from pool state. Returns signable data only; never signs or broadcasts. EXECUTION FLOW: (1) If the input token is non-native, send an ERC-20 approve to the router and WAIT for on-chain confirmation. (2) Call this tool again for a fresh quote (quotes expire). (3) Send the tx to the router contract: to=router, data=callData, value=value. This requires a private key or wallet signer. â ï¸ PRICE IMPACT: The response includes a priceImpact field. Agents MUST present this value to the user and request explicit confirmation before executing. High price impact means the user will receive significantly less value than expected. â ï¸ ZERO OUTPUT: If the swap amount is too small relative to the token pair price ratio, the API returns HTTP 400 with \"swap amount too small: output rounds to zero for this pair\". Increase the amount or use a different pair.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "EVM chain ID (e.g. 56 for BSC)"
+          },
+          "tokenIn": {
+            "type": "string",
+            "description": "Input token address (0x0000...0000 for native coin)"
+          },
+          "tokenOut": {
+            "type": "string",
+            "description": "Output token address"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "exactIn",
+              "exactOut"
+            ],
+            "description": "Quote direction"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Amount as stringified uint256 in token decimals"
+          },
+          "slippageBps": {
+            "description": "Slippage tolerance in basis points (default: 100 = 1%)",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "affiliateCode": {
+            "description": "Optional affiliate wallet address registered on-chain with SwapWizard â forwarded to the API so the affiliate fee for this operation is paid to that address. Omit if you have no affiliate.",
+            "type": "string"
+          },
+          "excludePositions": {
+            "description": "Positions to subtract from pool state during simulation â for a clean quote that excludes self-impact. Get these from list_user_lp_positions.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "poolAddress": {
+                  "type": "string",
+                  "description": "Pool contract address"
+                },
+                "liquidity": {
+                  "type": "string",
+                  "description": "Position liquidity as uint256 string"
+                },
+                "tickLower": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Lower tick bound"
+                },
+                "tickUpper": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Upper tick bound"
+                }
+              },
+              "required": [
+                "poolAddress",
+                "liquidity",
+                "tickLower",
+                "tickUpper"
+              ]
+            }
+          }
+        },
+        "required": [
+          "chainId",
+          "tokenIn",
+          "tokenOut",
+          "side",
+          "amount"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_clean_quote",
+      "description": "Maps to POST /quote with excludePositions=true. Shortcut to get_swap_quote that prices the swap as if the caller's own LP position were not in the pool, for concentrated-liquidity positions in the active tick range. Use when an agent holds a significant position in the pool it is about to trade against (rebalancing, exit, treasury sizing) and needs a quote unaffected by its own liquidity. Returns the same router/callData/value execution fields as get_swap_quote, and likewise supports an optional affiliateCode (registered affiliate wallet address) forwarded to the API. EXECUTION FLOW: same as get_swap_quote â approve (wait for confirmation), fresh quote, then send tx to the router contract (requires private key or wallet signer). â ï¸ PRICE IMPACT: The response includes a priceImpact field. Agents MUST present this value to the user and request explicit confirmation before executing. â ï¸ ZERO OUTPUT: If the swap amount is too small relative to the token pair price ratio, the API returns HTTP 400 with \"swap amount too small: output rounds to zero for this pair\". Increase the amount or use a different pair.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "EVM chain ID (e.g. 56 for BSC)"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Wallet address whose LP positions will be excluded from pool state during quoting"
+          },
+          "tokenIn": {
+            "type": "string",
+            "description": "Input token address (0x0000...0000 for native coin)"
+          },
+          "tokenOut": {
+            "type": "string",
+            "description": "Output token address"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "exactIn",
+              "exactOut"
+            ],
+            "description": "Quote direction"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Amount as stringified uint256 in token decimals"
+          },
+          "slippageBps": {
+            "description": "Slippage tolerance in basis points (default: 100 = 1%)",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "affiliateCode": {
+            "description": "Optional affiliate wallet address registered on-chain with SwapWizard â forwarded to the API so the affiliate fee for this operation is paid to that address. Omit if you have no affiliate.",
+            "type": "string"
+          },
+          "rpcUrl": {
+            "description": "Custom RPC endpoint URL for position discovery.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "chainId",
+          "owner",
+          "tokenIn",
+          "tokenOut",
+          "side",
+          "amount"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "zap_into_lp_position",
+      "description": "Maps to POST /addliquidity/quote. Builds a single-transaction zap to enter an LP position from ANY input token â the deposit token does NOT have to be one of the pool's underlying tokens. SwapWizard handles all intermediate swaps, the LP mint, and price-range setup in a single transaction. FULL CONCENTRATED LIQUIDITY SUPPORT: for CL pools (Uniswap V3/V4, PancakeSwap V3/Infinity CL, Aerodrome Slipstream, SushiSwap V3, Algebra forks like Camelot/THENA/QuickSwap, Fluid, Balancer V3) you can set a custom price range via tickLower/tickUpper â omit them for the protocol's default range. Classic pools (Curve, Balancer V2, Uniswap V2, Solidly) are also supported. Surplus returned to the user. Supports an optional affiliateCode (registered affiliate wallet address) forwarded to the API so the affiliate fee is paid on-chain to that address. IMPORTANT: The poolId parameter MUST come verbatim from the poolId field in the search_liquidity_pools response â do NOT construct or modify it. EXECUTION FLOW: (1) If the deposit token is non-native, send an ERC-20 approve to the router and WAIT for on-chain confirmation. (2) Call this tool again for a fresh quote (quotes expire). (3) Send the tx to the router contract: to=router, data=callData, value=value. This requires a private key or wallet signer. â ï¸ PRICE IMPACT: The response includes a priceImpact field. Agents MUST present this value to the user and request explicit confirmation before executing. â ï¸ ZERO OUTPUT: If an internal swap amount is too small, the API returns HTTP 400 with \"swap amount too small: output rounds to zero\". Increase the deposit amount.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "EVM chain ID"
+          },
+          "poolId": {
+            "type": "string",
+            "description": "Pool identifier from search_liquidity_pools (e.g. 'pancakeswap-v3:0x36696...')"
+          },
+          "deposits": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "Token address (0x0000...0000 for native)"
+                },
+                "amount": {
+                  "type": "string",
+                  "description": "Amount as stringified uint256 in token decimals"
+                }
+              },
+              "required": [
+                "token",
+                "amount"
+              ]
+            },
+            "description": "Tokens and amounts to deposit"
+          },
+          "sender": {
+            "description": "Wallet address of the sender (for simulation)",
+            "type": "string"
+          },
+          "tickLower": {
+            "description": "Custom lower tick for concentrated liquidity",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "tickUpper": {
+            "description": "Custom upper tick for concentrated liquidity",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "affiliateCode": {
+            "description": "Optional affiliate wallet address registered on-chain with SwapWizard â forwarded to the API so the affiliate fee for this operation is paid to that address. Omit if you have no affiliate.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "chainId",
+          "poolId",
+          "deposits"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "zap_out_of_lp_position",
+      "description": "Maps to POST /removeliquidity/quote. Builds a single-transaction zap to exit an LP position into ANY output token â you can withdraw into any token, not just the pool's underlying tokens. SwapWizard handles LP burn, fee collection, and intermediate swaps in a single transaction. Supports an optional affiliateCode (registered affiliate wallet address) forwarded to the API so the affiliate fee is paid on-chain to that address. REQUIRED WORKFLOW: First call list_user_lp_positions, then pass the returned fields (positionId, nftManager, dexName, liquidityKind) here along with sender, poolId, and withdrawals. EXECUTION FLOW: (1) APPROVE â For NFT-based positions, call setApprovalForAll(router, true) on the nftManager contract (do NOT use approve(router, tokenId)). For PCS Infinity BIN, call approveForAll(router, true). For classic LP pools (Curve, Balancer, Uniswap V2, Solidly), approve the LP token as a standard ERC-20. (2) WAIT for the approve tx to be confirmed on-chain. (3) Call this tool again for a fresh quote (quotes expire). (4) Send the tx to the router contract: to=router, data=callData, value=value. This requires a private key or wallet signer. â ï¸ PRICE IMPACT: The response includes a priceImpact field. Agents MUST present this value to the user and request explicit confirmation before executing.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "EVM chain ID"
+          },
+          "positionId": {
+            "type": "string",
+            "description": "Position identifier from list_user_lp_positions. For CL positions: NFT token ID. For classic pools: LP token contract address."
+          },
+          "poolId": {
+            "description": "Pool identifier from search_liquidity_pools â pass if available.",
+            "type": "string"
+          },
+          "nftManager": {
+            "description": "NFT position manager contract address from list_user_lp_positions. Required for CL positions (Uniswap V3/V4, PancakeSwap V3/Infinity CL, SushiSwap V3, Algebra).",
+            "type": "string"
+          },
+          "dexName": {
+            "description": "DEX project name from list_user_lp_positions (e.g. 'Uniswap V3', 'PancakeSwap V3', 'curve-dex').",
+            "type": "string"
+          },
+          "liquidityKind": {
+            "description": "Liquidity kind from list_user_lp_positions (e.g. UNIV3, UNIV4, ALGEBRA, SLIPSTREAM, PCS_INF_CL, CURVE, UNIV2, SOLIDLY).",
+            "type": "string"
+          },
+          "withdrawals": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "Token address to withdraw to"
+                }
+              },
+              "required": [
+                "token"
+              ]
+            },
+            "description": "Tokens to receive after removal"
+          },
+          "sender": {
+            "type": "string",
+            "description": "Wallet address of the position owner."
+          },
+          "percent": {
+            "description": "Percentage of position to remove (default: 100). For classic LP pools (UniV2, Solidly, Curve, Balancer) use 99 instead of 100 to avoid reverts from LP balance race conditions between RPC nodes.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "affiliateCode": {
+            "description": "Optional affiliate wallet address registered on-chain with SwapWizard â forwarded to the API so the affiliate fee for this operation is paid to that address. Omit if you have no affiliate.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "chainId",
+          "positionId",
+          "withdrawals",
+          "sender"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

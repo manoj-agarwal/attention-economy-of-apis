@@ -1,0 +1,370 @@
+{
+  "name": "Emailens",
+  "source_url": "https://emailens.dev/api/mcp",
+  "fetched_at": "2026-08-10T05:51:11+00:00",
+  "description": "Email compatibility analysis across 15 clients with preview, audit, fix, diff, and deliverability tools.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "name": "preview_email",
+      "title": "Preview Email",
+      "description": "Full email compatibility preview , transforms HTML for 21 email clients, analyzes CSS, generates scores, simulates dark mode, checks inbox preview and email size.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "html": {
+            "type": "string",
+            "description": "The email HTML source code"
+          },
+          "clients": {
+            "description": "Optional client ID filter",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "format": {
+            "description": "Input format: 'html' (default), 'jsx', 'mjml', or 'maizzle'",
+            "type": "string",
+            "enum": [
+              "html",
+              "jsx",
+              "mjml",
+              "maizzle"
+            ]
+          }
+        },
+        "required": [
+          "html"
+        ]
+      },
+      "annotations": {
+        "title": "Preview Email",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "analyze_email",
+      "title": "Analyze Email",
+      "description": "Quick CSS compatibility analysis , returns warnings and per-client scores.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "html": {
+            "type": "string",
+            "description": "The email HTML source code"
+          },
+          "format": {
+            "description": "Input format for framework-specific fix snippets",
+            "type": "string",
+            "enum": [
+              "html",
+              "jsx",
+              "mjml",
+              "maizzle"
+            ]
+          }
+        },
+        "required": [
+          "html"
+        ]
+      },
+      "annotations": {
+        "title": "Analyze Email",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "audit_email",
+      "title": "Audit Email",
+      "description": "Comprehensive quality audit , CSS compatibility, spam, links, accessibility, images, inbox preview, size, templates, content overflow, visual bugs.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "html": {
+            "type": "string",
+            "description": "The email HTML source code"
+          },
+          "format": {
+            "description": "Input format",
+            "type": "string",
+            "enum": [
+              "html",
+              "jsx",
+              "mjml",
+              "maizzle"
+            ]
+          },
+          "skip": {
+            "description": "Checks to skip",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "spam",
+                "links",
+                "accessibility",
+                "images",
+                "compatibility",
+                "inboxPreview",
+                "size",
+                "templateVariables",
+                "overflow",
+                "visual"
+              ]
+            }
+          }
+        },
+        "required": [
+          "html"
+        ]
+      },
+      "annotations": {
+        "title": "Audit Email",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "fix_email",
+      "title": "Fix Email",
+      "description": "Generate a structured fix prompt for email compatibility issues.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "html": {
+            "type": "string",
+            "description": "The email HTML source code to fix"
+          },
+          "format": {
+            "description": "Input format , controls fix syntax",
+            "type": "string",
+            "enum": [
+              "html",
+              "jsx",
+              "mjml",
+              "maizzle"
+            ]
+          },
+          "scope": {
+            "description": "Fix scope",
+            "type": "string",
+            "enum": [
+              "all",
+              "current"
+            ]
+          },
+          "selectedClientId": {
+            "description": "Client ID for scoped fixes",
+            "type": "string"
+          }
+        },
+        "required": [
+          "html"
+        ]
+      },
+      "annotations": {
+        "title": "Fix Email",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_clients",
+      "title": "List Email Clients",
+      "description": "List all 21 supported email clients with IDs, names, rendering engines, dark mode support, and deprecation status. Use the returned IDs to filter other tools like preview_email or capture_screenshots.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "title": "List Email Clients",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "diff_emails",
+      "title": "Diff Emails",
+      "description": "Compare two email HTML versions , shows score changes, fixed issues, and regressions per client.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "before": {
+            "type": "string",
+            "description": "Original email HTML"
+          },
+          "after": {
+            "type": "string",
+            "description": "Modified email HTML"
+          },
+          "format": {
+            "description": "Input format",
+            "type": "string",
+            "enum": [
+              "html",
+              "jsx",
+              "mjml",
+              "maizzle"
+            ]
+          }
+        },
+        "required": [
+          "before",
+          "after"
+        ]
+      },
+      "annotations": {
+        "title": "Diff Emails",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "check_deliverability",
+      "title": "Check Deliverability",
+      "description": "Check email deliverability for a domain , SPF, DKIM, DMARC, MX, BIMI.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "minLength": 3,
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$",
+            "description": "Domain to check (e.g. 'company.com')"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      },
+      "annotations": {
+        "title": "Check Deliverability",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "build_email",
+      "title": "Build Email",
+      "description": "Generate a cross-client-compatible email from a brief using Emailens's self-healing loop (generate → score across 21 clients → repair). Output stays in the framework you choose. Returns a runId immediately , poll get_build_status for progress and the final code. Requires a Pro/Team API key.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "intent": {
+            "type": "string",
+            "description": "What the email should be and contain , the brief to build from"
+          },
+          "format": {
+            "description": "Output framework: 'html' (default), 'jsx', 'mjml', or 'maizzle'",
+            "type": "string",
+            "enum": [
+              "html",
+              "jsx",
+              "mjml",
+              "maizzle"
+            ]
+          },
+          "seedHtml": {
+            "description": "Optional existing code to improve from instead of starting blank",
+            "type": "string"
+          },
+          "threshold": {
+            "description": "Target compatibility score, 50-100 (default 90)",
+            "type": "number"
+          },
+          "maxIterations": {
+            "description": "Max repair rounds, 1-8 (default 5)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "intent"
+        ]
+      },
+      "annotations": {
+        "title": "Build Email",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_build_status",
+      "title": "Get Build Status",
+      "description": "Check a build_email run by runId , returns status, iteration, best compatibility score, and the current best source once available.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "description": "The runId returned by build_email"
+          }
+        },
+        "required": [
+          "runId"
+        ]
+      },
+      "annotations": {
+        "title": "Get Build Status",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ]
+}

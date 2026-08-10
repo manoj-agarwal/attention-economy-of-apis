@@ -1,0 +1,1166 @@
+{
+  "name": "Justice Libre",
+  "source_url": "https://justicelibre.org/mcp",
+  "fetched_at": "2026-08-10T05:51:14+00:00",
+  "description": "Free access to ~1 million French administrative court decisions through a hosted endpoint, no authentication required.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Ã propos de JusticeLibre"
+      },
+      "description": "Vue d'ensemble du protocole JusticeLibre : cartographie des sources\n    et rÃ¨gles d'acheminement.\n\n    Appeler cet outil en prioritÃ© pour apprÃ©hender la matrice de\n    compatibilitÃ© des identifiants, les pÃ©rimÃ¨tres de recherche de chaque\n    juridiction, et les spÃ©cificitÃ©s des bases de donnÃ©es exploitÃ©es.\n    ",
+      "inputSchema": {
+        "properties": {},
+        "type": "object",
+        "title": "about_justicelibreArguments"
+      },
+      "name": "about_justicelibre",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "about_justicelibreDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Liste des juridictions couvertes"
+      },
+      "description": "RÃ©fÃ©rentiel exhaustif des codes juridictionnels.\n\n    Restitue les 51 instances couvertes (Conseil d'Ãtat, 9 CAA, 40 TA,\n    incluant les juridictions d'outre-mer) accompagnÃ©es de leur nomenclature\n    canonique.\n\n    Consulter impÃ©rativement cette liste pour dÃ©terminer le code exact Ã \n    fournir Ã  l'outil `search_admin`.\n    ",
+      "inputSchema": {
+        "properties": {},
+        "type": "object",
+        "title": "list_juridictionsArguments"
+      },
+      "name": "list_juridictions",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "list_juridictionsDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche Conseil d'Ãtat (ArianeWeb)"
+      },
+      "description": "Recherche sÃ©mantique ciblÃ©e sur la jurisprudence du Conseil d'Ãtat\n    (base ArianeWeb, ~270 000 dÃ©cisions).\n\n    Moteur exclusif disposant d'un vÃ©ritable algorithme de pertinence\n    (Sinequa) avec extraction de contexte. Ã privilÃ©gier systÃ©matiquement\n    pour le droit public.\n\n    EXTRACTION DU TEXTE : les ids retournÃ©s (`/Ariane_Web/AW_DCE/|XXXXXX`)\n    sont DÃSORMAIS exploitables directement par `get_decision_text(id)`\n    (rÃ©cupÃ©ration live via le plugin Sinequa).\n\n    â ï¸ COUVERTURE : cet index ArianeWeb (Sinequa) couvre MAL les arrÃªts\n    anciens/fondateurs (avant ~1990). Si une recherche ici renvoie 0, NE PAS\n    conclure que l'arrÃªt est absent de JusticeLibre : le bulk JADE\n    (`search_admin`) couvre le CE depuis 1873 (Trompier-Gravier 1944, PGD,\n    etc. inclus). Et si tu connais dÃ©jÃ  l'id LÃ©gifrance `CETATEXTâ¦` d'un\n    arrÃªt, `get_decision_text(\"CETATEXTâ¦\")` le sort directement du bulk.\n\n    Consigne de recherche : limiter les requÃªtes Ã  2-5 mots-clÃ©s\n    distinctifs ; les requÃªtes en phrase complÃ¨te retournent gÃ©nÃ©ralement\n    zÃ©ro rÃ©sultat.\n\n    Args:\n        query: mots-clÃ©s de recherche (ex : \"rÃ©fÃ©rÃ© libertÃ©\", \"QPC 145\")\n        limit: nombre maximum de rÃ©sultats (dÃ©faut 20)\n        offset: dÃ©calage pour paginer (dÃ©faut 0). RÃ©itÃ©rer avec offset=20,\n            offset=40, etc. pour obtenir les pages suivantes.\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_conseil_etatArguments"
+      },
+      "name": "search_conseil_etat",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_conseil_etatDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "DÃ©cisions administratives rÃ©centes"
+      },
+      "description": "DÃ©cisions admin **rÃ©centes** triÃ©es chronologiquement (API live).\n\n    PrioritÃ© au rÃ©cent : tri par date de lecture dÃ©croissante, pas par\n    pertinence. Utile pour \"actualitÃ© d'une juridiction\" mais PAS pour\n    trouver la jurisprudence pertinente sur un sujet â pour cela, utiliser\n    `search_admin` (bulk JADE avec BM25 ranking).\n\n    PÃ©rimÃ¨tre : CE + 9 CAA + 40 TA (incluant l'outre-mer), depuis ~2022.\n\n    Les identifiants gÃ©nÃ©rÃ©s (formats `DCE_*`, `DTA_*`, `DCAA_*`) sont\n    nativement compatibles avec l'outil `get_decision_text`.\n\n    Args:\n        query: mots-clÃ©s de recherche\n        juridiction: code de la juridiction. Exemples :\n            - \"CE\" â Conseil d'Ãtat\n            - \"CE-CAA\" â Conseil d'Ãtat + cours administratives d'appel\n            - \"TA69\" â Tribunal administratif de Lyon\n            - \"TA75\" â Tribunal administratif de Paris\n            - \"CAA69\" â Cour administrative d'appel de Lyon\n            Les codes \"TA\" ou \"CAA\" isolÃ©s retournent un rÃ©sultat vide â\n            un code spÃ©cifique est requis. Consulter `list_juridictions`\n            pour la nomenclature complÃ¨te.\n        limit: nombre maximum de rÃ©sultats (dÃ©faut 20)\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "juridiction": {
+            "default": "CE",
+            "title": "Juridiction",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_admin_recentArguments"
+      },
+      "name": "search_admin_recent",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_admin_recentDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "DÃ©cisions rÃ©centes des 40 TA"
+      },
+      "description": "RequÃªte simultanÃ©e de l'ensemble des 40 Tribunaux Administratifs.\n\n    Fusionne et trie chronologiquement (date de lecture dÃ©croissante) les\n    rÃ©sultats issus du territoire national. Pertinent pour cartographier\n    rapidement les Ã©ventuelles divergences d'apprÃ©ciation territoriale sur\n    une mÃªme question de droit.\n\n    Args:\n        query: mots-clÃ©s de recherche\n        limit_per_court: nombre de rÃ©sultats par tribunal (dÃ©faut 5, soit\n            jusqu'Ã  200 rÃ©sultats totaux avant application de `total_limit`)\n        total_limit: plafond global aprÃ¨s fusion (dÃ©faut 60 ; 0 = aucun\n            plafond). Si positif, tronque la liste fusionnÃ©e aux N entrÃ©es\n            les plus rÃ©centes.\n\n    Returns:\n        Dict comportant `per_court_totals` (nombre de hits par TA),\n        `decisions` (liste fusionnÃ©e triÃ©e chronologiquement) et les\n        Ã©ventuelles `errors`.\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "limit_per_court": {
+            "default": 5,
+            "title": "Limit Per Court",
+            "type": "integer"
+          },
+          "total_limit": {
+            "default": 60,
+            "title": "Total Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_admin_recent_all_taArguments"
+      },
+      "name": "search_admin_recent_all_ta",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_admin_recent_all_taDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "DÃ©cisions rÃ©centes des 9 CAA"
+      },
+      "description": "RequÃªte simultanÃ©e de l'ensemble des 9 Cours Administratives d'Appel.\n\n    Fusion et tri chronologique des rÃ©sultats par date de lecture.\n\n    Args:\n        query: mots-clÃ©s de recherche\n        limit_per_court: rÃ©sultats par cour (dÃ©faut 5, soit jusqu'Ã  45\n            rÃ©sultats au total)\n        total_limit: plafond global aprÃ¨s fusion (0 = aucun plafond).\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "limit_per_court": {
+            "default": 5,
+            "title": "Limit Per Court",
+            "type": "integer"
+          },
+          "total_limit": {
+            "default": 0,
+            "title": "Total Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_admin_recent_all_caaArguments"
+      },
+      "name": "search_admin_recent_all_caa",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_admin_recent_all_caaDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Texte intÃ©gral d'une dÃ©cision administrative"
+      },
+      "description": "Extraction du texte intÃ©gral d'une dÃ©cision relevant de l'ordre\n    administratif (Conseil d'Ãtat, TA, CAA).\n\n    Identifiants acceptÃ©s :\n    - `DCE_XXX_YYYYMMDD` (CE), `DTA_XXX_YYYYMMDD` (TA),\n      `DCAA_XXX_YYYYMMDD` (CAA) â extraction depuis le bulk JADE local.\n    - `CETATEXTâ¦` (id LÃ©gifrance/CETA renvoyÃ© par `search_admin`) â lookup\n      direct dans le bulk JADE local, texte intÃ©gral inclus.\n    - `/Ariane_Web/AW_DCE/|XXXXXX` (ou abrÃ©gÃ© `|XXXXXX`) â rÃ©cupÃ©ration EN\n      DIRECT du texte intÃ©gral via le plugin Sinequa du Conseil d'Ãtat.\n      Fonctionne pour toute dÃ©cision ArianeWeb, y compris hors bulk JADE.\n\n    INCOMPATIBILITÃS MAJEURES :\n    - Identifiants JURITEXT â rediriger vers `get_decision_judiciaire_libre`\n      ou `get_decision_judiciaire`.\n    - Identifiants CELEX `6XXXXCJXXXX` â rediriger vers `get_decision_cjue`.\n    - Identifiants HUDOC `001-XXXXXX` â rediriger vers `get_decision_cedh`.\n\n    Args:\n        decision_id: identifiant de la dÃ©cision (avec ou sans suffixe .xml)\n\n    Returns:\n        Dict comportant les mÃ©tadonnÃ©es complÃ¨tes et `full_text` (texte\n        intÃ©gral). Si la dÃ©cision est introuvable, dict d'erreur structurÃ©\n        `{error, error_category: \"not_found\", retryable}` avec les tools\n        alternatifs Ã  essayer.\n    ",
+      "inputSchema": {
+        "properties": {
+          "decision_id": {
+            "title": "Decision Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision_id"
+        ],
+        "type": "object",
+        "title": "get_decision_textArguments"
+      },
+      "name": "get_decision_text",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_decision_textDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche judiciaire (bulk DILA, sans auth)"
+      },
+      "description": "Recherche plein texte dans la jurisprudence judiciaire, exÃ©cutÃ©e\n    localement et affranchie de toute obligation d'authentification\n    gouvernementale.\n\n    Exploite l'index FTS5 des archives publiques DILA (~1,17 M dÃ©cisions :\n    Cour de cassation, 36 cours d'appel, Conseil constitutionnel). Scoring\n    BM25 disponible mais tri appliquÃ© par ordre chronologique dÃ©croissant.\n\n    **Couverture connue** : la base contient un sous-ensemble des arrÃªts\n    publiÃ©s par les CA en open data DILA (~73 000 arrÃªts CA, principalement\n    depuis 2007). Tous les arrÃªts ne sont PAS dans la base ; un faux nÃ©gatif\n    n'implique donc pas que l'arrÃªt n'existe pas. En cas de bredouille,\n    suggÃ©rer Ã  l'utilisateur de chercher sur LÃ©gifrance ou via PISTE\n    (`search_judiciaire`).\n\n    **Recherche par numÃ©ro de RG** : pour les arrÃªts CA, utiliser le param\n    `numero_rg` (lookup direct, normalise les variantes 21/05835, 21-05835,\n    2105835). Pour les pourvois Cass, utiliser `query` avec le numÃ©ro\n    (ex: query=\"21-12.345\").\n\n    â ï¸ Les rÃ©sultats ne contiennent qu'un SNIPPET tronquÃ© (`snippet`), pas\n    le texte intÃ©gral. Pour lire une dÃ©cision en entier, appeler\n    `get_decision_judiciaire_libre(id)` avec l'id retournÃ© (format\n    `JURITEXT*` Cass / cours d'appel, `CONSTEXT*` Conseil constitutionnel).\n    Ne pas se fier au snippet seul pour conclure sur le contenu.\n\n    Args:\n        query: mots-clÃ©s (ex : \"licenciement abusif\"). FTS5 supporte\n            `\"phrase exacte\"`, `mot1 AND mot2`, `mot*` (prÃ©fixe). Optionnel\n            si `numero_rg` est fourni.\n        juridiction: filtre optionnel : \"cassation\" / \"appel\" / \"constit\".\n        numero_rg: numÃ©ro RG d'un arrÃªt CA (ex: \"21/05835\"). Lookup direct\n            qui matche toutes les variantes typographiques.\n        date_min: date min ISO (YYYY-MM-DD), optionnel\n        date_max: date max ISO (YYYY-MM-DD), optionnel\n        limit: nombre maximum de rÃ©sultats (dÃ©faut 20, max 50)\n        offset: dÃ©calage pour paginer (dÃ©faut 0). Si la rÃ©ponse contient\n            `truncated: true`, rÃ©itÃ©rer avec `next_offset` pour la suite.\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "default": "",
+            "title": "Query",
+            "type": "string"
+          },
+          "juridiction": {
+            "default": "",
+            "title": "Juridiction",
+            "type": "string"
+          },
+          "numero_rg": {
+            "default": "",
+            "title": "Numero Rg",
+            "type": "string"
+          },
+          "date_min": {
+            "default": "",
+            "title": "Date Min",
+            "type": "string"
+          },
+          "date_max": {
+            "default": "",
+            "title": "Date Max",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "type": "object",
+        "title": "search_judiciaire_libreArguments"
+      },
+      "name": "search_judiciaire_libre",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_judiciaire_libreDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Texte intÃ©gral d'une dÃ©cision judiciaire (DILA)"
+      },
+      "description": "Extraction du texte intÃ©gral d'une dÃ©cision judiciaire depuis l'index\n    indÃ©pendant (sans authentification).\n\n    Accepte exclusivement les identifiants judiciaires libres (formats\n    `JURITEXT*`, `CONSTEXT*`, `JURI*`), tels que retournÃ©s par\n    `search_judiciaire_libre` (exemples : `\"JURITEXT000042579700\"`,\n    `\"CONSTEXT000049574021\"`).\n\n    Outil formellement inopÃ©rant pour les dÃ©cisions relevant de l'ordre\n    administratif (formats `DCE_*`, `DTA_*`, `DCAA_*`, `/Ariane_Web/...`).\n\n    Args:\n        decision_id: identifiant JURITEXT/JURI/CONSTEXT de la dÃ©cision\n    ",
+      "inputSchema": {
+        "properties": {
+          "decision_id": {
+            "title": "Decision Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision_id"
+        ],
+        "type": "object",
+        "title": "get_decision_judiciaire_libreArguments"
+      },
+      "name": "get_decision_judiciaire_libre",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_decision_judiciaire_libreDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche judiciaire (PISTE Judilibre)"
+      },
+      "description": "Recherche dans la jurisprudence judiciaire via l'API officielle PISTE\n    (authentification OAuth2 requise).\n\n    PÃ©rimÃ¨tre : Cour de cassation, cours d'appel, tribunaux judiciaires,\n    tribunaux de commerce. Ã n'utiliser qu'en dernier recours ou pour des\n    dÃ©cisions rÃ©centes absentes de la base libre DILA, compte tenu de\n    l'entrave technique imposÃ©e par la Cour de cassation.\n\n    Authentification (les identifiants PISTE ne transitent JAMAIS par la\n    conversation) :\n    1. `session_token` : jeton temporaire obtenu sur\n       justicelibre.org/tutoriel-piste.html (procÃ©dÃ© recommandÃ©).\n    2. Auto-hÃ©bergement : variables d'environnement PISTE_CLIENT_ID et\n       PISTE_CLIENT_SECRET dÃ©finies cÃ´tÃ© serveur.\n\n    Args:\n        query: mots-clÃ©s de recherche\n        session_token: jeton justicelibre temporaire (obtenu via le\n            formulaire du site)\n        juridiction: filtre optionnel â \"cc\" (Cour de cassation), \"ca\"\n            (cours d'appel), \"tj\" (tribunaux judiciaires), \"tcom\"\n            (tribunaux de commerce). Vide = toutes juridictions.\n        limit: nombre maximum de rÃ©sultats (dÃ©faut 20, maximum 50)\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "session_token": {
+            "default": "",
+            "title": "Session Token",
+            "type": "string"
+          },
+          "juridiction": {
+            "default": "",
+            "title": "Juridiction",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_judiciaireArguments"
+      },
+      "name": "search_judiciaire",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_judiciaireDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Texte intÃ©gral d'une dÃ©cision (PISTE Judilibre)"
+      },
+      "description": "Extraction du texte intÃ©gral d'une dÃ©cision judiciaire via l'API\n    restreinte PISTE (authentification OAuth2 requise).\n\n    Ã substituer systÃ©matiquement par `get_decision_judiciaire_libre`\n    lorsque la dÃ©cision figure dans les archives ouvertes de la DILA.\n\n    Outil formellement inopÃ©rant pour les dÃ©cisions relevant de l'ordre\n    administratif (formats `DCE_*`, `DTA_*`, `DCAA_*`, `/Ariane_Web/...`).\n\n    Authentification (les identifiants PISTE ne transitent JAMAIS par la\n    conversation) : `session_token` obtenu sur\n    justicelibre.org/tutoriel-piste.html, ou variables d'environnement\n    PISTE_CLIENT_ID / PISTE_CLIENT_SECRET cÃ´tÃ© serveur (auto-hÃ©bergement).\n\n    Args:\n        decision_id: identifiant Judilibre de la dÃ©cision\n        session_token: jeton justicelibre temporaire (recommandÃ©)\n    ",
+      "inputSchema": {
+        "properties": {
+          "decision_id": {
+            "title": "Decision Id",
+            "type": "string"
+          },
+          "session_token": {
+            "default": "",
+            "title": "Session Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision_id"
+        ],
+        "type": "object",
+        "title": "get_decision_judiciaireArguments"
+      },
+      "name": "get_decision_judiciaire",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_decision_judiciaireDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "RÃ©solution d'un numÃ©ro de loi ou dÃ©cret"
+      },
+      "description": "RÃ©sout un numÃ©ro de loi/ordonnance/dÃ©cret vers son identifiant LEGITEXT\n    ou JORFTEXT LÃ©gifrance.\n\n    Utile pour les textes non codifiÃ©s (lois, ordonnances, dÃ©crets) qui ne\n    sont pas dans la whitelist des 26 codes courts (CC, CP, LIL, LO58, etc.).\n    Une fois le LEGITEXT/JORFTEXT rÃ©solu, on peut l'utiliser avec\n    `get_law_article(code=<LEGITEXT>, num=<N>)` pour rÃ©cupÃ©rer un article\n    spÃ©cifique.\n\n    Exemples :\n    - `resolve_law_number(\"68-1250\")` â loi prescription quadriennale des\n      crÃ©ances publiques (JORFTEXT000000878035)\n    - `resolve_law_number(\"79-587\")` â loi motivation des actes admin\n    - `resolve_law_number(\"2000-321\")` â loi droits citoyens face Ã  l'admin\n\n    Args:\n        numero: format \"YY-NNNN\" ou \"YYYY-NNNN\" (ex: \"68-1250\", \"2000-321\")\n\n    Returns:\n        `{numero, legitext, titre_section, date_debut, articles_count, source_url}`\n        ou `{error}` si introuvable.\n    ",
+      "inputSchema": {
+        "properties": {
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          }
+        },
+        "required": [
+          "numero"
+        ],
+        "type": "object",
+        "title": "resolve_law_numberArguments"
+      },
+      "name": "resolve_law_number",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "resolve_law_numberDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "URL LÃ©gifrance canonique"
+      },
+      "description": "Construit l'URL canonique d'un document Ã  partir de son identifiant.\n\n    Utile pour vÃ©rifier les sources Ã  la main sur le site officiel (LÃ©gifrance,\n    Conseil constitutionnel, EUR-Lex, HUDOC, etc.) ou pour inclure un lien\n    cliquable dans un courrier.\n\n    Identifiants reconnus :\n    - `LEGIARTI*` â LÃ©gifrance article (passer `legitext` du texte parent\n      pour distinguer code (/codes/) vs loi non codifiÃ©e (/loda/)\n    - `LEGITEXT*` / `JORFTEXT*` â texte entier LÃ©gifrance\n    - `JURITEXT*` / `CONSTEXT*` / `CETATEXT*` â dÃ©cisions LÃ©gifrance\n    - CELEX (`6XXXXCJXXXX`) â EUR-Lex (CJUE)\n    - `ECLI:*` â EUR-Lex deeplink\n    - itemid HUDOC (`001-XXXXXX`) â Cour EDH\n    - ArianeWeb (`/Ariane_Web/AW_DCE/|XXXXXX`) â conseil-etat.fr\n\n    Args:\n        identifier: l'ID Ã  convertir\n        legitext: (optionnel) LEGITEXT du texte parent si `identifier` est un\n            LEGIARTI â amÃ©liore la prÃ©cision de l'URL (codes/ vs loda/)\n        date: (optionnel, YYYY-MM-DD) â appendÃ© Ã  l'URL LÃ©gifrance pour pointer\n            vers la version de l'article en vigueur Ã  cette date\n            (ex: `/loda/article_lc/LEGIARTI.../2023-01-01`). Indispensable pour\n            vÃ©rifier l'Ã©tat du droit Ã  une date historique, sinon LÃ©gifrance\n            affiche la version courante mÃªme si l'article a Ã©tÃ© abrogÃ© depuis.\n\n    Returns:\n        `{\"id\", \"source_url\"}` ou `{\"error\"}` si format non reconnu.\n    ",
+      "inputSchema": {
+        "properties": {
+          "identifier": {
+            "title": "Identifier",
+            "type": "string"
+          },
+          "legitext": {
+            "default": "",
+            "title": "Legitext",
+            "type": "string"
+          },
+          "date": {
+            "default": "",
+            "title": "Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "identifier"
+        ],
+        "type": "object",
+        "title": "build_source_urlArguments"
+      },
+      "name": "build_source_url",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "build_source_urlDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "DÃ©cision du Conseil constitutionnel par numÃ©ro"
+      },
+      "description": "RÃ©cupÃ¨re une dÃ©cision du Conseil constitutionnel par son numÃ©ro.\n\n    Format attendu : \"AA-NNN NATURE\" ou juste \"AA-NNN\" (ex : \"79-105 DC\",\n    \"2020-800 DC\", \"2023-1048 QPC\"). Recherche full-text sur le numÃ©ro\n    + filtre juridiction=\"Conseil constitutionnel\" dans judiciaire.db.\n\n    Args:\n        numero: numÃ©ro de dÃ©cision CC (ex : \"79-105 DC\")\n        nature: filtre optionnel (QPC, DC, L, etc.) â cf search_cc\n\n    Returns:\n        `{id, titre, date, juridiction, nature, ecli, text}`, ou dict\n        d'erreur structurÃ© `{error, error_category: \"not_found\"}` si\n        introuvable.\n    ",
+      "inputSchema": {
+        "properties": {
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "nature": {
+            "default": "",
+            "title": "Nature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "numero"
+        ],
+        "type": "object",
+        "title": "get_cc_decisionArguments"
+      },
+      "name": "get_cc_decision",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_cc_decisionDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "DÃ©cision du Conseil d'Ãtat par numÃ©ro"
+      },
+      "description": "RÃ©cupÃ¨re une dÃ©cision du Conseil d'Ãtat par son numÃ©ro de pourvoi.\n\n    Essaie d'abord le bulk JADE DILA (lookup SQL exact), puis si introuvable\n    tente ArianeWeb Sinequa â les deux bases ont des couvertures complÃ©mentaires.\n\n    Pour retrouver une dÃ©cision via identifiant DCE_*, utiliser\n    `get_decision_text` Ã  la place.\n\n    Args:\n        numero: numÃ©ro de pourvoi (ex : \"497566\", \"358109\")\n\n    Returns:\n        DÃ©cision avec mÃ©tadonnÃ©es, ou dict d'erreur structurÃ©\n        `{error, error_category: \"not_found\"}` si introuvable dans les\n        deux bases.\n    ",
+      "inputSchema": {
+        "properties": {
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          }
+        },
+        "required": [
+          "numero"
+        ],
+        "type": "object",
+        "title": "get_ce_decisionArguments"
+      },
+      "name": "get_ce_decision",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_ce_decisionDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "DÃ©cision administrative par numÃ©ro de requÃªte"
+      },
+      "description": "RÃ©cupÃ¨re une dÃ©cision administrative par son **numÃ©ro de requÃªte exact**.\n\n    Couvre toutes les juridictions : Conseil d'Ãtat, cours administratives\n    d'appel (CAA), tribunaux administratifs (TA). Utilise un lookup SQL exact\n    sur le champ `numero` â pas de FTS5, pas de faux positifs.\n\n    â ï¸ **DÃ©sambiguÃ¯sation indispensable** : un mÃªme numÃ©ro Ã  7 chiffres\n    (ex: 2200433) est partagÃ© par 24+ tribunaux administratifs diffÃ©rents\n    (chaque TA a sa propre sÃ©rie annuelle qui repart Ã  1). Sans `juridiction`,\n    tu obtiens un homonyme au hasard parmi 24 â souvent pas le bon. **Si tu\n    sais quelle juridiction a rendu la dÃ©cision, passe-la TOUJOURS.**\n\n    Args:\n        numero: numÃ©ro de requÃªte (ex : \"2200433\", \"2116343\", \"497566\")\n        juridiction: identifiant de la juridiction. **RecommandÃ© pour tout\n            numÃ©ro Ã  7 chiffres** (TA/CAA codifiÃ©). Formats acceptÃ©s :\n            - **Nom long (recommandÃ©)** : \"Cour administrative d'appel de Lyon\",\n              \"Tribunal administratif de Paris\", \"Conseil d'Ãtat\" (avec ou sans\n              accent, casse libre). Matching tolÃ©rant via extraction de ville.\n            - **Code court** : \"TA69\", \"TA75\", \"CAA69\", \"CE\", \"CE-CAA\".\n              â ï¸ Les codes courts peuvent rater les arrÃªts anciens (id\n              CETATEXT* historiques) pour lesquels le mapping interne Ã©choue.\n              Si tu sais le nom long, prÃ©fÃ¨re-le.\n            Note : \"Lyon\" seul est ambigu (TA Lyon ou CAA Lyon) â prÃ©fÃ©rer le\n            nom complet pour Ã©viter la collision.\n\n    Returns:\n        DÃ©cision avec mÃ©tadonnÃ©es (id, juridiction, numero, date, titre),\n        ou `{\"error\": \"introuvable\"}` si aucun rÃ©sultat dans JADE.\n\n    Exemples :\n        get_admin_decision(\"2200433\", juridiction=\"Tribunal Administratif de Lyon\")\n            â DTA_2200433_20230214 (TA Lyon, 14 fÃ©v 2023, RSA dÃ©rogatoire)\n        get_admin_decision(\"473286\")  # CE n'a pas de doublon, juridiction inutile\n            â DCE_473286_20231123 (CE, non-admission du pourvoi sur la prÃ©cÃ©dente)\n    ",
+      "inputSchema": {
+        "properties": {
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "juridiction": {
+            "default": "",
+            "title": "Juridiction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "numero"
+        ],
+        "type": "object",
+        "title": "get_admin_decisionArguments"
+      },
+      "name": "get_admin_decision",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_admin_decisionDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche Conseil constitutionnel"
+      },
+      "description": "Recherche dÃ©diÃ©e au **Conseil constitutionnel** (7 112 dÃ©cisions).\n\n    QuatriÃ¨me pouvoir juridictionnel franÃ§ais aux cÃ´tÃ©s de la Cour de cassation,\n    du Conseil d'Ãtat et de la Cour de justice de la RÃ©publique. ContrÃ´le la\n    constitutionnalitÃ© des lois (contrÃ´le *a priori* via DC, *a posteriori* via\n    QPC) et les Ã©lections nationales.\n\n    Args:\n        query: mots-clÃ©s (opÃ©rateurs FTS5)\n        nature: filtre optionnel par type de dÃ©cision :\n            - \"QPC\" : Question Prioritaire de ConstitutionnalitÃ©\n              (contrÃ´le a posteriori, saisine par justiciable via CE/Cass)\n            - \"DC\"  : DÃ©cision sur conformitÃ© de loi ordinaire ou organique\n              (contrÃ´le a priori avant promulgation)\n            - \"L\"   : Lois diverses, dÃ©lÃ©galisation\n            - \"AN\"  : Ãlections lÃ©gislatives, inÃ©ligibilitÃ©s\n            - \"SEN\" : Ãlections sÃ©natoriales\n            - \"PDR\" : Ãlection prÃ©sidentielle\n            - \"ORGA\": Organisation (rÃ¨glement intÃ©rieur, composition)\n            - \"REF\" : RÃ©fÃ©rendum\n            - \"ELEC\": Autres Ã©lections\n            - \"I\"   : IncompÃ©tence\n            (si vide, toutes natures confondues)\n        date_min, date_max: ISO YYYY-MM-DD\n        limit: max 50 (dÃ©faut 20)\n        offset: pagination\n\n    Returns:\n        `{\"total\", \"returned\", \"nature_filter\", \"decisions\": [...]}`\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "nature": {
+            "default": "",
+            "title": "Nature",
+            "type": "string"
+          },
+          "date_min": {
+            "default": "",
+            "title": "Date Min",
+            "type": "string"
+          },
+          "date_max": {
+            "default": "",
+            "title": "Date Max",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_ccArguments"
+      },
+      "name": "search_cc",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_ccDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche Cour EDH"
+      },
+      "description": "Recherche textuelle dans la jurisprudence de la Cour europÃ©enne des\n    droits de l'homme.\n\n    Exploitation de l'index localisÃ© regroupant les ~76 000 documents\n    HUDOC francophones (arrÃªts, dÃ©cisions, rapports de Chambre, Grande\n    Chambre, ComitÃ©). Libre d'accÃ¨s.\n\n    Args:\n        query: mots-clÃ©s (ex : \"article 8 vie familiale\", \"garde Ã  vue\")\n        limit: nombre maximum de rÃ©sultats (dÃ©faut 20, max 50)\n        offset: dÃ©calage pour paginer (dÃ©faut 0). Si la rÃ©ponse contient\n            `truncated: true`, rÃ©itÃ©rer avec `next_offset` pour la suite.\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_cedhArguments"
+      },
+      "name": "search_cedh",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_cedhDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Texte intÃ©gral d'une dÃ©cision CEDH"
+      },
+      "description": "Extraction du texte intÃ©gral d'une dÃ©cision de la Cour europÃ©enne des\n    droits de l'homme sur la base de son identifiant systÃ¨me (itemid HUDOC).\n\n    Args:\n        decision_id: itemid HUDOC (ex : \"001-249914\")\n\n    Returns:\n        DÃ©cision avec `full_text`, ou dict d'erreur structurÃ©\n        `{error, error_category: \"not_found\"}` si l'itemid est inconnu.\n    ",
+      "inputSchema": {
+        "properties": {
+          "decision_id": {
+            "title": "Decision Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision_id"
+        ],
+        "type": "object",
+        "title": "get_decision_cedhArguments"
+      },
+      "name": "get_decision_cedh",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_decision_cedhDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche CJUE"
+      },
+      "description": "Recherche textuelle dans la jurisprudence de la Cour de justice de\n    l'Union europÃ©enne.\n\n    Exploitation de l'index localisÃ© des dÃ©cisions de la CJUE, du Tribunal\n    de l'UE, des ordonnances et des conclusions des avocats gÃ©nÃ©raux\n    (donnÃ©es EUR-Lex). Libre d'accÃ¨s.\n\n    Args:\n        query: mots-clÃ©s (ex : \"libre circulation capitaux\", \"CJUE C-72/24\")\n        limit: nombre maximum de rÃ©sultats (dÃ©faut 20, max 50)\n        offset: dÃ©calage pour paginer (dÃ©faut 0). Si la rÃ©ponse contient\n            `truncated: true`, rÃ©itÃ©rer avec `next_offset` pour la suite.\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_cjueArguments"
+      },
+      "name": "search_cjue",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_cjueDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Texte intÃ©gral d'un arrÃªt CJUE"
+      },
+      "description": "Extraction du texte intÃ©gral d'une dÃ©cision de la Cour de justice de\n    l'Union europÃ©enne sur la base de son identifiant normalisÃ© (CELEX).\n\n    Seuls les identifiants CELEX sont acceptÃ©s â un ECLI seul ne suffit\n    pas : retrouver d'abord le CELEX correspondant via `search_cjue`.\n\n    Args:\n        decision_id: identifiant CELEX (ex : \"62024CJ0072\")\n\n    Returns:\n        DÃ©cision avec `full_text`, ou dict d'erreur structurÃ©\n        `{error, error_category: \"not_found\"}` si le CELEX est inconnu.\n    ",
+      "inputSchema": {
+        "properties": {
+          "decision_id": {
+            "title": "Decision Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision_id"
+        ],
+        "type": "object",
+        "title": "get_decision_cjueArguments"
+      },
+      "name": "get_decision_cjue",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_decision_cjueDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche administrative (JADE, BM25)"
+      },
+      "description": "Recherche pondÃ©rÃ©e par pertinence BM25 sur la jurisprudence\n    administrative complÃ¨te (Conseil d'Ãtat + 9 CAA + 40 TA).\n\n    Source : bulk JADE DILA (~550 k dÃ©cisions full text). Contrairement aux\n    outils `search_admin_recent*` qui trient par date, celui-ci classe par\n    pertinence sÃ©mantique des mots-clÃ©s. Indispensable pour trouver LES\n    bonnes dÃ©cisions sur un sujet sans dÃ©pendre de l'anciennetÃ©.\n\n    â ï¸ **Si tu cherches par numÃ©ro de requÃªte (7 chiffres ex: 2200433)**,\n    utilise plutÃ´t `get_admin_decision(numero, juridiction=...)` qui fait\n    un lookup SQL exact. La recherche FTS5 d'un numÃ©ro court ne le trouve\n    que dans les dÃ©cisions qui le **citent** dans leur texte (ex: dÃ©cision\n    de cassation), pas la dÃ©cision identifiÃ©e par ce numÃ©ro.\n\n    Args:\n        query: mots-clÃ©s (opÃ©rateurs FTS5 : AND/OR/NOT, \"phrase exacte\", mot*)\n        juridiction: filtre par fragment de nom de juridiction. Ex :\n            \"Lyon\" â toutes les dÃ©cisions Lyon (TA + CAA), \"Tribunal\n            Administratif de Lyon\" â uniquement TA Lyon. CombinÃ© en\n            FTS5 AND avec la query principale.\n        sort: \"relevance\" (dÃ©faut, BM25) ou \"date_desc\" / \"date_asc\"\n        date_min: limite infÃ©rieure ISO YYYY-MM-DD (optionnel)\n        date_max: limite supÃ©rieure ISO YYYY-MM-DD (optionnel)\n        limit: nombre de rÃ©sultats (dÃ©faut 20, max 50)\n        offset: pagination\n\n    Returns:\n        {\"total\", \"returned\", \"decisions\": [...]} avec extracts BM25.\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "juridiction": {
+            "default": "",
+            "title": "Juridiction",
+            "type": "string"
+          },
+          "sort": {
+            "default": "relevance",
+            "title": "Sort",
+            "type": "string"
+          },
+          "date_min": {
+            "default": "",
+            "title": "Date Min",
+            "type": "string"
+          },
+          "date_max": {
+            "default": "",
+            "title": "Date Max",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_adminArguments"
+      },
+      "name": "search_admin",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_adminDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche articles de loi (LEGI)"
+      },
+      "description": "Recherche pondÃ©rÃ©e dans les codes et lois consolidÃ©s franÃ§ais.\n\n    Source : bulk LEGI DILA (3,6 Go avec versions historiques). Trouve\n    les articles dont le texte ou le titre contient les mots-clÃ©s.\n\n    Args:\n        query: mots-clÃ©s FTS5\n        code: filtre optionnel sur un code spÃ©cifique (CC, CT, CSP...)\n        date_min/date_max: filtre par date_debut de version (ISO)\n        limit: max 50\n        offset: pagination\n\n    Returns:\n        {\"total\", \"returned\", \"articles\": [...]}\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "code": {
+            "default": "",
+            "title": "Code",
+            "type": "string"
+          },
+          "date_min": {
+            "default": "",
+            "title": "Date Min",
+            "type": "string"
+          },
+          "date_max": {
+            "default": "",
+            "title": "Date Max",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_legiArguments"
+      },
+      "name": "search_legi",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_legiDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche Journal officiel (JORF)"
+      },
+      "description": "Recherche dans le Journal officiel (JORF post-1990).\n\n    Source : bulk JORF DILA (1,1 Go). Contient les textes publiÃ©s au JO\n    non codifiÃ©s : lois, dÃ©crets, arrÃªtÃ©s, circulaires, ordonnances.\n\n    Args:\n        query: mots-clÃ©s FTS5\n        nature: filtre optionnel (\"LOI\", \"DECRET\", \"ARRETE\", \"CIRCULAIRE\"...)\n        date_min/date_max: fourchette de publication (ISO)\n        limit: max 50\n\n    Returns:\n        {\"total\", \"returned\", \"textes\": [...]}\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "nature": {
+            "default": "",
+            "title": "Nature",
+            "type": "string"
+          },
+          "date_min": {
+            "default": "",
+            "title": "Date Min",
+            "type": "string"
+          },
+          "date_max": {
+            "default": "",
+            "title": "Date Max",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_jorfArguments"
+      },
+      "name": "search_jorf",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_jorfDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche conventions collectives (KALI)"
+      },
+      "description": "Recherche dans les conventions collectives et accords de branche (KALI).\n\n    Source : bulk KALI DILA (745 Mo). Couvre les conventions collectives\n    nationales, accords de branche, avenants, identifiÃ©s par leur IDCC.\n\n    Args:\n        query: mots-clÃ©s\n        idcc: filtre optionnel par IDCC (4 chiffres, ex \"1486\" pour bureaux\n              d'Ã©tudes techniques)\n        limit: max 50\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "idcc": {
+            "default": "",
+            "title": "Idcc",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_kaliArguments"
+      },
+      "name": "search_kali",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_kaliDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche dÃ©libÃ©rations CNIL"
+      },
+      "description": "Recherche dans les dÃ©libÃ©rations de la CNIL.\n\n    Source : bulk CNIL (109 Mo, ~8 000 dÃ©libÃ©rations). Utile pour le droit\n    des donnÃ©es personnelles, RGPD, traitements algorithmiques.\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_cnilArguments"
+      },
+      "name": "search_cnil",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_cnilDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Article de loi Ã  une date donnÃ©e"
+      },
+      "description": "Renvoie le texte d'un article de loi Ã  une date donnÃ©e (ou version\n    actuelle si `date` vide).\n\n    ParticularitÃ© justicelibre : quand une dÃ©cision de 1992 cite\n    l'article 1128 du Code civil, l'article a Ã©tÃ© totalement rÃ©Ã©crit en\n    2016. Avec ce tool on rÃ©cupÃ¨re le texte **tel qu'il existait en 1992**\n    (l'ancienne version napolÃ©onienne), pas le texte actuel.\n\n    Codes/textes supportÃ©s (26) : 22 codes consolidÃ©s â CC, CP, CPC, CPP,\n    CT, CSP, CJA, CGCT, CRPA, CPI, CASF, CMF, C.com, C.cons, C.Ã©duc, CU,\n    C.env, CR, CGI, CESEDA, CSS, CCH â + 4 textes non codifiÃ©s : CONST\n    (Constitution), LIL, LO58, L2005-102.\n\n    Args:\n        code: code court (ex : \"CC\" pour Code civil, \"CT\" pour Code du travail)\n        num: numÃ©ro de l'article (ex : \"1128\", \"L1152-1\", \"132-1\")\n        date: date ISO YYYY-MM-DD (optionnel â si absent, version en vigueur).\n              Utiliser la date de la dÃ©cision citante pour obtenir la\n              version contemporaine de la citation.\n\n    Returns:\n        dict avec `legiarti`, `num`, `code`, `texte`, `etat`\n        (VIGUEUR/MODIFIE/ABROGE), `date_debut`, `date_fin`, `nota`. Plus\n        un champ `note` si la version retournÃ©e n'est pas celle demandÃ©e.\n    ",
+      "inputSchema": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "num": {
+            "title": "Num",
+            "type": "string"
+          },
+          "date": {
+            "default": "",
+            "title": "Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "num"
+        ],
+        "type": "object",
+        "title": "get_law_articleArguments"
+      },
+      "name": "get_law_article",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_law_articleDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Versions historiques d'un article de loi"
+      },
+      "description": "Renvoie toutes les versions historiques d'un article de loi, du plus\n    ancien au plus rÃ©cent.\n\n    Utile pour construire une \"timeline\" de l'article et comprendre son\n    Ã©volution (ex : un article modifiÃ© en 1964, 1994, 2016 aura 3-4 lignes\n    avec `date_debut`, `date_fin`, `etat`, `texte` distincts).\n\n    Args:\n        code: code court (voir get_law_article pour la liste des 26\n            codes/textes)\n        num: numÃ©ro de l'article\n\n    Returns:\n        dict avec `code`, `code_long`, `num`, `count`, `versions`\n        (liste ordonnÃ©e par `date_debut` ascendante).\n    ",
+      "inputSchema": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "num": {
+            "title": "Num",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "num"
+        ],
+        "type": "object",
+        "title": "get_law_versionsArguments"
+      },
+      "name": "get_law_versions",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "get_law_versionsDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "DÃ©cisions citant un article de loi"
+      },
+      "description": "Cherche les dÃ©cisions qui citent EXPLICITEMENT un article de loi donnÃ©.\n\n    Exploite l'index FTS5 sur les sources jurisprudence disponibles pour\n    matcher les formulations courantes de citation (`\"article 1382 du code\n    civil\"`, `\"art. L. 1152-1 du Code du travail\"`, etc.). Cross-rÃ©fÃ©rencement\n    inverse : partant d'un article, on trouve la jurisprudence pertinente.\n\n    **LIMITATION CONNUE** : ce tool trouve UNIQUEMENT les citations explicites\n    du numÃ©ro d'article. Il ne capte PAS :\n    - les rÃ©fÃ©rences indirectes (\"conformÃ©ment aux dispositions du Code civil\n      relatives Ã  la responsabilitÃ© dÃ©lictuelleâ¦\")\n    - les renvois Ã  une section entiÃ¨re sans numÃ©ro prÃ©cis\n    - les citations du code par abrÃ©viation seule sans article (\"en vertu du CT\")\n    Pour une recherche conceptuelle plus large, prÃ©fÃ©rer `search_all` avec\n    l'expansion thÃ©saurus (ex: \"harcÃ¨lement\" â inclut \"intimidation\" etc.).\n\n    Args:\n        code: code court de l'article (ex : \"CT\", \"CC\")\n        num: numÃ©ro de l'article (ex : \"L1152-1\", \"1240\")\n        sources: liste optionnelle de sources Ã  interroger parmi\n                 [\"dila\", \"jade\", \"cedh\", \"cjue\"]. Par dÃ©faut : toutes.\n        limit: nombre de dÃ©cisions par source (dÃ©faut 20, max 50)\n\n    Returns:\n        dict `{\"code\", \"num\", \"total\", \"per_source\": {source: count},\n        \"decisions\": [{source, id, juridiction, date, title, extract}]}`.\n        Si une source est en panne, elle est absente de `per_source` et\n        dÃ©taillÃ©e dans `source_errors` (rÃ©sultats alors incomplets).\n    ",
+      "inputSchema": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "num": {
+            "title": "Num",
+            "type": "string"
+          },
+          "sources": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sources"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "code",
+          "num"
+        ],
+        "type": "object",
+        "title": "search_decisions_citingArguments"
+      },
+      "name": "search_decisions_citing",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_decisions_citingDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche fÃ©dÃ©rÃ©e toutes sources"
+      },
+      "description": "Recherche fÃ©dÃ©rÃ©e pondÃ©rÃ©e par pertinence sur toutes les sources.\n\n    Tool ONE-STOP quand on ne sait pas oÃ¹ chercher : interroge en parallÃ¨le\n    les sources locales (DILA judic, JADE admin, LEGI, CEDH, CJUE) et\n    retourne une liste fusionnÃ©e triÃ©e par score BM25 avec un bonus\n    d'autoritÃ© (CE/Cass/CEDH > CAA > TA/CA).\n\n    Args:\n        query: mots-clÃ©s (ou phrase). Si `expand_synonyms=True` (dÃ©faut),\n            les termes du thÃ©saurus juridique FR sont automatiquement\n            Ã©tendus Ã  leurs Ã©quivalents (ex: \"harcÃ¨lement\" â aussi\n            \"intimidation\", \"vexation morale\", etc.)\n        sources: liste optionnelle parmi [\"dila\", \"jade\", \"legi\", \"cedh\",\n            \"cjue\"]. None = toutes.\n        sort: \"relevance\" (dÃ©faut) ou \"date_desc\"\n        date_min, date_max: ISO YYYY-MM-DD\n        limit: nombre de rÃ©sultats fusionnÃ©s (dÃ©faut 30, max 100 ; chaque\n            source locale plafonne Ã  50 rÃ©sultats par appel)\n        expand_synonyms: active le thÃ©saurus (dÃ©faut True)\n\n    Returns:\n        dict {\"query_expanded\", \"per_source_counts\", \"results\": [...]}.\n        `per_source_counts` ne compte que les sources ayant rÃ©pondu ; si\n        une source est en panne, elle est dÃ©taillÃ©e dans `source_errors`\n        et un `warning` signale des rÃ©sultats potentiellement incomplets.\n        `truncated: true` + `note` signalent que la fusion dÃ©passe `limit`.\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "sources": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sources"
+          },
+          "sort": {
+            "default": "relevance",
+            "title": "Sort",
+            "type": "string"
+          },
+          "date_min": {
+            "default": "",
+            "title": "Date Min",
+            "type": "string"
+          },
+          "date_max": {
+            "default": "",
+            "title": "Date Max",
+            "type": "string"
+          },
+          "limit": {
+            "default": 30,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "expand_synonyms": {
+            "default": true,
+            "title": "Expand Synonyms",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_allArguments"
+      },
+      "name": "search_all",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_allDictOutput"
+      }
+    },
+    {
+      "annotations": {
+        "readOnlyHint": true,
+        "title": "Recherche annuaire des adresses publiques"
+      },
+      "description": "Recherche dans l'annuaire agrÃ©gÃ© des adresses Ã©lectroniques publiques\n    des juridictions et administrations franÃ§aises.\n\n    AgrÃ¨ge 3 sources hÃ©bergÃ©es sur justicelibre.org (~75 000 adresses\n    fonctionnelles publiques, sous Licence Ouverte 2.0) :\n      - dump quotidien DILA (services locaux : juridictions, mairies, sous-prÃ©f, etc.)\n      - API `api-lannuaire.service-public.fr` (administrations centrales)\n      - annuaire CADA (PRADA - personnes responsables L. 330-1 CRPA)\n      - PDFs gouvernementaux scrapÃ©s (adresses inÃ©dites : bureaux internes,\n        cabinets, Ã©coles, DASEN, etc. absents des annuaires officiels)\n\n    Recherche : substring case-insensitive sur mail, organisme et service.\n    Cette version alpha ne fait pas de BM25 : classement par pertinence\n    simple (match mail > organisme > service).\n\n    Args:\n        query: mots-clÃ©s (ex : \"mairie strasbourg\", \"dsden nord\", \"dacs-c3\",\n               \"greffe caa douai\", \"prada culture\")\n        category: filtre catÃ©gorie (ex : \"mairie\", \"bav\", \"ecole\", \"cour_appel\",\n               \"dacs\", \"prada\", \"administration_centrale\")\n        source: filtre origine (\"dila\", \"api\", \"prada\", \"pdf\", \"manuel\")\n        limit: nombre maximum de rÃ©sultats (dÃ©faut 20, max 200)\n\n    Returns:\n        dict avec `total` (matches totaux), `returned`, `results` (liste de\n        dicts {mail, organisme, service, categorie, source, tel, site,\n        adresse, date_source, url_page}). Les entrÃ©es issues de PDF scrapÃ©s\n        (`source: \"pdf\"`) portent en plus la traÃ§abilitÃ© complÃ¨te :\n        `role`, `source_url` (document officiel d'origine), `source_label`,\n        `source_page` (page du PDF), `preuve_url` (copie archivÃ©e sur\n        justicelibre.org/preuves/ â Ã  citer si l'original a disparu).\n    ",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Category"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "title": "search_annuaireArguments"
+      },
+      "name": "search_annuaire",
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "title": "search_annuaireDictOutput"
+      }
+    }
+  ]
+}

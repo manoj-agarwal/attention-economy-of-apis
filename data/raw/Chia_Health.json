@@ -1,0 +1,1691 @@
+{
+  "name": "Chia Health",
+  "source_url": "https://mcp.chia.health/",
+  "fetched_at": "2026-08-10T05:51:38+00:00",
+  "description": "Enables AI-assisted telehealth workflows for browsing medications, completing intake, signing consent, placing orders, and managing treatment via streamable HTTP.",
+  "github_stars": 5,
+  "tools": [
+    {
+      "name": "auth_start",
+      "title": "Start Session",
+      "description": "Start a patient session by providing their contact information. Sends a 6-digit verification code to the patient's email.\n\nReturns a session_id (NOT a token). The session_id is used with auth_verify_otp to prove email ownership and get a bearer token.\n\nThe code is in the email subject line: 'Chia Health: Your code is XXXXXX'. If you have access to the patient's email (e.g. Gmail MCP), search for this subject.\n\nNo authentication required. Call this when the patient is ready to proceed with their medical intake â after browsing medications and checking eligibility.",
+      "inputSchema": {
+        "properties": {
+          "email": {
+            "description": "Patient's email address",
+            "title": "Email",
+            "type": "string"
+          },
+          "phone": {
+            "description": "Patient's phone number (US format)",
+            "title": "Phone",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "Patient's first name",
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "default": "",
+            "description": "Patient's last name",
+            "title": "Last Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "phone",
+          "first_name"
+        ],
+        "title": "start_sessionArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "start_sessionOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "auth_verify_otp",
+      "title": "Verify OTP Code",
+      "description": "Verify the 6-digit code sent to the patient's email. Returns a guest-scope bearer token for intake, consent, order, and checkout tools.\n\nRequires the session_id from auth_start â no email needed.\n\nAfter checkout and payment, call auth_check_payment to upgrade the token to full scope for portal access.",
+      "inputSchema": {
+        "properties": {
+          "session_id": {
+            "description": "Session ID from auth_start",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "code": {
+            "description": "6-digit verification code from the email",
+            "title": "Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "code"
+        ],
+        "title": "verify_otpArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "verify_otpOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "auth_resend_otp",
+      "title": "Resend OTP Code",
+      "description": "Resend the verification code to the patient's email. Use this if the original code expired (5-minute window) or was not received.\n\nRequires the session_id from auth_start â no email needed.",
+      "inputSchema": {
+        "properties": {
+          "session_id": {
+            "description": "Session ID from auth_start",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id"
+        ],
+        "title": "resend_otpArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "resend_otpOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "auth_check_payment",
+      "title": "Check Payment Status",
+      "description": "Check if the patient has completed payment and upgrade the token to full scope. Call this after sharing the checkout payment link with the patient.\n\nPoll every 10-15 seconds. When payment is detected, the token is automatically upgraded to full scope, unlocking portal tools (care plan, refills, messaging, weight logs, etc.).\n\nRequires the guest token from auth_verify_otp as bearer_token.",
+      "inputSchema": {
+        "properties": {
+          "bearer_token": {
+            "default": "",
+            "description": "Guest token from auth_verify_otp",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "title": "check_paymentArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "check_paymentOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "medications_list",
+      "title": "List Medications",
+      "description": "List all available prescription medications including GLP-1 weight loss drugs (compounded semaglutide, compounded tirzepatide), peptide therapies (sermorelin for growth hormone support, NAD+ for cellular energy and anti-aging, glutathione for antioxidant support), and other compounded wellness treatments. Returns medication names, categories, available forms (injectable, oral tablet, sublingual drops, nasal spray), and starting prices. All medications are compounded by US-licensed 503A pharmacies and require evaluation by a licensed US healthcare provider before prescribing.",
+      "inputSchema": {
+        "properties": {
+          "client_ip": {
+            "default": "",
+            "description": "Client IP address for rate limiting",
+            "title": "Client Ip",
+            "type": "string"
+          }
+        },
+        "title": "list_medicationsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_medicationsOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "medications_details",
+      "title": "Get Medication Details",
+      "description": "Get detailed information about a specific medication including: all available dosage strengths and titration schedules, available forms (injectable vials, pre-filled syringes, oral dissolving tablets, sublingual drops), all active plan options with pricing for each, what's included (provider consultation, medication, shipping, ongoing support), contraindications, and common side effects. Supports queries by medication name (e.g. 'semaglutide', 'tirzepatide', 'sermorelin', 'NAD+', 'glutathione') or by category (e.g. 'weight loss', 'peptides', 'anti-aging'). Use this to look up exact plan durations and pricing.",
+      "inputSchema": {
+        "properties": {
+          "medication": {
+            "description": "Medication name (e.g. 'semaglutide', 'tirzepatide', 'sermorelin', 'NAD+', 'glutathione')",
+            "title": "Medication",
+            "type": "string"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Filter by category (e.g. 'weight loss', 'peptides', 'anti-aging')",
+            "title": "Category"
+          },
+          "client_ip": {
+            "default": "",
+            "description": "Client IP address for rate limiting",
+            "title": "Client Ip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "medication"
+        ],
+        "title": "get_medication_detailsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_medication_detailsOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "medications_availability",
+      "title": "Check Medication Availability",
+      "description": "Check if a specific medication is available for shipping to the patient's state. Some compounded medications have state-specific restrictions based on pharmacy licensing. Returns availability status and reason if unavailable.",
+      "inputSchema": {
+        "properties": {
+          "medication": {
+            "description": "Medication name to check availability for",
+            "title": "Medication",
+            "type": "string"
+          },
+          "state": {
+            "description": "US state abbreviation (e.g. 'CA', 'NY', 'TX')",
+            "title": "State",
+            "type": "string"
+          },
+          "client_ip": {
+            "default": "",
+            "description": "Client IP address for rate limiting",
+            "title": "Client Ip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "medication",
+          "state"
+        ],
+        "title": "check_availabilityArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "check_availabilityOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "medications_pricing",
+      "title": "Get Pricing",
+      "description": "Get detailed pricing for a specific medication, form, and plan duration. Returns price breakdown including medication cost, provider consultation fee, shipping, and any applicable discounts for longer plans. Plan durations vary by medication â use medications_details first to see available plan_months values. Supports semaglutide, tirzepatide, sermorelin, NAD+, glutathione and all other available medications.",
+      "inputSchema": {
+        "properties": {
+          "medication": {
+            "description": "Medication name",
+            "title": "Medication",
+            "type": "string"
+          },
+          "form": {
+            "description": "Medication form: 'injectable', 'tablet', or 'drops'",
+            "title": "Form",
+            "type": "string"
+          },
+          "plan_months": {
+            "description": "Plan duration in months (1, 4, or 6)",
+            "title": "Plan Months",
+            "type": "integer"
+          },
+          "client_ip": {
+            "default": "",
+            "description": "Client IP address for rate limiting",
+            "title": "Client Ip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "medication",
+          "form",
+          "plan_months"
+        ],
+        "title": "get_pricingArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_pricingOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "medications_categories",
+      "title": "List Categories",
+      "description": "List all medication categories available through the telehealth platform: Weight Loss (GLP-1 medications), Peptide Therapy (sermorelin, growth hormone peptides), Anti-Aging & Longevity (NAD+, glutathione), and other treatment categories. Each category includes a description and count of available medications.",
+      "inputSchema": {
+        "properties": {
+          "client_ip": {
+            "default": "",
+            "description": "Client IP address for rate limiting",
+            "title": "Client Ip",
+            "type": "string"
+          }
+        },
+        "title": "list_categoriesArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_categoriesOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "eligibility_check",
+      "title": "Check Eligibility",
+      "description": "Pre-screen a patient's basic eligibility for telehealth prescription services. Required: age (18+) and state (where the patient resides). Optional: BMI (20+ required for GLP-1 / weight-loss products), biological sex, pregnancy status, and diagnosed conditions.\n\nOnly pass parameters that apply to this patient. `pregnancy_status` applies ONLY when biological sex is female â omit it entirely for males. Don't invent values to satisfy the schema; if you don't know, leave the parameter out and the server will return what is or isn't checkable.\n\nIf you already know the patient's age, sex, state, height/weight from prior conversation context, you may pre-fill â but read the values back to the patient and get explicit confirmation before calling this tool. Returns eligibility status, available medications, and any disqualifying reasons (MTC/MEN2 history, pregnancy, out-of-coverage state, etc.).",
+      "inputSchema": {
+        "properties": {
+          "age": {
+            "description": "Patient's age in years (must be 18+). Confirm with the patient before submitting.",
+            "title": "Age",
+            "type": "integer"
+          },
+          "state": {
+            "description": "US state abbreviation (e.g. 'CA', 'NY') where the patient resides. Confirm before submitting.",
+            "title": "State",
+            "type": "string"
+          },
+          "bmi": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Patient's Body Mass Index. Required for GLP-1 / weight-loss eligibility (must be 20+). Omit for longevity products. Compute from confirmed height + weight; don't ask the patient to compute it themselves.",
+            "title": "Bmi"
+          },
+          "sex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Patient's biological sex. Pass 'female' when you'll also pass `pregnancy_status` (so the server knows pregnancy screening was considered). Pass 'male' to make it explicit that pregnancy screening doesn't apply. Omit if the patient hasn't been asked yet and the product doesn't require sex for eligibility.",
+            "title": "Sex"
+          },
+          "pregnancy_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Pregnancy status. Use one of these exact values: 'not pregnant', 'currently pregnant', 'planning pregnancy', 'breastfeeding'. ONLY applies when sex == 'female'. OMIT this parameter entirely for biological males â do NOT ask males about pregnancy.",
+            "title": "Pregnancy Status"
+          },
+          "conditions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "List of diagnosed medical conditions the patient confirms they have. Disqualifiers include medullary thyroid carcinoma (MTC) and MEN2 syndrome. Omit if the patient has no diagnosed conditions or hasn't been asked yet.",
+            "title": "Conditions"
+          },
+          "client_ip": {
+            "default": "",
+            "description": "Client IP address for rate limiting",
+            "title": "Client Ip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "age",
+          "state"
+        ],
+        "title": "check_eligibilityArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "check_eligibilityOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "intake_questions",
+      "title": "Get Intake Questions",
+      "description": "Get the medical intake questionnaire for the chosen medication(s). The questionnaire is product-aware: GLP-1 / weight-loss medications return weight-loss goals, GLP-1 history, and MTC/MEN2 screening; NAD+ and other longevity peptides return energy/sleep/stress/cognitive/delivery-method questions instead. If the patient wants more than one medication, pass the additional slugs in `additional_medications` â the server returns the UNION of section sets deduped by section key, so you ask each shared question exactly once.\n\n## How to present this to the patient\n1. PROGRESSIVE DISCLOSURE: walk through ONE section at a time. Wait for the patient's reply before moving to the next section. Do not paste the whole questionnaire in a single message.\n2. HONOR CONDITIONALS: each section and each question may carry a `conditional_on` predicate (e.g. `{sex_assigned_at_birth: Female}` on the Pregnancy section). SKIP any section/question whose predicate isn't satisfied. Don't ask males about pregnancy or perimenopause.\n3. QUIZ FORMAT: present every `select` / `multi_select` question as a short pick-list using the `options` array verbatim. The patient should be able to reply with a single choice, not a sentence. Reserve free text for `*_details` follow-ups.\n4. EASY FIRST: order sections from low-friction (goals, lifestyle, preferences) to high-friction (clinical history, MTC/MEN2, prior therapies). The provider sees all answers regardless of order asked.\n5. USE-AND-VERIFY: if you know answers from prior conversation context, pre-fill them in your draft, but read them back to the patient and get explicit OK before calling `intake_submit`. Never silently submit assumed values.\n\nReturns two phases: (1) pre_checkout â eligibility / screening questions, collected and submitted BEFORE payment; (2) post_checkout â detailed clinical history, collected and submitted AFTER payment. Do not submit post_checkout answers before the patient has paid. A licensed US healthcare provider reviews both phases and makes all prescribing decisions.",
+      "inputSchema": {
+        "properties": {
+          "medication": {
+            "description": "Primary medication slug (e.g. 'semaglutide', 'nad-injection', 'nad-nasal-spray')",
+            "title": "Medication",
+            "type": "string"
+          },
+          "additional_medications": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional list of additional medication slugs the patient also wants. Use this when the patient is ordering more than one product in the same visit (e.g. GLP-1 + NAD+) so the questionnaire is deduped.",
+            "title": "Additional Medications"
+          },
+          "client_ip": {
+            "default": "",
+            "description": "Client IP address for rate limiting",
+            "title": "Client Ip",
+            "type": "string"
+          }
+        },
+        "required": [
+          "medication"
+        ],
+        "title": "get_intake_questionsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_intake_questionsOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "intake_submit",
+      "title": "Submit Intake",
+      "description": "Submit a completed medical intake questionnaire for provider review. All fields from intake_questions must be completed. Returns an intake ID and estimated provider review time. The intake is reviewed by a licensed US healthcare provider who makes all prescribing decisions. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "patient_email": {
+            "description": "Patient's email address",
+            "title": "Patient Email",
+            "type": "string"
+          },
+          "patient_name": {
+            "description": "Patient's full legal name",
+            "title": "Patient Name",
+            "type": "string"
+          },
+          "intake_answers": {
+            "additionalProperties": true,
+            "description": "Completed intake questionnaire answers from intake_questions",
+            "title": "Intake Answers",
+            "type": "object"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patient_email",
+          "patient_name",
+          "intake_answers"
+        ],
+        "title": "submit_intakeArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "submit_intakeOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "intake_status",
+      "title": "Get Intake Status",
+      "description": "Check the current status of a previously submitted intake questionnaire. Returns whether the intake is under review, approved, or denied by a licensed healthcare provider. Use this to poll for provider review completion before proceeding to order placement. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "intake_id": {
+            "description": "Intake ID returned from intake_submit",
+            "title": "Intake Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intake_id"
+        ],
+        "title": "get_intake_statusArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_intake_statusOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "consent_list",
+      "title": "Get Required Consents",
+      "description": "Get the list of all consent documents a patient must accept before ordering medication. Returns consent IDs, titles, summaries, and order of presentation. Required consents include: telehealth informed consent, compounded medication treatment consent, pharmacy authorization, HIPAA notice of privacy practices, and AI-assisted intake disclosure. Each consent must be fetched individually via consent_text and confirmed by the patient before proceeding. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "intake_id": {
+            "description": "Intake ID to get required consents for",
+            "title": "Intake Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intake_id"
+        ],
+        "title": "get_required_consentsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_required_consentsOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "consent_text",
+      "title": "Get Consent Text",
+      "description": "Fetch the full text of a specific consent document for patient review. Returns the complete consent document split into titled sections that the agent MUST present to the patient verbatim in the conversation â do not summarize or paraphrase. Includes: consent version number, effective date, section headings and body text, a confirmation prompt the patient should agree to, and withdrawal instructions. Available consent types: telehealth informed consent, compounded medication treatment consent, pharmacy authorization, HIPAA notice of privacy practices, and AI-assisted intake disclosure. The patient must explicitly confirm each consent before the agent can call consent_submit. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "consent_id": {
+            "description": "Consent document ID from consent_list",
+            "title": "Consent Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "consent_id"
+        ],
+        "title": "get_consent_textArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_consent_textOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "consent_submit",
+      "title": "Submit Consent",
+      "description": "Record a patient's consent confirmation for a specific consent document. The agent must have already presented the full consent text (from consent_text) to the patient and received explicit confirmation. Required parameters: intake_id, consent_id, the patient's exact confirmation text (e.g. 'I agree'), consent method ('ai_agent_conversational'), the AI platform name ('chatgpt', 'claude', 'gemini'), and a session/conversation ID for audit trail. Returns a consent record with timestamp, audit trail details, and the list of remaining consents still needed. All consent records are retained for 10 years per HIPAA requirements. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "intake_id": {
+            "description": "Intake ID this consent belongs to",
+            "title": "Intake Id",
+            "type": "string"
+          },
+          "consent_id": {
+            "description": "Consent document ID being confirmed",
+            "title": "Consent Id",
+            "type": "string"
+          },
+          "patient_confirmation": {
+            "description": "Patient's exact confirmation text (e.g. 'I agree')",
+            "title": "Patient Confirmation",
+            "type": "string"
+          },
+          "consent_method": {
+            "default": "ai_agent_conversational",
+            "description": "Method of consent collection",
+            "title": "Consent Method",
+            "type": "string"
+          },
+          "agent_platform": {
+            "default": "",
+            "description": "AI platform name: 'chatgpt', 'claude', or 'gemini'",
+            "title": "Agent Platform",
+            "type": "string"
+          },
+          "agent_session_id": {
+            "default": "",
+            "description": "Unique session/conversation ID for audit trail",
+            "title": "Agent Session Id",
+            "type": "string"
+          },
+          "timestamp": {
+            "default": "",
+            "description": "ISO 8601 timestamp of consent confirmation",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intake_id",
+          "consent_id",
+          "patient_confirmation"
+        ],
+        "title": "submit_consentArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "submit_consentOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "consent_status",
+      "title": "Get Consent Status",
+      "description": "Check whether all required consents are complete for a patient intake. Returns status of each consent and whether the patient can proceed to ordering. This is a gate â order_create will reject if consents are incomplete. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "intake_id": {
+            "description": "Intake ID to check consent completion for",
+            "title": "Intake Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intake_id"
+        ],
+        "title": "get_consent_statusArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_consent_statusOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "order_create",
+      "title": "Create Order",
+      "description": "Create a new prescription medication order. The patient must have completed intake questionnaire and consent before ordering. Required: medication name, selected form (injectable, tablet, drops), plan duration (1, 4, or 6 months), shipping address. The order is reviewed by a licensed US healthcare provider who makes the final prescribing decision. If approved, medication is compounded at a US-licensed 503A pharmacy and shipped directly to the patient. Returns order ID, estimated provider review time, and expected delivery window. Payment is processed via Stripe Agentic Commerce Protocol (ACP). Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "intake_id": {
+            "description": "Approved intake ID from intake_submit",
+            "title": "Intake Id",
+            "type": "string"
+          },
+          "medication": {
+            "description": "Medication name to order",
+            "title": "Medication",
+            "type": "string"
+          },
+          "form": {
+            "description": "Medication form: 'injectable', 'tablet', or 'drops'",
+            "title": "Form",
+            "type": "string"
+          },
+          "plan_months": {
+            "description": "Plan duration in months (1, 4, or 6)",
+            "title": "Plan Months",
+            "type": "integer"
+          },
+          "shipping_address": {
+            "additionalProperties": true,
+            "description": "Shipping address with keys: line1, city, state, zip, and optional line2",
+            "title": "Shipping Address",
+            "type": "object"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intake_id",
+          "medication",
+          "form",
+          "plan_months",
+          "shipping_address"
+        ],
+        "title": "create_orderArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "create_orderOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "order_status",
+      "title": "Get Order Status",
+      "description": "Get the current status of a medication order. Returns status (pending_review, provider_reviewing, approved, needs_info, denied, compounding, shipped, delivered), tracking information, and delivery estimate. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Order ID from order_create",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "title": "get_order_statusArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_order_statusOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "order_documents",
+      "title": "Get Required Documents",
+      "description": "Get the list of documents a patient needs to upload for their order. Returns required documents (photo ID, selfie for verification) with upload status and accepted file formats. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Order ID to check required documents for",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "title": "get_required_documentsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_required_documentsOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "order_upload",
+      "title": "Upload Document",
+      "description": "Upload a verification document for a medication order. Accepts photo ID and selfie as base64-encoded files. Supported formats: PDF, JPEG, PNG. Maximum size: 10MB. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Order ID to upload document for",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "document_type": {
+            "description": "Document type: 'photo_id' or 'selfie'",
+            "title": "Document Type",
+            "type": "string"
+          },
+          "file_base64": {
+            "description": "Base64-encoded file content (PDF, JPEG, or PNG, max 10MB)",
+            "title": "File Base64",
+            "type": "string"
+          },
+          "file_name": {
+            "description": "Original filename with extension (e.g. 'license.jpg')",
+            "title": "File Name",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "document_type",
+          "file_base64",
+          "file_name"
+        ],
+        "title": "upload_documentArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "upload_documentOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "checkout_create",
+      "title": "Create Checkout",
+      "description": "Initiate a checkout session for a medication order. Returns checkout details including line items, total, and payment options.\n\nTWO PAYMENT PATHS are supported:\n1. **Stripe ACP (preferred)**: If your platform supports Stripe Agentic Commerce Protocol, provision a Shared Payment Token (SPT) and call checkout_complete to pay instantly.\n2. **Payment link (fallback)**: If ACP/SPT is not available, present the returned `payment_url` to the patient. This is a Stripe-hosted checkout page where the patient can enter their card and pay directly. After sending the link, call checkout_status to poll for payment completion.\n\nRequires authentication.",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Order ID to create checkout for",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "title": "create_checkoutArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "create_checkoutOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "checkout_update",
+      "title": "Update Checkout",
+      "description": "Update an existing checkout session. Can modify shipping method, apply promo codes, or update customer details before payment is completed. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "checkout_id": {
+            "description": "Checkout session ID to update",
+            "title": "Checkout Id",
+            "type": "string"
+          },
+          "updates": {
+            "additionalProperties": true,
+            "description": "Updates to apply: shipping method, promo code, or customer details",
+            "title": "Updates",
+            "type": "object"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "checkout_id",
+          "updates"
+        ],
+        "title": "update_checkoutArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "update_checkoutOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "checkout_complete",
+      "title": "Complete Checkout",
+      "description": "Complete payment using Stripe ACP (Shared Payment Token). Only use this if your platform supports Stripe Agentic Commerce Protocol and can provision an SPT. If your platform does NOT support ACP, use the `payment_url` from checkout_create instead, then poll checkout_status. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "checkout_id": {
+            "description": "Checkout session ID to complete payment for",
+            "title": "Checkout Id",
+            "type": "string"
+          },
+          "shared_payment_token": {
+            "description": "Stripe ACP Shared Payment Token (SPT) provisioned by the client platform",
+            "title": "Shared Payment Token",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "checkout_id",
+          "shared_payment_token"
+        ],
+        "title": "complete_checkoutArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "complete_checkoutOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "checkout_status",
+      "title": "Get Checkout Status",
+      "description": "Check the payment status of a checkout session. Use this to poll for completion after sending the patient a payment link (the `payment_url` from checkout_create). When the patient pays via the link, this tool detects the payment, triggers order fulfillment, and returns the confirmation. Poll every 5-10 seconds while waiting. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "checkout_id": {
+            "description": "Checkout session ID to check payment status for",
+            "title": "Checkout Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "checkout_id"
+        ],
+        "title": "get_checkout_statusArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_checkout_statusOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "checkout_cancel",
+      "title": "Cancel Checkout",
+      "description": "Cancel an in-progress checkout session. Releases any held inventory and cancels the associated Stripe PaymentIntent if not yet captured. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "checkout_id": {
+            "description": "Checkout session ID to cancel",
+            "title": "Checkout Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "checkout_id"
+        ],
+        "title": "cancel_checkoutArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "cancel_checkoutOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "portal_log_weight",
+      "title": "Log Weight",
+      "description": "Log a patient's weight for tracking progress on their treatment plan. Requires patient_id, weight in pounds, and date (ISO 8601). Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "patient_id": {
+            "description": "Patient ID",
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "weight_lbs": {
+            "description": "Weight in pounds",
+            "title": "Weight Lbs",
+            "type": "number"
+          },
+          "date": {
+            "description": "Date of weight measurement in ISO 8601 format (YYYY-MM-DD)",
+            "title": "Date",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patient_id",
+          "weight_lbs",
+          "date"
+        ],
+        "title": "log_weightArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "log_weightOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "portal_log_side_effects",
+      "title": "Log Side Effects",
+      "description": "Log side effects a patient is experiencing. If severity is 'severe', the case is auto-flagged for immediate provider review and returns urgent guidance. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "patient_id": {
+            "description": "Patient ID",
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "effects": {
+            "description": "List of side effects being experienced (e.g. ['nausea', 'headache'])",
+            "items": {
+              "type": "string"
+            },
+            "title": "Effects",
+            "type": "array"
+          },
+          "severity": {
+            "description": "Severity level: 'mild', 'moderate', or 'severe'",
+            "title": "Severity",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patient_id",
+          "effects",
+          "severity"
+        ],
+        "title": "log_side_effectsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "log_side_effectsOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "portal_message",
+      "title": "Message Provider",
+      "description": "Send a message to the patient's healthcare provider. Returns sent confirmation and estimated response time. Urgent messages (containing keywords like 'emergency', 'chest pain', 'difficulty breathing') are flagged for priority response. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "patient_id": {
+            "description": "Patient ID",
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "message": {
+            "description": "Message text to send to the healthcare provider",
+            "title": "Message",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patient_id",
+          "message"
+        ],
+        "title": "message_providerArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "message_providerOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "portal_care_plan",
+      "title": "Get Care Plan",
+      "description": "Get the patient's current care plan including: current medication, current dosage, titration schedule, next dose adjustment date, upcoming refill date, provider notes, and weight progress summary. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "patient_id": {
+            "description": "Patient ID",
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patient_id"
+        ],
+        "title": "get_care_planArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_care_planOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "portal_refill",
+      "title": "Request Refill",
+      "description": "Request a medication refill for the patient's current prescription. Creates a refill order that will be reviewed by a provider within 24-48 hours. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "patient_id": {
+            "description": "Patient ID",
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patient_id"
+        ],
+        "title": "request_refillArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "request_refillOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "portal_support",
+      "title": "Contact Support",
+      "description": "Contact customer support with a question or issue. Creates a support ticket and returns the ticket ID and estimated response time. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "patient_id": {
+            "description": "Patient ID",
+            "title": "Patient Id",
+            "type": "string"
+          },
+          "subject": {
+            "description": "Support ticket subject line",
+            "title": "Subject",
+            "type": "string"
+          },
+          "message": {
+            "description": "Detailed description of the question or issue",
+            "title": "Message",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "patient_id",
+          "subject",
+          "message"
+        ],
+        "title": "contact_supportArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "contact_supportOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "provider_questions",
+      "title": "Get Provider Questions",
+      "description": "Get follow-up questions from the healthcare provider for a specific order. The provider may request additional information before making a prescribing decision. Returns the questions if the order status is 'needs_info', or a message that no questions are pending. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Order ID to get provider questions for",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "title": "get_provider_questionsArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_provider_questionsOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "provider_respond",
+      "title": "Submit Provider Response",
+      "description": "Submit answers to provider follow-up questions for a specific order. The responses are sent to the provider for review. Returns confirmation and updated order status. Requires authentication.",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Order ID to submit responses for",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "answers": {
+            "additionalProperties": true,
+            "description": "Answers to the provider's follow-up questions keyed by question ID",
+            "title": "Answers",
+            "type": "object"
+          },
+          "bearer_token": {
+            "default": "",
+            "description": "Authentication token for the patient session",
+            "title": "Bearer Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "answers"
+        ],
+        "title": "submit_provider_responseArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "submit_provider_responseOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    }
+  ]
+}

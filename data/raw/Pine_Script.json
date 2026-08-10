@@ -1,0 +1,363 @@
+{
+  "name": "Pine Script",
+  "source_url": "https://pinescript-mcp.fly.dev/mcp",
+  "fetched_at": "2026-08-10T05:51:28+00:00",
+  "description": "Provides Pine Script v6 documentation, function lookup, and syntax validation tools for AI coding assistants.",
+  "github_stars": 6,
+  "tools": [
+    {
+      "name": "list_docs",
+      "description": "USE WHEN discovering what Pine Script v6 documentation is available.\nReturns a categorised list of doc file paths with one-line descriptions.\nAFTER calling this tool, call get_doc(path) for small files or list_sections(path) then get_section(path, header) for large files (ta.md, strategy.md, collections.md, drawing.md, general.md).\nData sourced from bundled Pine Script v6 documentation.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": [
+            "discovery",
+            "reference"
+          ]
+        }
+      }
+    },
+    {
+      "name": "list_sections",
+      "description": "USE WHEN navigating a large documentation file before reading a specific section.\nReturns a newline-separated list of # and ## headers (### excluded) in the file.\nAFTER calling this tool, call get_section(path, header) with a header from this list.\nData sourced from bundled Pine Script v6 documentation.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "description": "Documentation file path (e.g., 'reference/functions/ta.md').",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": [
+            "discovery",
+            "reference"
+          ]
+        }
+      }
+    },
+    {
+      "name": "get_doc",
+      "description": "USE WHEN reading the full content of a Pine Script v6 documentation file.\nReturns the file content; when limit is set, a header shows the char range and offset to continue reading.\nAFTER calling this tool, use offset=<end> to continue if the header indicates more content is available. For large files (ta.md, strategy.md, collections.md, drawing.md, general.md), prefer list_sections() + get_section() instead.\nData sourced from bundled Pine Script v6 documentation.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "description": "Relative path to the documentation file (e.g., 'reference/functions/ta.md').",
+            "type": "string"
+          },
+          "limit": {
+            "default": 0,
+            "description": "Maximum characters to return. Use 30000 for large files. 0 = no limit.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "description": "Character offset to start reading from.",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": [
+            "reference"
+          ]
+        }
+      }
+    },
+    {
+      "name": "get_section",
+      "description": "USE WHEN reading a specific named section from a Pine Script v6 documentation file.\nReturns the section content from the matched header to the next same-level header, with file path and line range.\nAFTER calling this tool, call list_sections(path) if the header was not found, or get_section() again with a child header for a narrower subsection.\nData sourced from bundled Pine Script v6 documentation.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "description": "Documentation file path (e.g., 'reference/functions/strategy.md').",
+            "type": "string"
+          },
+          "header": {
+            "description": "Header text to find (e.g., 'strategy.exit()' or '## strategy.exit()').",
+            "type": "string"
+          },
+          "include_children": {
+            "default": true,
+            "description": "Include nested subsections under the matched header.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "path",
+          "header"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": [
+            "reference"
+          ]
+        }
+      }
+    },
+    {
+      "name": "search_docs",
+      "description": "USE WHEN finding documentation sections that match specific terms across all Pine Script v6 docs.\nReturns up to max_results sections ranked by match count, each with a preview and a get_section() call hint.\nAFTER calling this tool, call get_section(file, header) for each result you want to read in full.\nData sourced from bundled Pine Script v6 documentation.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "description": "Search terms (case-insensitive). Multi-word queries match sections containing ALL terms.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "max_results": {
+            "default": 5,
+            "description": "Maximum sections to return.",
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": [
+            "search"
+          ]
+        }
+      }
+    },
+    {
+      "name": "get_functions",
+      "description": "USE WHEN browsing valid Pine Script v6 functions, optionally filtered to a namespace.\nReturns function names grouped by namespace (e.g. ta.*, strategy.*) or filtered to the requested namespace.\nAFTER calling this tool, call validate_function(fn_name) to check a specific name, or get_section() to read its documentation.\nData sourced from bundled pine_v6_functions.json.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "namespace": {
+            "default": "",
+            "description": "Filter by namespace (e.g., 'ta', 'strategy', 'request'). Empty string returns all functions grouped by namespace.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": [
+            "reference",
+            "validation"
+          ]
+        }
+      }
+    },
+    {
+      "name": "validate_function",
+      "description": "USE WHEN confirming a Pine Script v6 function name is valid before using it in code.\nReturns a valid/invalid verdict with namespace suggestions or known replacement hints (e.g. ta.adx â ta.dmi, security â request.security).\nAFTER calling this tool, call get_functions(namespace) to list all valid functions in the relevant namespace if the function is invalid.\nData sourced from bundled pine_v6_functions.json.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "fn_name": {
+            "description": "Function name to validate (e.g., 'ta.sma', 'strategy.entry', 'plot').",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "fn_name"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "x-fastmcp-wrap-result": true
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": [
+            "validation"
+          ]
+        }
+      }
+    },
+    {
+      "name": "resolve_topic",
+      "description": "USE WHEN looking up an exact Pine Script API term or known concept keyword.\nReturns the best-matching doc paths with matched keywords and a retrieval suggestion (get_doc or list_sections + get_section).\nAFTER calling this tool, follow the suggestion: call get_doc() for small files or list_sections() + get_section() for large files. For natural language questions use search_docs() instead.\nData sourced from bundled TOPIC_MAP and doc file content scan.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "description": "Exact Pine Script term or known concept keyword (e.g., 'ta.rsi', 'strategy.entry', 'repainting').",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "x-fastmcp-wrap-result": true
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": [
+            "search"
+          ]
+        }
+      }
+    },
+    {
+      "name": "list_prompts",
+      "description": "List all available prompts.\n\nReturns JSON with prompt metadata including name, description,\nand optional arguments.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "x-fastmcp-wrap-result": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_prompt",
+      "description": "Get a prompt by name with optional arguments.\n\nReturns the rendered prompt as JSON with a messages array.\nArguments should be provided as a dict mapping argument names\nto values.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The name of the prompt to get",
+            "type": "string"
+          },
+          "arguments": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional arguments for the prompt"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "x-fastmcp-wrap-result": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    }
+  ]
+}

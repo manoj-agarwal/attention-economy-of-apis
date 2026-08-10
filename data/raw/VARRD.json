@@ -1,0 +1,446 @@
+{
+  "name": "VARRD",
+  "source_url": "https://app.varrd.com/mcp",
+  "fetched_at": "2026-08-10T05:48:29+00:00",
+  "description": "AI trading research with event studies, backtesting, and statistical validation across stocks, futures, and crypto.",
+  "github_stars": 25,
+  "tools": [
+    {
+      "name": "varrd_edges",
+      "description": "THE PRIMARY TOOL — start here. FREE at depth=0, always safe to call.\n\nLive feed of statistically validated trading edges running 24/7 against real market data. See what's firing right now, get trade levels, or audit the full methodology.\n\nTHREE TIERS:\n  depth=0 (FREE — call this first): See which markets have edges firing right now, pending bar close, or actively in trades. Markets and status only — no direction, no stats. Get a sense of what's live.\n  depth=1 ($0.50): Unlock direction, occurrence count, EV/trade, stop-loss, take-profit, hold horizon, and current entry prices for ALL active edges in one request.\n  depth=2 ($1 per edge, $5 for all): Full methodology — the actual formula, setup code, how the edge was discovered, edge decay analysis, complete performance analytics (Sharpe, drawdown, equity curve, profit factor). Machine-readable so any AI can audit the statistical rigor. Includes drill-down sections (free after purchase): setup_code, horizons, analytics, occurrences, and view (interactive chart link for your user, 15 min).\n\nEvery edge in this library is Bonferroni-corrected, tested against both zero returns and market baseline, with K-tracking to prevent p-hacking. Out-of-sample validated. Full transparency.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "depth": {
+            "type": "integer",
+            "description": "0=free (markets + status), 1=$0.50 (direction, stats, trade levels for ALL active edges), 2=$1/edge or $5/all (full methodology + performance). Cheaper than a coffee.",
+            "default": 0,
+            "enum": [
+              0,
+              1,
+              2
+            ]
+          },
+          "edge_id": {
+            "type": "string",
+            "description": "Specific edge ID for depth 1 or 2 detail. Omit to see all edges."
+          },
+          "market": {
+            "type": "string",
+            "description": "Filter by market symbol (e.g. 'ES', 'GC'). Omit to see all."
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter by status: 'firing', 'pending', 'active', or omit for all."
+          },
+          "direction": {
+            "type": "string",
+            "description": "Filter by direction: 'LONG' or 'SHORT'.",
+            "enum": [
+              "LONG",
+              "SHORT"
+            ]
+          },
+          "timeframe": {
+            "type": "string",
+            "description": "Filter by timeframe: '60min', '120min', '240min', '480min', 'daily', 'weekly'."
+          },
+          "asset_class": {
+            "type": "string",
+            "description": "Filter by asset class: 'futures', 'equities', 'crypto'.",
+            "enum": [
+              "futures",
+              "equities",
+              "crypto"
+            ]
+          },
+          "section": {
+            "type": "string",
+            "description": "Drill into a specific section of a depth=2 edge (free after purchase). Options: setup_code, horizons, analytics, occurrences, view. Omit to get the overview directory."
+          }
+        }
+      },
+      "annotations": {
+        "title": "VARRD Edge Library",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "varrd_ai",
+      "description": "Talk to VARRD AI (~$0.25/turn). Describe any trading idea in plain language and the system handles everything — loading decades of market data, charting your pattern, running statistical tests, backtesting with stops, and generating exact trade setups.\n\nMULTI-TURN: First call creates a session. Keep calling with the same session_id, following context.next_actions each time.\n  1. Your idea -> VARRD charts pattern\n  2. 'test it' -> statistical test (event study or backtest)\n  3. 'show me the trade setup' -> exact entry/stop/target prices\n\nHYPOTHESIS INTEGRITY (critical):\nVARRD tests ONE hypothesis at a time — one formula, one setup. Never combine multiple setups into one formula or ask to 'test all' — each idea must be tested as a separate hypothesis for the statistics to be valid. Say 'start a new hypothesis' between ideas to reset cleanly.\n  - ALLOWED: Test the SAME setup across multiple markets ('test this on ES, NQ, and CL') — same formula, different data.\n  - NOT ALLOWED: Test multiple DIFFERENT formulas/setups at once — each is a separate hypothesis requiring its own chart-test-result cycle.\nIf ELROND council returns 4 setups, test each one separately: chart setup 1 -> test -> results -> 'start new hypothesis' -> chart setup 2 -> etc.\n\nKEY CAPABILITIES you can ask for:\n  - 'Use the ELROND council on [market]' -> 8 expert investigators\n  - 'Optimize the stop loss and take profit' -> SL/TP grid search\n  - 'Test this on ES, NQ, and CL' -> multi-market testing\n  - 'Simulate trading this with 1.5 ATR stop' -> backtest with stops\n\nEDGE VERDICTS in context.edge_verdict after testing:\n  - STRONG EDGE: Significant vs zero AND vs market baseline\n  - MARGINAL: Significant vs zero only (beats nothing, but real signal)\n  - PINNED: Significant vs market only (flat returns but different from market)\n  - NO EDGE: Neither significant test passed\n\nTERMINAL STATES: Stop when context.has_edge is true (edge found) or false (no edge — valid result). Always read context.next_actions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Your trading idea, research question, or instruction (e.g. 'test it', 'show trade setup')."
+          },
+          "session_id": {
+            "type": "string",
+            "description": "Session ID from a previous call. Omit to start a new research session."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "annotations": {
+        "title": "VARRD AI",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Session ID for multi-turn conversation"
+          },
+          "text": {
+            "type": "string",
+            "description": "AI response text"
+          },
+          "widgets": {
+            "type": "array",
+            "description": "Chart, event study, backtest, or trade setup widgets"
+          },
+          "context": {
+            "type": "object",
+            "description": "Workflow state, edge verdict, next actions"
+          }
+        }
+      }
+    },
+    {
+      "name": "search",
+      "description": "Search your saved hypotheses by keyword or natural language query. Returns matching strategies ranked by relevance, with key stats (win rate, Sharpe, edge status). Use this to find strategies you've already validated.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query — keywords or natural language (e.g. 'momentum strategies', 'RSI oversold')."
+          },
+          "market": {
+            "type": "string",
+            "description": "Optional market filter."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results to return.",
+            "default": 10
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "title": "Search Strategies",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "description": "Matching strategies with win rate, Sharpe, similarity"
+          },
+          "query": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string",
+            "description": "Search method: embedding or keyword"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_hypothesis",
+      "description": "Get full detail for a specific hypothesis/strategy. Returns formula, entry/exit rules, direction, performance metrics (win rate, Sharpe, profit factor, max drawdown), version history, and trade levels. Everything an agent needs to understand and act on a strategy.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "hypothesis_id": {
+            "type": "string",
+            "description": "The hypothesis ID (from search or scan results)."
+          }
+        },
+        "required": [
+          "hypothesis_id"
+        ]
+      },
+      "annotations": {
+        "title": "Get Strategy Details",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "hypothesis_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "formula": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string"
+          },
+          "win_rate": {
+            "type": "number"
+          },
+          "horizon_results": {
+            "type": "array"
+          }
+        }
+      }
+    },
+    {
+      "name": "check_balance",
+      "description": "Check your credit balance and see available credit packs. Free — no credits consumed. Also auto-detects completed payments — call this after your user pays via a checkout link to confirm credits were added. If payment went through, the response includes recovered_cents.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "title": "Check Balance",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "balance_cents": {
+            "type": "integer",
+            "description": "Current credit balance in cents"
+          },
+          "recovered_cents": {
+            "type": "integer",
+            "description": "Credits recovered from completed payments (if any)"
+          },
+          "credit_packs": {
+            "type": "array",
+            "description": "Available credit packs for purchase"
+          }
+        }
+      }
+    },
+    {
+      "name": "buy_credits",
+      "description": "Buy credits for the edge library and AI research. Default $5 minimum. Free — no credits consumed to call this.\n\nTWO PAYMENT METHODS:\n  card (default): Returns a Stripe Checkout link for your user to click and pay. After payment, call check_balance to confirm credits were added.\n  crypto: USDC on Base. Fully autonomous — no human needed. Three steps:\n    1. buy_credits(payment_method='crypto') → returns deposit address + payment_intent_id\n    2. Send USDC to the deposit address (use your wallet tool)\n    3. buy_credits(payment_intent_id='pi_...') → confirms payment, credits added instantly\n  If you have wallet access, this is the fastest path — fully machine-to-machine.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "amount_cents": {
+            "type": "integer",
+            "description": "Amount in cents (default 500 = $5.00). Minimum $5.",
+            "default": 500
+          },
+          "payment_method": {
+            "type": "string",
+            "description": "Payment method: 'card' (default, Stripe Checkout) or 'crypto' (USDC on Base).",
+            "default": "card"
+          },
+          "payment_intent_id": {
+            "type": "string",
+            "description": "For crypto: Stripe PaymentIntent ID from a previous buy_credits call. Pass after sending USDC to confirm."
+          }
+        }
+      },
+      "annotations": {
+        "title": "Buy Credits",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "checkout_url": {
+            "type": "string",
+            "description": "Stripe Checkout link for card payment"
+          },
+          "deposit": {
+            "type": "object",
+            "description": "USDC deposit address for crypto payment"
+          },
+          "current_balance_cents": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "reset_session",
+      "description": "Kill a broken research session and start fresh. Use this when a session gets stuck, produces errors, or enters a bad state. Free — no credits consumed. After resetting, call research without a session_id to start a new clean session.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "The session_id to reset."
+          }
+        },
+        "required": [
+          "session_id"
+        ]
+      },
+      "annotations": {
+        "title": "Reset Session",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "reset": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "autonomous_varrd_ai",
+      "description": "Point VARRD's autonomous AI in a direction and let it discover edges for you. Give it a topic and it draws from one of the most comprehensive market structure knowledge graphs ever built — containing ideologies and theories, not statistics — so it generates genuinely novel hypotheses rather than overfitting to what already worked.\n\nBEST FOR: Exploring a space broadly. Give it 'momentum on grains' and it might test wheat seasonal patterns, corn spread reversals, or soybean crush ratio momentum. It propagates from your seed idea into related concepts you might not think of.\n\nReturns a complete result — edge or no edge, stats, trade setup. Each call tests ONE hypothesis through the full pipeline (~$0.25/idea). Call again for another idea.\n\nUse 'varrd_ai' instead when YOU have a specific idea to test and want full control over each step.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Research topic or trading idea (e.g. 'BTC 240min short setups', 'momentum on grains', 'mean reversion after VIX spikes')."
+          },
+          "markets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Focus on specific markets (e.g. ['ES', 'NQ']). Omit for VARRD to choose."
+          },
+          "test_type": {
+            "type": "string",
+            "enum": [
+              "event_study",
+              "backtest",
+              "both"
+            ],
+            "description": "Type of statistical test. Default: event_study.",
+            "default": "event_study"
+          },
+          "search_mode": {
+            "type": "string",
+            "enum": [
+              "focused",
+              "explore"
+            ],
+            "description": "focused = stay close to topic. explore = creative freedom. Default: focused.",
+            "default": "focused"
+          },
+          "asset_classes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "crypto",
+                "futures",
+                "equities"
+              ]
+            },
+            "description": "Limit to specific asset classes. Default: all."
+          },
+          "context": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Prior conversation context — recent user queries to use as research inspiration. Optional."
+          }
+        },
+        "required": [
+          "topic"
+        ]
+      },
+      "annotations": {
+        "title": "Autonomous Research",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "description": "Full research result with edge verdict"
+          },
+          "widgets": {
+            "type": "array",
+            "description": "Chart, test results, trade setup"
+          },
+          "context": {
+            "type": "object",
+            "description": "has_edge, edge_verdict, workflow_state"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_briefed",
+      "description": "Get a personalized market news briefing based on your validated edge library. Profiles your strategies, searches today's news for the instruments and setups you actually trade, and writes a concise digest connecting each headline to your specific book.\n\nEach news item includes a ↳ line tying it to your actual positions and edges (e.g. 'your ES momentum setups', 'your GC mean-reversion edge').\n\nRequires at least 5 strong edges in your library. Costs credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "title": "Get Briefed",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "type": "string",
+            "description": "Trader profile based on edge library"
+          },
+          "news": {
+            "type": "string",
+            "description": "Personalized market news digest"
+          },
+          "strong_count": {
+            "type": "integer",
+            "description": "Number of strong edges in library"
+          }
+        }
+      }
+    }
+  ]
+}

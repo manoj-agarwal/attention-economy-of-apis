@@ -1,0 +1,438 @@
+{
+  "name": "SheetsData",
+  "source_url": "https://mcp.sheetsdata.com/mcp",
+  "fetched_at": "2026-08-10T05:50:29+00:00",
+  "description": "Provides structured electronic component datasheet data including specs, pinouts, and package information.",
+  "github_stars": 9,
+  "tools": [
+    {
+      "name": "search_parts",
+      "description": "Search for electronic components by part number, description, or keyword. Start here â this is the best entry point for finding components. Queries all configured providers in parallel. Results are merged by MPN with indicative pricing and stock from each source. Each result includes datasheet_status so you know which parts have datasheets available for read_datasheet. Best with specific part numbers or keywords (e.g. 'STM32F103', 'buck converter 3A'). For spec-based discovery in natural language, use search_datasheets instead. When the calling org has a private parts library, matching org-uploaded parts are appended to the results with source='private_library' and any tags the team has applied â including private parts whose MPN, manufacturer, description, type, category, or tag matches the query.\n\nDATASHEET STATUS VALUES:\n- 'ready' â extracted and indexed; call read_datasheet, search_datasheets, or analyze_image.\n- 'extracting' / 'in_progress' / 'queued' / 'pending' â extraction running or scheduled. Poll check_extraction_status every 5-10s until 'ready' or 'failed'. Typical time: 30s-2min.\n- 'not_extracted' â known part but datasheet hasn't been fetched yet. Trigger it via prefetch_datasheets (cheapest) or by calling read_datasheet (auto-triggers on first read).\n- 'no_source' â we couldn't find a public datasheet URL for this MPN. First, retry prefetch_datasheets in 10-30s (the URL resolver re-runs and often finds a source on the second pass). If still 'no_source', the agent can upload the PDF manually via request_datasheet_upload + confirm_datasheet_upload (see those tools). Org-uploaded datasheets are private to the org.\n- 'unsupported' â PDF exists but can't be extracted (scanned image-only, encrypted, or corrupted). Upload a clean text-based PDF via request_datasheet_upload to override.\n- 'failed' / 'error' â extraction errored. The response includes the error reason. Retry via prefetch_datasheets or escalate to support.\n- 'rejected' â input wasn't a real MPN (bare value like '100nF', description, or reference designator). Fix the input and re-call.\n- 'deduplicated' â another part in the family already has this datasheet; same content is returned under the primary MPN.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query (part number or keyword)"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results per provider (default 20). With providers='all', total results can be up to 3Ã this value (one set per provider).",
+            "default": 20
+          },
+          "providers": {
+            "type": "string",
+            "description": "Which providers to query: 'all' (default), 'jlcpcb', 'mouser', or 'digikey'",
+            "enum": [
+              "all",
+              "jlcpcb",
+              "mouser",
+              "digikey"
+            ],
+            "default": "all"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "search_datasheets",
+      "description": "Semantic search across all extracted datasheets. Finds components matching natural language queries about specifications, features, or capabilities. Best for broad spec-based discovery across all parts (e.g. 'low-noise LDO with PSRR above 70dB'). Only searches datasheets that have been previously extracted â not all parts that exist. For finding specific parts by number, use search_parts instead.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Natural language search query"
+          },
+          "section_type": {
+            "type": "string",
+            "description": "Optional: limit search to a specific section type",
+            "enum": [
+              "all",
+              "electrical_characteristics",
+              "features",
+              "description",
+              "pin_configuration",
+              "absolute_maximum_ratings",
+              "application_information",
+              "recommended_operating_conditions"
+            ],
+            "default": "all"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results (default 15)",
+            "default": 15
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "prefetch_datasheets",
+      "description": "Trigger background datasheet extraction for multiple parts at once (up to 20). Non-blocking â returns immediately with the status of each part. Use this to warm up datasheets for a BOM before calling read_datasheet. Example: prefetch_datasheets(['TPS54302', 'ADS1115', 'LP5907'])\n\nIf a part comes back 'no_source' on the first call, retry prefetch for that MPN once after 10-30s â the URL resolver is retriable and often finds a source on the second pass. If still 'no_source', use request_datasheet_upload + confirm_datasheet_upload to attach your own PDF (org-private).\n\nPart numbers must be specific MPNs (e.g. 'STM32F446RCT6', 'TPS54302DDCR') or LCSC numbers (e.g. 'C2837938'). Do NOT pass bare values ('100nF', '10K'), descriptions, BOM reference designators, test points, or board/module names â see the server instructions for the full rule set. When a BOM has values-only rows, use search_parts first to resolve each to an MPN.\n\nDATASHEET STATUS VALUES:\n- 'ready' â extracted and indexed; call read_datasheet, search_datasheets, or analyze_image.\n- 'extracting' / 'in_progress' / 'queued' / 'pending' â extraction running or scheduled. Poll check_extraction_status every 5-10s until 'ready' or 'failed'. Typical time: 30s-2min.\n- 'not_extracted' â known part but datasheet hasn't been fetched yet. Trigger it via prefetch_datasheets (cheapest) or by calling read_datasheet (auto-triggers on first read).\n- 'no_source' â we couldn't find a public datasheet URL for this MPN. First, retry prefetch_datasheets in 10-30s (the URL resolver re-runs and often finds a source on the second pass). If still 'no_source', the agent can upload the PDF manually via request_datasheet_upload + confirm_datasheet_upload (see those tools). Org-uploaded datasheets are private to the org.\n- 'unsupported' â PDF exists but can't be extracted (scanned image-only, encrypted, or corrupted). Upload a clean text-based PDF via request_datasheet_upload to override.\n- 'failed' / 'error' â extraction errored. The response includes the error reason. Retry via prefetch_datasheets or escalate to support.\n- 'rejected' â input wasn't a real MPN (bare value like '100nF', description, or reference designator). Fix the input and re-call.\n- 'deduplicated' â another part in the family already has this datasheet; same content is returned under the primary MPN.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "part_numbers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "description": "List of MPNs to prefetch (max 20). Must be specific manufacturer part numbers, not values or descriptions."
+          }
+        },
+        "required": [
+          "part_numbers"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "check_extraction_status",
+      "description": "Check the extraction status of one or more parts. Free. Each entry includes the current extraction step, elapsed seconds, and document ID.\n\nUse after prefetch_datasheets or after read_datasheet triggers a new extraction.\n\nRecommended polling cadence: every 5-10 seconds. Extraction typically takes 30s-2min for new parts, so polling faster than every 5s wastes calls. Stop polling once status is 'ready', 'failed', 'no_source', or 'unsupported'.\n\nDATASHEET STATUS VALUES:\n- 'ready' â extracted and indexed; call read_datasheet, search_datasheets, or analyze_image.\n- 'extracting' / 'in_progress' / 'queued' / 'pending' â extraction running or scheduled. Poll check_extraction_status every 5-10s until 'ready' or 'failed'. Typical time: 30s-2min.\n- 'not_extracted' â known part but datasheet hasn't been fetched yet. Trigger it via prefetch_datasheets (cheapest) or by calling read_datasheet (auto-triggers on first read).\n- 'no_source' â we couldn't find a public datasheet URL for this MPN. First, retry prefetch_datasheets in 10-30s (the URL resolver re-runs and often finds a source on the second pass). If still 'no_source', the agent can upload the PDF manually via request_datasheet_upload + confirm_datasheet_upload (see those tools). Org-uploaded datasheets are private to the org.\n- 'unsupported' â PDF exists but can't be extracted (scanned image-only, encrypted, or corrupted). Upload a clean text-based PDF via request_datasheet_upload to override.\n- 'failed' / 'error' â extraction errored. The response includes the error reason. Retry via prefetch_datasheets or escalate to support.\n- 'rejected' â input wasn't a real MPN (bare value like '100nF', description, or reference designator). Fix the input and re-call.\n- 'deduplicated' â another part in the family already has this datasheet; same content is returned under the primary MPN.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "part_numbers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "description": "1-20 MPNs to check. Must be specific manufacturer part numbers, not values or descriptions."
+          }
+        },
+        "required": [
+          "part_numbers"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "get_part_details",
+      "description": "Get full details for a specific electronic component by manufacturer part number (MPN) or LCSC number. Returns specs, pricing, and stock from all configured providers, plus the cached datasheet summary if available. Includes datasheet_status and available_sections when ready. Set prefetch_datasheet=true to trigger background extraction â no extra charge. Use after search_parts to drill into a specific result.\n\nThe part_number must be a specific manufacturer part number (e.g. 'TPS54302DDCR', 'STM32F446RCT6') or LCSC number (e.g. 'C2837938'). Do NOT pass bare component values ('100nF', '10K'), descriptions ('buck converter'), or reference designators ('R1', 'U3').\n\nDATASHEET STATUS VALUES:\n- 'ready' â extracted and indexed; call read_datasheet, search_datasheets, or analyze_image.\n- 'extracting' / 'in_progress' / 'queued' / 'pending' â extraction running or scheduled. Poll check_extraction_status every 5-10s until 'ready' or 'failed'. Typical time: 30s-2min.\n- 'not_extracted' â known part but datasheet hasn't been fetched yet. Trigger it via prefetch_datasheets (cheapest) or by calling read_datasheet (auto-triggers on first read).\n- 'no_source' â we couldn't find a public datasheet URL for this MPN. First, retry prefetch_datasheets in 10-30s (the URL resolver re-runs and often finds a source on the second pass). If still 'no_source', the agent can upload the PDF manually via request_datasheet_upload + confirm_datasheet_upload (see those tools). Org-uploaded datasheets are private to the org.\n- 'unsupported' â PDF exists but can't be extracted (scanned image-only, encrypted, or corrupted). Upload a clean text-based PDF via request_datasheet_upload to override.\n- 'failed' / 'error' â extraction errored. The response includes the error reason. Retry via prefetch_datasheets or escalate to support.\n- 'rejected' â input wasn't a real MPN (bare value like '100nF', description, or reference designator). Fix the input and re-call.\n- 'deduplicated' â another part in the family already has this datasheet; same content is returned under the primary MPN.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "part_number": {
+            "type": "string",
+            "description": "Specific manufacturer part number (MPN) or LCSC number (e.g. 'C2837938'). Not a value or description."
+          },
+          "provider": {
+            "type": "string",
+            "description": "Which provider to query: 'all' (default), 'jlcpcb', 'mouser', or 'digikey'",
+            "enum": [
+              "all",
+              "jlcpcb",
+              "mouser",
+              "digikey"
+            ],
+            "default": "all"
+          },
+          "prefetch_datasheet": {
+            "type": "boolean",
+            "description": "Trigger background datasheet extraction (no extra charge). Default false.",
+            "default": false
+          }
+        },
+        "required": [
+          "part_number"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "read_datasheet",
+      "description": "Read from a component's datasheet. Two modes:\n\n**Section mode** (default): Returns a named section. Start with section='summary' to get an overview and a list of available_sections. Then request specific sections by name. Section names are dynamic â any heading in the actual datasheet works (e.g. 'register_map', 'i2c_interface', 'power_management'). If a section name isn't found, automatically falls back to search mode.\n\n**Search mode**: Semantic search within the part's datasheet. Best for targeted questions (register bit fields, I2C config, specific specs). Use when you need to find specific information rather than a whole section.\n\nFirst call for a new part triggers extraction (30s-2min). Subsequent calls are cached.\n\n**Datasheet vs Reference Manual**: Manufacturer datasheets cover high-level specs, pinout, absolute maximum ratings, and package info. For microcontrollers (STM32, nRF52, RP2040), register-level programming details (I2C CR1/CR2, DMA config, interrupt bits) are in a separate Reference Manual, not the datasheet. The summary's available_sections will show what's actually present.\n\nThe part_number must be a specific manufacturer part number (e.g. 'TPS54302', 'STM32F446RCT6') or LCSC number (e.g. 'C2837938'). Do NOT pass bare component values ('100nF', '10K'), descriptions, or reference designators.\n\nDATASHEET STATUS VALUES:\n- 'ready' â extracted and indexed; call read_datasheet, search_datasheets, or analyze_image.\n- 'extracting' / 'in_progress' / 'queued' / 'pending' â extraction running or scheduled. Poll check_extraction_status every 5-10s until 'ready' or 'failed'. Typical time: 30s-2min.\n- 'not_extracted' â known part but datasheet hasn't been fetched yet. Trigger it via prefetch_datasheets (cheapest) or by calling read_datasheet (auto-triggers on first read).\n- 'no_source' â we couldn't find a public datasheet URL for this MPN. First, retry prefetch_datasheets in 10-30s (the URL resolver re-runs and often finds a source on the second pass). If still 'no_source', the agent can upload the PDF manually via request_datasheet_upload + confirm_datasheet_upload (see those tools). Org-uploaded datasheets are private to the org.\n- 'unsupported' â PDF exists but can't be extracted (scanned image-only, encrypted, or corrupted). Upload a clean text-based PDF via request_datasheet_upload to override.\n- 'failed' / 'error' â extraction errored. The response includes the error reason. Retry via prefetch_datasheets or escalate to support.\n- 'rejected' â input wasn't a real MPN (bare value like '100nF', description, or reference designator). Fix the input and re-call.\n- 'deduplicated' â another part in the family already has this datasheet; same content is returned under the primary MPN.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "part_number": {
+            "type": "string",
+            "description": "Specific manufacturer part number (MPN) or LCSC number. Not a value or description."
+          },
+          "mode": {
+            "type": "string",
+            "description": "Reading mode: 'section' (default) returns a named section, 'search' does semantic search",
+            "enum": [
+              "section",
+              "search"
+            ],
+            "default": "section"
+          },
+          "section": {
+            "type": "string",
+            "description": "Section name for section mode. Start with 'summary' to discover available sections. Common: summary, pinout, electrical, abs_max, register_map, timing, package. Any heading in the datasheet works (slugified).",
+            "default": "summary"
+          },
+          "query": {
+            "type": "string",
+            "description": "Search query â REQUIRED when mode='search', ignored when mode='section'. Example: 'charge voltage register', 'I2C address'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max search results for search mode (default 10). Each result includes adjacent context chunks for continuity.",
+            "default": 10
+          }
+        },
+        "required": [
+          "part_number"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "compare_parts",
+      "description": "Compare 2-5 electronic components side by side in a single call. For each part, returns merged provider data (pricing, stock, structured parameters, package) plus the cached datasheet summary if one exists, plus datasheet_status ('ready', 'extracting', or 'not_extracted').\n\nUse this instead of calling get_part_details in a loop â it fans out provider queries in parallel and merges by MPN. For *discovering* candidates, use search_parts or find_alternative first; compare_parts assumes you already know which MPNs you want to compare.\n\nBehavior:\n- Uses only cached datasheet summaries â does not trigger extraction. Call prefetch_datasheets first if you need summaries for parts that haven't been extracted yet.\n- Validates every MPN upfront. If *any* input is not a real part number (value, description, reference designator), the whole call is rejected with a 'rejected' map listing the offenders â other parts are not compared. Filter your list before calling.\n- If a valid MPN is not found at any provider, that part still appears in the response with an 'error' field; the other parts are compared normally.\n\nIMPORTANT â part_numbers must be specific manufacturer part numbers (e.g. 'TPS54302DDCR', 'STM32F446RCT6') or LCSC numbers (e.g. 'C2837938'). Do NOT pass component values ('100nF', '10K'), descriptions ('buck converter'), or reference designators ('U3', 'R1').\n\nExample: compare_parts(['TPS54302', 'LM2596', 'MP2359'])\n\nDATASHEET STATUS VALUES:\n- 'ready' â extracted and indexed; call read_datasheet, search_datasheets, or analyze_image.\n- 'extracting' / 'in_progress' / 'queued' / 'pending' â extraction running or scheduled. Poll check_extraction_status every 5-10s until 'ready' or 'failed'. Typical time: 30s-2min.\n- 'not_extracted' â known part but datasheet hasn't been fetched yet. Trigger it via prefetch_datasheets (cheapest) or by calling read_datasheet (auto-triggers on first read).\n- 'no_source' â we couldn't find a public datasheet URL for this MPN. First, retry prefetch_datasheets in 10-30s (the URL resolver re-runs and often finds a source on the second pass). If still 'no_source', the agent can upload the PDF manually via request_datasheet_upload + confirm_datasheet_upload (see those tools). Org-uploaded datasheets are private to the org.\n- 'unsupported' â PDF exists but can't be extracted (scanned image-only, encrypted, or corrupted). Upload a clean text-based PDF via request_datasheet_upload to override.\n- 'failed' / 'error' â extraction errored. The response includes the error reason. Retry via prefetch_datasheets or escalate to support.\n- 'rejected' â input wasn't a real MPN (bare value like '100nF', description, or reference designator). Fix the input and re-call.\n- 'deduplicated' â another part in the family already has this datasheet; same content is returned under the primary MPN.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "part_numbers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2,
+            "maxItems": 5,
+            "description": "2-5 specific manufacturer part numbers or LCSC numbers to compare head-to-head. Must be real MPNs â the call is rejected upfront if any entry is a value, description, or reference designator."
+          }
+        },
+        "required": [
+          "part_numbers"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "check_design_fit",
+      "description": "Validate whether a component will work within your operating conditions. Compares your design parameters against the datasheet's absolute maximum ratings and recommended operating conditions. Returns PASS/FAIL/WARNING per parameter with margin percentages.\n\nParameter mapping by component type:\n- Buck/boost converters: input_voltage, output_voltage, output_current, ambient_temp\n- MOSFETs: supply_voltage=VDS, output_current=ID (drain current), ambient_temp\n- LDOs: input_voltage, output_voltage, output_current, ambient_temp\n- Logic ICs: supply_voltage=VCC, ambient_temp\n\nResult semantics (per-parameter 'result' field):\n- PASS: comfortable margin. For a recommended-operating RANGE, any value inside the range (including the exact edges) is PASS. For an absolute-MAX rating, PASS means more than 10% below the limit.\n- WARNING: for absolute-max ratings only, the user value is within 10% of the limit (but not over) â part will work but with thin margin for part-to-part variation, temperature drift, and transients. Consider derating.\n- FAIL: user value is outside the allowed range / exceeds the limit â part is out of spec and will be stressed or damaged.\n- INSUFFICIENT_DATA: the check could not be completed safely â most commonly an ambient_temp input that could not be translated to a junction-temperature check (see the temperature note below). INSUFFICIENT_DATA never counts as a PASS: it pulls the overall verdict down to at-least-WARNING.\nEach check also reports 'limit_type' (max / min / range / fixed) so you can see whether it was judged against an operating range, an absolute-max rating, or a fixed-output setpoint.\n\nTemperature honesty:\n- ambient_temp is NOT silently treated as a junction temperature. The stored operating-temperature limit is junction-suspect, so a bare ambient input is never reported as a clean PASS on thermal grounds. If you also supply input_voltage, output_voltage and output_current AND a thermal-resistance (RthJA) value is available, the tool estimates Tj = Ta + PdÂ·RthJA (Pd â (Vin-Vout)Â·Iout, a documented approximation) and checks the junction estimate â reported as 'temperature (junction est.)' with the assumptions in the note. Otherwise the temperature check returns INSUFFICIENT_DATA asking you to pull RthJA via read_datasheet. The 'temperature_basis' field (junction / ambient / unknown) tells you which basis was used.\n\nBehavior:\n- Two-tier validation. For parameters in our structured database (Vin, Iout, operating temp, etc.), returns instantly and free of LLM cost. For parameters only found in the datasheet text, falls back to an LLM read of the absolute-max and recommended-operating-conditions sections. The 'validation_method' field in the response tells you which path was used.\n- If the part hasn't been extracted yet and the LLM fallback is needed, this call triggers extraction (30s-2min). Returns status='extracting' if so â poll check_extraction_status and retry.\n\nWhen NOT to use:\n- You need power dissipation or junction-temperature rise â this tool only checks nameplate limits. Pull RthJA from read_datasheet and calculate yourself.\n- You need SOA (safe-operating-area) curve checks for MOSFETs â use analyze_image on the SOA graph.\n- You're checking a passive or mechanical part with no abs-max table â there's nothing for this tool to compare against.\n\nExample: check_design_fit('TPS54302', input_voltage=24, output_current=2.5, ambient_temp=70)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "part_number": {
+            "type": "string",
+            "description": "Specific manufacturer part number to validate. Not a value or description."
+          },
+          "input_voltage": {
+            "type": "number",
+            "description": "Input voltage / VIN (V). For converters.",
+            "minimum": 0,
+            "maximum": 1500
+          },
+          "output_voltage": {
+            "type": "number",
+            "description": "Output voltage / VOUT (V). For converters/LDOs.",
+            "minimum": 0,
+            "maximum": 1500
+          },
+          "output_current": {
+            "type": "number",
+            "description": "Output current / IOUT (A). For MOSFETs, this is drain current ID.",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "supply_voltage": {
+            "type": "number",
+            "description": "Supply voltage / VCC / VDD (V). For MOSFETs, this is VDS (drain-source voltage). NOT used for power dissipation â compared against VDS(max) only.",
+            "minimum": 0,
+            "maximum": 1500
+          },
+          "ambient_temp": {
+            "type": "number",
+            "description": "Ambient temperature TA (Â°C).",
+            "minimum": -65,
+            "maximum": 200
+          },
+          "switching_frequency": {
+            "type": "number",
+            "description": "Switching frequency FSW (kHz). For converters.",
+            "minimum": 0,
+            "maximum": 10000000
+          }
+        },
+        "required": [
+          "part_number"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "analyze_image",
+      "description": "Analyze an image from a component's datasheet using vision AI. Use this when read_datasheet returns a section containing images and you need to extract data from a graph, package drawing, pin diagram, or circuit schematic. Pass the image_key from the read_datasheet response (the storage path in the image URL). Optionally pass a specific question to focus the analysis.\n\nIMPORTANT: For precise numeric values (electrical specs, max ratings), prefer read_datasheet text tables first â they are more reliable than vision-extracted graph data. Use analyze_image for visual information not available in text: package dimensions from drawings, pin assignments from diagrams, graph trends, and approximate values from characteristic curves.\n\nExamples:\n- analyze_image(part_number='IRFZ44N', image_key='images/abc123.png') -> classifies and describes the image\n- analyze_image(part_number='IRFZ44N', image_key='images/abc123.png', question='What is the drain current at Vgs=5V?')",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "part_number": {
+            "type": "string",
+            "description": "MPN of the component"
+          },
+          "image_key": {
+            "type": "string",
+            "description": "Image storage path from read_datasheet output (e.g. 'images/abc123.png')"
+          },
+          "question": {
+            "type": "string",
+            "description": "Optional specific question about the image (e.g. 'What are the package dimensions?')"
+          }
+        },
+        "required": [
+          "part_number",
+          "image_key"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "find_alternative",
+      "description": "Find alternative / second-source components for a given MPN. Returns parts ranked by how closely their specs, package, and category match the reference part, with a match_score and match_notes explaining each match.\n\nWhen to use:\n- Original part is out of stock or end-of-life.\n- You need a cheaper equivalent with similar specs.\n- You need a second source for supply-chain resilience.\n- You need a drop-in replacement on an existing PCB (use constraints=['same_package']).\n\nWhen NOT to use:\n- You're browsing a category from scratch â use search_parts.\n- You already have candidates and want a head-to-head comparison â use compare_parts directly.\n\nBehavior:\n- Eval boards, dev kits, and breakout modules are filtered out â results are IC-level alternatives only.\n- 'same_package' uses fuzzy matching, so SOT-23 â¡ SOT23, SOIC-8 â¡ SOP-8, LQFP64 â¡ TQFP64, etc. Exact string match is not required.\n- If provider search returns few candidates, the tool falls back to semantic search across extracted datasheets to surface niche alternatives.\n- The response includes a 'hint' field pointing to compare_parts / read_datasheet for drilling into promising alternatives.\n\nExample: find_alternative('TPS54302', constraints=['same_package', 'in_stock'])\n\nDATASHEET STATUS VALUES:\n- 'ready' â extracted and indexed; call read_datasheet, search_datasheets, or analyze_image.\n- 'extracting' / 'in_progress' / 'queued' / 'pending' â extraction running or scheduled. Poll check_extraction_status every 5-10s until 'ready' or 'failed'. Typical time: 30s-2min.\n- 'not_extracted' â known part but datasheet hasn't been fetched yet. Trigger it via prefetch_datasheets (cheapest) or by calling read_datasheet (auto-triggers on first read).\n- 'no_source' â we couldn't find a public datasheet URL for this MPN. First, retry prefetch_datasheets in 10-30s (the URL resolver re-runs and often finds a source on the second pass). If still 'no_source', the agent can upload the PDF manually via request_datasheet_upload + confirm_datasheet_upload (see those tools). Org-uploaded datasheets are private to the org.\n- 'unsupported' â PDF exists but can't be extracted (scanned image-only, encrypted, or corrupted). Upload a clean text-based PDF via request_datasheet_upload to override.\n- 'failed' / 'error' â extraction errored. The response includes the error reason. Retry via prefetch_datasheets or escalate to support.\n- 'rejected' â input wasn't a real MPN (bare value like '100nF', description, or reference designator). Fix the input and re-call.\n- 'deduplicated' â another part in the family already has this datasheet; same content is returned under the primary MPN.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "part_number": {
+            "type": "string",
+            "description": "The MPN to find alternatives for"
+          },
+          "constraints": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "in_stock",
+                "same_package",
+                "jlcpcb"
+              ]
+            },
+            "description": "Optional filters to narrow alternatives. 'in_stock' = only parts with non-zero stock at any provider. 'same_package' = package footprint must match (fuzzy). 'jlcpcb' = must be available at JLCPCB (useful for JLCPCB-assembled boards â also restricts the provider search to JLCPCB).",
+            "default": []
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max alternatives to return (default 5, max 20).",
+            "default": 5,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "part_number"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "request_datasheet_upload",
+      "description": "Request a signed URL to upload a datasheet PDF for a component whose datasheet we don't have. Use this when search_parts / get_part_details / prefetch_datasheets return datasheet_status='no_source' (and a retry didn't help) or 'unsupported'. Free â the upload fee is only charged on confirm_datasheet_upload after we validate the file.\n\nFlow (3 steps):\n1. Call request_datasheet_upload with the MPN, the file's SHA-256, and its byte size. You get back an upload_url, upload_method ('PUT'), upload_headers, and an opaque upload_token.\n2. Upload the PDF directly to the returned URL with curl: `curl -X PUT -H 'Content-Type: application/pdf' --data-binary @file.pdf \"$UPLOAD_URL\"` (add any headers from upload_headers).\n3. Call confirm_datasheet_upload with the upload_token. Server verifies the bytes, re-hashes, checks for the MPN on the first page, charges the upload fee (50Â¢), and queues extraction. Returns document_id + status='pending'.\n\nValidation rules (checked at confirm time, refunded on failure):\n- File must be a valid PDF (magic bytes + parseable).\n- Actual SHA-256 must match expected_sha256.\n- Actual byte size must match size_bytes (Â±0).\n- MPN or its core stem must appear in the first page text (catches wrong-file uploads). Scanned image-only PDFs will fail this check â upload a text-based PDF.\n- Max 50MB per file. No dev-kit manuals / BOB schematics / app-notes as datasheets â use the matching MPN's actual datasheet.\n\nUploaded datasheets are scoped to your organization (private). They satisfy read_datasheet, search_datasheets, check_design_fit, and analyze_image for your org's tokens only.\n\nTokens expire after 15 minutes. If upload fails or times out, just call request_datasheet_upload again.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "part_number": {
+            "type": "string",
+            "description": "Manufacturer part number the PDF belongs to. Must be a real MPN, not a value or description."
+          },
+          "expected_sha256": {
+            "type": "string",
+            "description": "Lowercase hex SHA-256 of the PDF bytes (64 chars). Used both as the storage key (content-addressed) and to detect tampering. Compute with `shasum -a 256 file.pdf`.",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "description": "Size of the PDF in bytes. Must be â¤ 50_000_000 (50MB) and > 1024.",
+            "minimum": 1024,
+            "maximum": 50000000
+          },
+          "manufacturer": {
+            "type": "string",
+            "description": "Optional. Manufacturer name (e.g. 'Texas Instruments') if the MPN alone doesn't disambiguate."
+          }
+        },
+        "required": [
+          "part_number",
+          "expected_sha256",
+          "size_bytes"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "confirm_datasheet_upload",
+      "description": "Confirm a datasheet upload started via request_datasheet_upload. Pass the upload_token you got back from the request step. The server downloads the uploaded bytes, re-hashes to verify integrity, validates that it's a real PDF with the MPN on the first page, creates the private Document + Component records, charges the upload fee (50Â¢), and queues extraction.\n\nSuccess response: document_id, mpn, sha256, file_size_bytes, status='pending'. Poll check_extraction_status with the MPN to wait for extraction to finish (30s-2min typically).\n\nFailure modes:\n- 'upload_not_found' â no bytes at the upload URL yet. Retry your curl upload.\n- 'sha256_mismatch' â uploaded bytes hash differs from expected_sha256. Re-compute the hash and re-request.\n- 'invalid_pdf' â bytes aren't a parseable PDF. No charge.\n- 'mpn_not_in_pdf' â MPN (or its stem) isn't on the first page. Either you uploaded the wrong file or it's a scanned image-only PDF. No charge.\n- 'token_expired' â upload token is older than 15 minutes. Restart via request_datasheet_upload.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "upload_token": {
+            "type": "string",
+            "description": "Opaque token returned by request_datasheet_upload."
+          }
+        },
+        "required": [
+          "upload_token"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": true
+      }
+    }
+  ]
+}

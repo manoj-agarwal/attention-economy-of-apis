@@ -1,0 +1,85 @@
+{
+  "name": "CometChat Docs",
+  "source_url": "https://mcp.cometchat.com/mcp",
+  "fetched_at": "2026-08-10T05:48:05+00:00",
+  "description": "Search CometChat documentation and retrieve implementation bundles for real-time chat and calling features.",
+  "github_stars": 36,
+  "tools": [
+    {
+      "name": "search_cometchat_docs",
+      "title": "Search CometChat Documentation",
+      "description": "Searches CometChat documentation including SDK guides (JavaScript, React, iOS, Android, Flutter, React Native), UI Kit references, REST API documentation, integration tutorials, and OpenAPI specs. Returns ranked snippets with titles and direct links to source pages. Supports an optional `version` filter to scope results to a specific documentation version.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query. 1â500 characters."
+          },
+          "version": {
+            "type": "string",
+            "description": "Optional documentation version filter, e.g. 'v4' or 'v3'."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of results to return. Default 10, maximum 25.",
+            "minimum": 1,
+            "maximum": 25
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Search CometChat Documentation",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "fetch_cometchat_doc_page",
+      "title": "Fetch CometChat Documentation Page",
+      "description": "Fetches the full content of a single CometChat documentation page by URL or path. Returns the page content as markdown along with title and section metadata. Path can be passed as a full https://www.cometchat.com/docs URL or as a relative path such as '/sdk/javascript/overview'.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Documentation path or full URL. Relative paths like '/sdk/javascript/overview' and full URLs both work."
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Fetch CometChat Documentation Page",
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "get_cometchat_implementation_bundle",
+      "title": "Get CometChat Implementation Bundle",
+      "description": "Returns a curated implementation bundle for a named CometChat integration scenario. Each bundle includes prerequisites, install commands, configuration, working code examples, and common pitfalls. Available bundles cover common integration patterns across React, Flutter, iOS, Android, React Native, and the JavaScript SDK.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bundle": {
+            "type": "string",
+            "description": "Bundle name in lowercase kebab-case, e.g. 'react-uikit-quickstart'."
+          }
+        },
+        "required": [
+          "bundle"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Get CometChat Implementation Bundle",
+        "readOnlyHint": true
+      }
+    }
+  ]
+}

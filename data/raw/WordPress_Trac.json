@@ -1,0 +1,131 @@
+{
+  "name": "WordPress Trac",
+  "source_url": "https://mcp-server-wporg-trac-staging.a8cai.workers.dev/mcp",
+  "fetched_at": "2026-08-10T05:50:01+00:00",
+  "description": "Provides access to WordPress.org Trac development data through public CSV and RSS endpoints, enabling searches across 60,000+ tickets, detailed ticket retrieval with metadata and comments, changeset information with diff content, and recent development activity monitoring for WordPress core contributors and plugin developers.",
+  "github_stars": 13,
+  "tools": [
+    {
+      "name": "searchTickets",
+      "description": "Search for WordPress Trac tickets by keyword or filter expression. Returns ticket summaries with basic info.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query for tickets (keywords or filter expressions like 'summary~=keyword')"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of results to return (default: 10, max: 50)",
+            "default": 10
+          },
+          "status": {
+            "type": "string",
+            "description": "Filter by ticket status (e.g., 'open', 'closed', 'new')"
+          },
+          "component": {
+            "type": "string",
+            "description": "Filter by component name (e.g., 'Administration', 'Posts, Post Types')"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "getTicket",
+      "description": "Get detailed information about a specific WordPress Trac ticket including description, comments, and metadata.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Trac ticket ID number"
+          },
+          "includeComments": {
+            "type": "boolean",
+            "description": "Include ticket comments and discussion (default: true)",
+            "default": true
+          },
+          "commentLimit": {
+            "type": "number",
+            "description": "Maximum number of comments to return (default: 10, max: 50)",
+            "default": 10
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "getChangeset",
+      "description": "Get information about a specific WordPress code changeset/commit including commit message, author, and diff.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "number",
+            "description": "SVN revision number (e.g., 58504)"
+          },
+          "includeDiff": {
+            "type": "boolean",
+            "description": "Include diff content (default: true)",
+            "default": true
+          },
+          "diffLimit": {
+            "type": "number",
+            "description": "Maximum characters of diff to return (default: 2000, max: 10000)",
+            "default": 2000
+          }
+        },
+        "required": [
+          "revision"
+        ]
+      }
+    },
+    {
+      "name": "getTimeline",
+      "description": "Get recent activity from WordPress Trac timeline including recent tickets, commits, and other events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "number",
+            "description": "Number of days to look back (default: 7, max: 30)",
+            "default": 7
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of events to return (default: 20, max: 100)",
+            "default": 20
+          }
+        }
+      }
+    },
+    {
+      "name": "getTracInfo",
+      "description": "Get WordPress Trac metadata like components, milestones, priorities, and severities.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "components",
+              "milestones",
+              "priorities",
+              "severities"
+            ],
+            "description": "Type of Trac information to retrieve"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      }
+    }
+  ]
+}

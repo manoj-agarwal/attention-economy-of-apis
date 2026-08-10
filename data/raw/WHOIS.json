@@ -1,0 +1,49 @@
+{
+  "name": "WHOIS",
+  "source_url": "https://whois.ddnsip.cn/mcp",
+  "fetched_at": "2026-08-10T05:47:50+00:00",
+  "description": "Query WHOIS/RDAP information for domains, IP addresses, CIDR prefixes, and ASNs.",
+  "github_stars": 63,
+  "tools": [
+    {
+      "description": "Query WHOIS/RDAP information for multiple domain names, IP addresses/CIDR prefixes, or ASNs in one call. Results are returned per query with individual statuses. Disabled unless the operator enables batch queries.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "queries": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Domain names, IP addresses (v4/v6), or ASNs (e.g. AS12345) to look up"
+          }
+        },
+        "required": [
+          "queries"
+        ],
+        "additionalProperties": false
+      },
+      "name": "whois_batch_lookup"
+    },
+    {
+      "description": "Query WHOIS/RDAP information for a domain name, IP address or CIDR prefix (v4 or v6), or ASN",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Domain name, IP address (v4/v6), or ASN (e.g. AS12345) to look up"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "name": "whois_lookup"
+    }
+  ]
+}

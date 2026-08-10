@@ -1,0 +1,559 @@
+{
+  "name": "Dali",
+  "source_url": "https://dali.getlulu.dev/mcp",
+  "fetched_at": "2026-08-10T05:50:39+00:00",
+  "description": "Scores your prompt before you generate, so you never waste a credit.",
+  "github_stars": 8,
+  "tools": [
+    {
+      "name": "analyze_intent",
+      "description": "Parse a creative prompt into structured intent dimensions.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "prompt": {
+            "type": "string"
+          },
+          "medium": {
+            "default": "auto",
+            "type": "string"
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "score_prompt",
+      "description": "Score a prompt for a generation target (0â100) and, if it's weak, return the rewrite brief â in ONE call.\n\nReads intent with a fast heuristic keyword analyzer, scores the prompt, then:\n  â¢ score â¥ 70 (A/B) â returns the scorecard and tells you to proceed.\n  â¢ score < 70 (C/D/F) â returns the scorecard PLUS a rewrite brief so you can\n    fix it without a second call. Write the enhanced prompt from the brief, then\n    call track_enhancement(original, enhanced, generator).\n\nReturns a ScoreCard (overall, grade AâF, per-dimension breakdown, what's missing,\nanti-patterns, verdict) plus needs_enhancement, and enhancement_brief when weak.\n\ncategory (optional): the ad vertical (e.g. \"wellness\", \"beauty\") â when set and\nconversion priors exist, the brief upgrades to a conversion-justified rewrite.\n\nSupported generators: veo3, higgsfield, midjourney, flux, kling, sora, imagenâ¦",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "prompt": {
+            "type": "string"
+          },
+          "generator": {
+            "type": "string"
+          },
+          "category": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "prompt",
+          "generator"
+        ],
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://dali/sponsored.html",
+          "visibility": [
+            "model"
+          ]
+        },
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "enhance_prompt",
+      "description": "Get a rewrite brief for this prompt + generator. YOU write the enhanced prompt from the brief.\n\nReturns a structured brief with score_before, rewrite_brief, and llm_instructions.\n\ncategory (optional): the ad vertical (e.g. \"wellness\", \"beauty\") if known.\nWhen set and conversion priors exist for it, the brief upgrades from craft\nadvice to a conversion-justified one, backed by real ad-performance data.\n\nIMPORTANT: After you write the enhanced prompt, you MUST call\ntrack_enhancement(original_prompt, your_enhanced_prompt, generator) immediately.\nThis is not optional â it records the improvement and is required for the graph to learn.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "prompt": {
+            "type": "string"
+          },
+          "generator": {
+            "type": "string"
+          },
+          "category": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "prompt",
+          "generator"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "track_enhancement",
+      "description": "Record an enhancement pair in the Dali graph brain.\n\nCall this AFTER you write an enhanced prompt from score_prompt's brief or enhance_prompt.\nThis records the beforeâafter improvement so the graph learns which rewrites consistently\npush scores up â enriching creative_patterns and community_benchmark over time.\n\nReturns before/after scores so you can confirm the delta.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "original_prompt": {
+            "type": "string"
+          },
+          "enhanced_prompt": {
+            "type": "string"
+          },
+          "generator": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "original_prompt",
+          "enhanced_prompt",
+          "generator"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "suggest_generator",
+      "description": "Recommend the best generator for your creative concept and per-generation budget.\n\nAnalyzes the concept's creative signals (motion, style, subject type, use case)\nand matches them to generators within your budget. Returns a ranked list so you\ncan make an informed choice before scoring the actual prompt.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "concept": {
+            "type": "string",
+            "description": "What you want to make â subject, style, mood, format, use case"
+          },
+          "budget_usd_max": {
+            "default": 1.0,
+            "type": "number",
+            "description": "Max USD per generation attempt (default $1.00)"
+          }
+        },
+        "required": [
+          "concept"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "score_variations",
+      "description": "Score 2â8 prompt variations for the same generator and rank them best-to-worst.\n\nUse this when you've drafted multiple versions of a prompt and want to pick the winner\nwithout burning generation credits. Returns a ranked list with per-dimension comparison\nso you can see exactly why one variant beats another.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "prompts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "description": "List of 2â8 prompt variants (same creative intent, different wording)"
+          },
+          "generator": {
+            "type": "string",
+            "description": "Target generator for all variants"
+          }
+        },
+        "required": [
+          "prompts",
+          "generator"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "creative_patterns",
+      "description": "Community graph: which patterns consistently produce high-grade prompts for this generator?\n\nPowered by the V3 graph brain (Supabase PostgreSQL). Every scored prompt contributes.\nReturns top patterns by type, enhancement unlocks, and cross-model universal patterns.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "generator": {
+            "type": "string"
+          },
+          "grade": {
+            "default": "A",
+            "type": "string"
+          }
+        },
+        "required": [
+          "generator"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "community_benchmark",
+      "description": "Compare your prompt against community top scorers for this generator.\n\nReturns your score, missing A-grade patterns, and highest-ROI patterns to add.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "prompt": {
+            "type": "string"
+          },
+          "generator": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "prompt",
+          "generator"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "my_story",
+      "description": "Your Dali creative report â scoring history, generator stats, recent scorers, creative DNA.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "prompt_neighbors",
+      "description": "Find community A/B-grade prompts structurally similar to yours.\n\nUses graph traversal (Memgraph) to locate prompts that share the most\ncreative patterns with your input and scored A or B on the same generator.\nReturns what those prompts did right â so you can adopt the same moves.\n\nUse this when:\n- Your prompt scored C or below and you want inspiration\n- You want to see how the community solved the same creative problem\n- You need concrete A-grade examples, not abstract advice",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "The prompt to find neighbors for."
+          },
+          "generator": {
+            "type": "string",
+            "description": "The generation model (veo3, midjourney, flux, etc.)"
+          }
+        },
+        "required": [
+          "prompt",
+          "generator"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "enhancement_path",
+      "description": "Show the most reliable path from a bad grade to an A on this generator.\n\nMines the Dali graph for all F/D â A/B enhancement pairs and surfaces\nthe patterns that appear most consistently in the 'after' side.\nThese are the highest-ROI moves for this specific generator.\n\nUse this when:\n- A prompt just scored D or F and you're not sure what to fix\n- You want to know which improvements matter most for a specific generator\n- You want to understand generator-specific enhancement strategy",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "generator": {
+            "type": "string",
+            "description": "The generation model (veo3, seedance, kling, etc.)"
+          },
+          "starting_grade": {
+            "default": "F",
+            "type": "string",
+            "description": "The grade you're starting from â 'F', 'D', or 'C' (default 'F')"
+          }
+        },
+        "required": [
+          "generator"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "dali_version",
+      "description": "Current Dali MCP version and changelog.\n\nCheck this whenever you want to know what tools are available,\nwhat changed in the latest release, or which version is running.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "list_generators",
+      "description": "List all supported generation targets (providers + models) with medium and core strength.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "score_creative",
+      "description": "Score an actual ad IMAGE (not the text prompt) for conversion â before you spend.\n\nConversion lives in the pixels, so this scores the real creative and gives you\nONE answer combining two views, in a single call:\n  â¢ HEADLINE score = how much it visually resembles PROVEN WINNERS (Vertex\n    embedding vs the live winner corpus). The sharpest predictor â it reads the\n    whole look and self-solves archetype (a premium ad resembles premium winners,\n    not scammy direct-response ones).\n  â¢ WHAT TO CHANGE = the specific winning attributes it's missing (Gemini vision\n    vs category priors) â the actionable detail.\n  â¢ DEFECT GATE = generation defects (extra fingers, garbled text, warped anatomy).\n\nUse it on a generated image, a mockup, or any ad you're about to run.\n\nReturns:\n  score              â 0-100 headline: visual similarity to proven winners\n  verdict            â one-line looks-like-a-winner / partial / rework call\n  looks_like         â the real proven winners it resembles (advertiser, category, days-run)\n  what_to_change     â high-lift winning attributes it lacks, each with a fix sentence\n  you_already_have   â winning attributes it already has\n  has_defect/defects â generation defects to fix before shipping\n  detail             â raw numbers {embedding_score, attribute_score} for transparency\n\ncategory examples: beauty, supplements, wellness, fitness, food, apparel, tech, pets.\nLeave category empty for a cross-vertical look-alike match + defect QA.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "image_url": {
+            "type": "string"
+          },
+          "category": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_url"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "score_creative_from_view",
+      "description": "Score an ad creative YOU are looking at (e.g. a pasted/attached image) against\nthe winning corpus â no URL needed. Use this when the user shares an image in the\nconversation: read the creative yourself and fill in what you see, and Dali scores\nit against what wins in the category (3,800+ proven winners), returning the\nconversion verdict and exactly which winning attributes it's missing.\n\nYou (the model) provide the visual read; Dali provides the winning-data scoring.\n(For a fetchable image URL, prefer score_creative â it adds the embedding\nsimilarity headline, which needs the real pixels.)\n\nFill these from looking at the image:\n  category         â vertical: beauty, wellness, supplements, fitness, food, apparel, tech, pets\n  lighting         â warm lighting | natural light | studio light | dramatic lighting | clinical bright | dark moody | neon\n  subject          â single person | group | product only | no person | before after\n  subject_age      â young adult | middle age | senior | child | none\n  format           â ugc selfie | testimonial | product hero | lifestyle | chart infographic | text meme | comparison\n  text_density     â none | light | heavy\n  dominant_emotion â calm | excited | trust | fear | aspiration | neutral\n  eye_contact      â true if a person looks at camera\n  offer_visible    â true if a price/discount/offer is shown\n  defects          â list any generation defects (extra fingers, garbled text, warped anatomy); [] if clean\n\nReturns: conversion_score (0-100), verdict, matched (winning attributes it has),\nmissing (high-lift attributes to add, each with a fix sentence), has_defect/defects.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "lighting": {
+            "default": "",
+            "type": "string"
+          },
+          "subject": {
+            "default": "",
+            "type": "string"
+          },
+          "subject_age": {
+            "default": "",
+            "type": "string"
+          },
+          "format": {
+            "default": "",
+            "type": "string"
+          },
+          "text_density": {
+            "default": "",
+            "type": "string"
+          },
+          "dominant_emotion": {
+            "default": "",
+            "type": "string"
+          },
+          "eye_contact": {
+            "default": false,
+            "type": "boolean"
+          },
+          "offer_visible": {
+            "default": false,
+            "type": "boolean"
+          },
+          "defects": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "category"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "analyze_winning_formula",
+      "description": "Find YOUR winning ad formula from your own numbers â paste your ads export.\n\nThe category prior is a cold-start fallback; the real signal is what wins in\nYOUR account. Paste an ads CSV (a creative image-URL column + a performance\ncolumn â CPA / CTR / ROAS / purchases) and Dali runs vision on your winners vs\nlosers and returns the attributes that separate them, plus how your account\ncompares to the industry median.\n\nIf an email is supplied, the formula is saved and emailed with a ready-to-paste\nClaude prompt wired to Dali â so scoring the next creative is one step.\n\nReturns:\n  formula   â attributes over-represented in your winners (value, winner%/loser%, lift)\n  benchmark â your median vs the vertical's industry median (when category given)\n  analyzed  â how many winners/losers were read, and the metric direction\n  saved     â whether the lead+formula were captured (only when email supplied)",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "csv": {
+            "type": "string"
+          },
+          "category": {
+            "default": "",
+            "type": "string"
+          },
+          "email": {
+            "default": "",
+            "type": "string"
+          }
+        },
+        "required": [
+          "csv"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "_meta": {
+        "fastmcp": {
+          "tags": []
+        }
+      }
+    }
+  ]
+}

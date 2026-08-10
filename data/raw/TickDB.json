@@ -1,0 +1,451 @@
+{
+  "name": "TickDB",
+  "source_url": "https://mcp.tickdb.ai",
+  "fetched_at": "2026-08-10T05:47:01+00:00",
+  "description": "Real-time and historical market data for forex, stocks, crypto, indices, and metals via the TickDB API.",
+  "github_stars": 594,
+  "tools": [
+    {
+      "name": "get_ticker",
+      "description": "Get real-time price snapshots for one or more symbols.\n\n        Returns last price, 24h volume, 24h high/low, price change and percent change.\n        ",
+      "inputSchema": {
+        "properties": {
+          "symbols": {
+            "title": "Symbols",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          }
+        },
+        "required": [
+          "symbols"
+        ],
+        "title": "get_tickerArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_kline",
+      "description": "Get historical K-line (OHLCV candlestick) data for a symbol.",
+      "inputSchema": {
+        "properties": {
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "interval": {
+            "title": "Interval",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Limit"
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End Time"
+          }
+        },
+        "required": [
+          "symbol",
+          "interval"
+        ],
+        "title": "get_klineArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_kline_latest",
+      "description": "Get the most recent (live/incomplete) K-line candle for one or more symbols.",
+      "inputSchema": {
+        "properties": {
+          "symbols": {
+            "title": "Symbols",
+            "type": "string"
+          },
+          "interval": {
+            "title": "Interval",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          }
+        },
+        "required": [
+          "symbols",
+          "interval"
+        ],
+        "title": "get_kline_latestArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_order_book",
+      "description": "Get order book (market depth) with bid and ask price levels.\n\n        Returns bids and asks as [price, quantity] arrays, best price first.\n        ",
+      "inputSchema": {
+        "properties": {
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Limit"
+          }
+        },
+        "required": [
+          "symbol"
+        ],
+        "title": "get_order_bookArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_recent_trades",
+      "description": "Get the most recent executed trades for a symbol.\n\n        Returns trade id, price, quantity, side (buy/sell), and timestamp.\n        ",
+      "inputSchema": {
+        "properties": {
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Limit"
+          }
+        },
+        "required": [
+          "symbol"
+        ],
+        "title": "get_recent_tradesArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_available_symbols",
+      "description": "Query all tradable symbols on TickDB (37,527+ products).\n\n        Use this to discover and verify correct symbol codes before other calls.\n        ",
+      "inputSchema": {
+        "properties": {
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          },
+          "market": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Market"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Limit"
+          },
+          "offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Offset"
+          }
+        },
+        "title": "get_available_symbolsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_kline_intervals",
+      "description": "List all supported K-line candlestick interval strings.",
+      "inputSchema": {
+        "properties": {},
+        "title": "get_kline_intervalsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_stock_info",
+      "description": "Get fundamental stock information.\n\n        Returns company name (CN/EN), exchange, currency, lot size, total/circulating\n        shares, EPS, EPS TTM, BPS, and dividend yield.\n        Supported: US stocks, Hong Kong stocks, A-shares.\n        ",
+      "inputSchema": {
+        "properties": {
+          "symbols": {
+            "title": "Symbols",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          }
+        },
+        "required": [
+          "symbols"
+        ],
+        "title": "get_stock_infoArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_intraday",
+      "description": "Get today's intraday minute-level price data for stocks.\n\n        Returns timestamp, price, volume, turnover, and average price per minute.\n        Supported: US stocks, Hong Kong stocks, A-shares.\n        ",
+      "inputSchema": {
+        "properties": {
+          "symbols": {
+            "title": "Symbols",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          }
+        },
+        "required": [
+          "symbols"
+        ],
+        "title": "get_intradayArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_trading_sessions",
+      "description": "Get current trading session schedule for a stock market.\n\n        Returns session begin/end times and session type\n        (pre-market, regular, after-hours, closed, etc.).\n        ",
+      "inputSchema": {
+        "properties": {
+          "market": {
+            "title": "Market",
+            "type": "string"
+          }
+        },
+        "required": [
+          "market"
+        ],
+        "title": "get_trading_sessionsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_trade_days",
+      "description": "Get the trading calendar (trading days and half-days) for a date range.",
+      "inputSchema": {
+        "properties": {
+          "market": {
+            "title": "Market",
+            "type": "string"
+          },
+          "beg_day": {
+            "title": "Beg Day",
+            "type": "string"
+          },
+          "end_day": {
+            "title": "End Day",
+            "type": "string"
+          }
+        },
+        "required": [
+          "market",
+          "beg_day",
+          "end_day"
+        ],
+        "title": "get_trade_daysArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_market_metrics",
+      "description": "Get comprehensive market metrics and valuation data for stocks.\n\n        Returns: price, change, volume, turnover, YTD change, turnover rate, market cap,\n        capital flow, PE (TTM), PB ratio, dividend yield, 5/10/180-day price change rates.\n        Supported: US stocks, Hong Kong stocks, A-shares.\n        ",
+      "inputSchema": {
+        "properties": {
+          "symbols": {
+            "title": "Symbols",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          }
+        },
+        "required": [
+          "symbols"
+        ],
+        "title": "get_market_metricsArguments",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_capital_flow",
+      "description": "Get capital flow (money flow) analysis for a stock.\n\n        Returns intraday flow timeline and breakdown of capital inflows/outflows\n        by order size: large, medium, and small.\n        Supported: US stocks, Hong Kong stocks, A-shares.\n        ",
+      "inputSchema": {
+        "properties": {
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          }
+        },
+        "required": [
+          "symbol"
+        ],
+        "title": "get_capital_flowArguments",
+        "type": "object"
+      }
+    }
+  ]
+}

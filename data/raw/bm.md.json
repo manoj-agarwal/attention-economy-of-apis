@@ -1,0 +1,275 @@
+{
+  "name": "bm.md",
+  "source_url": "https://bm.md/mcp",
+  "fetched_at": "2026-08-10T05:47:00+00:00",
+  "description": "Markdown processing server with tools for rendering, linting, parsing, and text extraction, optimized for Chinese publishing platforms like WeChat, Zhihu, and Juejin.",
+  "github_stars": 602,
+  "tools": [
+    {
+      "name": "render",
+      "title": "渲染 Markdown 为 HTML",
+      "description": "将 Markdown 内容渲染为适用于不同平台的 HTML 片段。支持 GFM 语法、数学公式（KaTeX）、代码高亮，并自动将 CSS 样式内联到元素上，确保在微信公众号等富文本编辑器中正确显示。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "maxLength": 5242880,
+            "description": "要渲染的 Markdown 源文本，支持 GFM（GitHub Flavored Markdown）语法、数学公式（$..$ 或 $$..$$）"
+          },
+          "markdownStyle": {
+            "default": "ayu-light",
+            "description": "Markdown 排版样式 ID",
+            "type": "string",
+            "enum": [
+              "ayu-light",
+              "bauhaus",
+              "blueprint",
+              "botanical",
+              "green-simple",
+              "kami",
+              "maximalism",
+              "neo-brutalism",
+              "newsprint",
+              "organic",
+              "playful-geometric",
+              "professional",
+              "retro",
+              "sketch",
+              "terminal"
+            ]
+          },
+          "codeTheme": {
+            "default": "kimbie-light",
+            "description": "代码块高亮主题 ID",
+            "type": "string",
+            "enum": [
+              "catppuccin-frappe",
+              "catppuccin-latte",
+              "catppuccin-macchiato",
+              "catppuccin-mocha",
+              "kimbie-dark",
+              "kimbie-light",
+              "panda-syntax-dark",
+              "panda-syntax-light",
+              "paraiso-dark",
+              "paraiso-light",
+              "rose-pine",
+              "rose-pine-dawn",
+              "tokyo-night-dark",
+              "tokyo-night-light"
+            ]
+          },
+          "mermaidTheme": {
+            "default": "",
+            "description": "Mermaid 流程图主题 ID，空字符串表示使用默认主题",
+            "type": "string",
+            "enum": [
+              "",
+              "catppuccin-latte",
+              "catppuccin-mocha",
+              "dracula",
+              "github-dark",
+              "github-light",
+              "nord",
+              "nord-light",
+              "one-dark",
+              "solarized-dark",
+              "solarized-light",
+              "tokyo-night",
+              "tokyo-night-light",
+              "tokyo-night-storm",
+              "zinc-dark",
+              "zinc-light"
+            ]
+          },
+          "infographicTheme": {
+            "default": "default",
+            "description": "Infographic 信息图主题 ID",
+            "type": "string",
+            "enum": [
+              "default",
+              "dark",
+              "hand-drawn"
+            ]
+          },
+          "infographicPalette": {
+            "default": "antv",
+            "description": "Infographic 信息图配色 ID",
+            "type": "string",
+            "enum": [
+              "antv",
+              "spectral"
+            ]
+          },
+          "customCss": {
+            "default": "",
+            "description": "自定义 CSS 样式，在主题样式之后应用。选择器需约束在 #bm-md 下，例如：#bm-md h1 { color: red; }",
+            "type": "string",
+            "maxLength": 50000
+          },
+          "enableFootnoteLinks": {
+            "default": true,
+            "description": "是否将文中链接自动转换为脚注形式，便于阅读时查看原始链接",
+            "type": "boolean"
+          },
+          "openLinksInNewWindow": {
+            "default": true,
+            "description": "是否为所有外部链接添加 target=\"_blank\"，在新窗口打开",
+            "type": "boolean"
+          },
+          "platform": {
+            "default": "html",
+            "description": "目标发布平台。wechat 会进行微信公众号适配，html 使用通用 HTML 输出",
+            "type": "string",
+            "enum": [
+              "html",
+              "wechat"
+            ]
+          },
+          "footnoteLabel": {
+            "default": "Footnotes",
+            "description": "GFM 脚注区域标题",
+            "type": "string",
+            "maxLength": 50
+          },
+          "referenceTitle": {
+            "default": "References",
+            "description": "外部链接参考区域标题",
+            "type": "string",
+            "maxLength": 50
+          }
+        },
+        "required": [
+          "markdown"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "渲染后的 HTML 片段，CSS 样式已内联到元素上，可直接复制粘贴到富文本编辑器"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "parse",
+      "title": "解析 HTML 为 Markdown",
+      "description": "将 HTML 内容反向转换为 Markdown 格式。适用于从网页复制内容、导入已有文章、或将富文本转换为 Markdown 进行编辑。会自动清理不安全的 HTML 标签。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "html": {
+            "type": "string",
+            "maxLength": 5242880,
+            "description": "要转换的 HTML 源代码，可以是完整文档或 HTML 片段"
+          }
+        },
+        "required": [
+          "html"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "转换后的 Markdown 文本，使用 - 作为无序列表标记"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "extract",
+      "title": "提取 Markdown 纯文本",
+      "description": "从 Markdown 文档中提取纯文本内容，移除所有格式标记（如标题符号、链接、图片、代码块等）。适用于字数统计、文本分析、生成摘要、或作为语音朗读的输入。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "maxLength": 5242880,
+            "description": "要提取文本的 Markdown 源文本"
+          }
+        },
+        "required": [
+          "markdown"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "提取后的纯文本内容，保留段落分隔，已移除所有 Markdown 格式标记"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "lint",
+      "title": "校验并修复 Markdown",
+      "description": "使用 markdownlint 规则对 Markdown 内容进行规范校验，并自动修复可修复的问题。包括：统一标题层级、修复列表缩进、规范空行、移除行尾空格等。",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "maxLength": 5242880,
+            "description": "要校验和修复的 Markdown 源文本"
+          }
+        },
+        "required": [
+          "markdown"
+        ]
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "校验并自动修复后的 Markdown 文本"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

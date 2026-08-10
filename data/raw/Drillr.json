@@ -1,8 +1,9 @@
 {
-  "name": "ai.drillr/drillr",
+  "name": "Drillr",
   "source_url": "https://gateway.drillr.ai/mcp/data",
-  "fetched_at": "2026-08-10T02:31:54+00:00",
-  "registry_description": "The financial MCP for AI agents - 90+ financial tables, SEC filings, signals, alt-data.",
+  "fetched_at": "2026-08-10T05:51:10+00:00",
+  "description": "Financial data MCP for AI agents: 90+ SQL tables, SEC filings, earnings transcripts, and alternative data.",
+  "github_stars": 6,
   "tools": [
     {
       "name": "sec_report_list",
