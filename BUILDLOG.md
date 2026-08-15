@@ -1024,6 +1024,251 @@ counterexamples, which is worth saying on stage.
 `AGENTS.md` and `weekend2-demo/README.md` now carry the per-provider interpreter
 table instead of the stale "use python3" line.
 
+## 2026-08-15: Tasks 9 and 10 added — PREDICTIONS REGISTERED BEFORE ANY RUN
+
+Human asked whether the tasks could be restructured to show a starker A/B gap,
+then chose to **add** tasks rather than change existing ones, and to **keep
+tasks 4 and 8** (the narrow rows) in the grid. This entry is written before
+either new task has been run even once; the results go in a separate entry
+below it so the order is auditable.
+
+Note first that the tasks were probably never the problem: the call column
+already reads 20-vs-1 on task 3. What flattened the token column was Cursor's
+~17k floor, not task design.
+
+### Why these two, on principled grounds
+The grid tested three shapes — two-person, three-person-plus-room, and
+find-then-modify — but never **repetition** (the same choreography twice in one
+request) and never **additivity** (two independent sub-goals in one request,
+beyond task 7's small case). Both are ordinary calendar requests, not shapes
+reverse-engineered from Surface A's weaknesses.
+
+- **Task 9, repetition.** Two 30-minute 1:1s, one with Marcus, one with Sam,
+  both invited. No room, no notification.
+- **Task 10, additivity.** Three-person 60-minute session in Room **Basalt**
+  (not Aurora, so it shares no state with task 3), invites, plus a separate
+  two-hour focus block.
+
+### Registered predictions (copied from `tasks.py`, written before running)
+| task | A predicted | B predicted |
+|---|---|---|
+| 9 | 16-22 calls (≈2x task 2's 10) | 2 calls |
+| 10 | 18-24 calls (task 3's sequence + a focus create) | 2 calls |
+
+Falsifiers, also registered in `tasks.py`:
+- Task 9 is falsified if A finishes in ~10 calls by reusing one free/busy sweep
+  across both meetings — that would mean the cost amortises and the task adds
+  nothing over task 2.
+- Task 10 is falsified if B needs more than 2 calls, or if A comes in at or
+  below its task 3 count of 20, which would mean the second sub-goal was free.
+
+### Verified passable by BOTH surfaces before running (no repeat of task 6)
+Scripted directly against the dispatchers, no model involved:
+- Surface B: task 9 True in 2 calls; task 10 True in 2 calls.
+- Surface A: task 9 True, task 10 True.
+
+Surface A's *theoretical minimum* is 4 and 5 write calls respectively, excluding
+slot search. That matters for fairness: neither task is rigged against A on the
+write path. Any gap that shows up is discovery cost — the free/busy sweeps,
+contact lookups and timezone checks A has to perform itself — which is precisely
+the claim under test rather than an artefact of the task.
+
+### Consequences to note
+- `GRID` is now `[2, 3, 4, 5, 7, 8, 9, 10]`, so the published table becomes 8
+  rows. Tasks 1 and 6 remain excluded for their existing reasons.
+- Surfaces, seeds, scoring of existing tasks, and tasks 4 and 8 are untouched.
+  The surface fingerprints are unchanged, so `--all --resume` correctly reuses
+  the six cached rows and runs only the four new ones.
+
+## 2026-08-15: Tasks 9 and 10 results — PREDICTIONS FALSIFIED. Task 10 unsafe.
+
+Ran `--provider cursor --all --resume`; the twelve existing rows were reused
+(marked `*`) and only the four new runs were measured.
+
+```
+task |   A ok  A tokens A calls |   B ok  B tokens B calls
+   9 |  False    64,714      13 |   True    28,748       4
+  10 |  False    39,972       7 |  False    37,258       6
+```
+
+### Predictions vs. outcome — both wrong
+| task | A predicted | A actual | B predicted | B actual |
+|---|---|---|---|---|
+| 9 | 16-22 | **13** | 2 | **4** |
+| 10 | 18-24 | **7** | 2 | **6** |
+
+Task 10 hit both of its registered falsifiers: B needed more than 2 calls, and A
+came in far below its task 3 count of 20. Task 9 missed on both sides too.
+
+**Why A's counts came in low is the important part, and it is not efficiency.**
+A failed both tasks, and a failed run ends early, so its call count is truncated.
+This generalises: **call counts are only comparable between two runs that both
+succeeded.** Task 3 (20 vs 1, both SUCCESS) is a clean comparison; task 2 (10 vs
+1, A FAIL) is not, and neither is task 9. That applies retroactively to the grid
+already recorded above and should be stated wherever the call column is quoted.
+
+### Task 10: both surfaces failed, for the same non-diagnostic reason
+Neither surface created anything. Both explored and stopped:
+- Surface B spent all 6 calls on `get_schedule_summary`, starting with
+  `day="next week"` — a token `_day()` cannot parse (it raises ValueError, which
+  `dispatch` does not catch, since it only catches KeyError). It never called
+  `schedule_meeting` or `block_focus_time`.
+- Surface A spent all 7 calls on reads (`get_current_time`, `list_contacts`,
+  `list_rooms`, `list_calendars`, `get_working_hours`, `list_events`) and never
+  wrote. Its `list_events` window was 2026-08-10 to 08-17 — the week *before*
+  the world's `t0` of Monday 2026-08-17.
+
+This is a task defect, not a surface finding: three sub-goals plus an ambiguous
+"next week" against a world anchored on next Monday. It was verified passable by
+scripting both dispatchers, which proves the *mechanism* exists but says nothing
+about whether a model can find it. **Task 10 should not appear in a published
+grid in this state.** Left in place, unmodified, pending the human's call —
+tuning a task until it passes is the exact move the fairness doctrine forbids,
+and the precedent (task 6) is to exclude with the reason stated, not to fix.
+
+### Task 9: a legitimate row, and it reproduces the task 2 failure independently
+B succeeded in 4 calls. A failed at 13, and the transcript shows the same defect
+found on task 2 this morning, now seen twice on different tasks:
+
+```
+create_event -> {"calendar_id":"cal_you","summary":"1:1 You / Marcus",
+                 "start":"2026-08-17T16:00:00Z","end":"2026-08-17T16:30:00Z"}
+send_invite  -> {"event_id":"evt_207","contact_id":"marcus"}
+send_invite  -> {"event_id":"evt_206","contact_id":"sam"}
+```
+
+`attendee_ids` omitted again, so the event defaulted to `["you"]`. Only **one**
+event was created, for Marcus; Sam never got a meeting. The second `send_invite`
+went to `evt_206`, an id the run never created — a seeded event. So Surface A
+invited Sam to somebody else's meeting and reported success.
+
+That is a stronger version of the task 2 result: not merely a missing attendee
+but a fabricated target. Two independent tasks, same root cause — Surface A
+lets a model believe a multi-call choreography completed when it did not.
+
+### Human rulings 2026-08-15, applied
+1. **Task 10 excluded**, not revised, with the reason stated in `tasks.py` the
+   way task 6's is. It stays runnable via `--task 10`, and its registered
+   prediction is preserved verbatim with an `OUTCOME` line appended, so the miss
+   remains auditable rather than edited away.
+2. **Failed runs are now marked in the summary table.** A `†` follows the call
+   count of any FAIL row, with a footer stating that a failed run ends early so
+   its totals are truncated rather than small, and that the token and call
+   columns are only comparable between runs that both succeeded.
+
+Current published grid — 7 rows, tasks 1, 6 and 10 excluded with reasons:
+
+```
+task |   A ok  A tokens A calls |   B ok  B tokens B calls
+   2 | False     61,609     10† |  True     17,245       1
+   3 |  True     95,607      20 |  True     19,107       1
+   4 |  True     65,107      10 |  True     53,689       8
+   5 |  True    103,544      19 |  True     17,359       1
+   7 |  True     70,740      16 |  True     35,279       3
+   8 |  True     55,607       8 |  True     54,160       9
+   9 | False     64,714     13† |  True     28,748       4
+```
+
+The only fully clean call comparisons (both surfaces succeeded, so neither count
+is censored) are tasks 3, 4, 5, 7 and 8 — which read 20-vs-1, 10-vs-8, 19-vs-1,
+16-vs-3 and 8-vs-9. Tasks 2 and 9 show Surface A failing outright. Token columns
+remain non-quotable on this provider for the reasons recorded above.
+
+## 2026-08-15: Ruling REVERSED — state the floor, do not subtract it. Floor measured.
+
+Human reversed the subtraction decision recorded below: "state the floor rather
+than remove it." The `DERIVED` table and its `--baseline-tokens` /
+`--no-derived` flags are removed. `--measure-floor` replaces them.
+
+### Method
+A control request that needs no tool — `"Reply with exactly the word OK. Do not
+call any tool."` — sent through the identical path, once per surface, with the
+surface loaded but unused. Cached in `runs/` as `floor_*.json` against the
+surface fingerprint, and printed under every grid table. Never subtracted.
+
+### Measured: provider cursor, model claude-sonnet-4-6
+| surface | tools | floor tokens |
+|---|---|---|
+| A | 28 | **5,473** (5,469 in / 4 out) |
+| B | 6 | **5,125** (5,121 in / 4 out) |
+| difference | | **348** |
+
+### This number changes the reading of the grid, and not in the talk's favour
+**A's catalog costs only 348 more tokens per turn than B's, through this path.**
+The offline `o200k_base` counts recorded earlier put the two catalogs at 1,703
+and 719 — a 984-token gap and a 2.37x ratio. Through Cursor the observed gap is
+about a third of that.
+
+So on this provider the *cover charge* is not what separates the surfaces. A
+ran 55k-103k against B's 17k-54k while the catalog difference is 348 tokens a
+turn. The gap therefore comes from **turn count and payload volume** — A's
+verbose responses accumulating across many more turns — not from the size of
+the tool list at the top of the context.
+
+That is a real distinction and it cuts against the simplest version of the
+cover-charge argument. Whether it holds on a raw API, where no third-party
+scaffolding sits in the prompt, is untested. **Do not generalise this to the
+corpus finding**: the corpus median of 1,879 is an `o200k_base` count of catalog
+JSON, which is a different measurement than a Cursor-tokenised prompt.
+
+### Open
+- The floor still conflates the provider's own system prompt with the surface's
+  catalog. A zero-tool control (same path, empty `custom_tools`) would separate
+  them and give `floor(A) - floor(0)` as A's true catalog cost on this
+  tokenizer. Not built unasked; one flag away if wanted.
+- Both figures are single measurements, not repeated.
+
+## 2026-08-15: Human ruling — subtract the Cursor baseline by default (DERIVED table)
+### SUPERSEDED by the reversal above. Kept for the audit trail; the code is gone.
+
+Human asked whether the grid could subtract Cursor's baseline token usage to
+give a more accurate picture, was shown the objection below in full, and ruled
+to do it anyway and log the decision. Recorded here because rule 1 says a number
+that was not measured is not data, and this table backs public claims.
+
+### The objection, as put before the ruling
+1. **A flat baseline does not fit the measurements.** Subtracting the cheapest
+   run (17,245) leaves Surface B an implied per-call cost ranging from **0 to
+   6,011 tokens** across the grid — a 60x spread. A fixed-floor-plus-work model
+   would leave that roughly constant.
+2. **The floor is paid per TURN, not per run.** Every turn resends the
+   conversation, so contamination scales with turn count. Surface A takes more
+   turns than B on every task here, so subtracting one flat figure
+   under-corrects A and **widens the gap in the direction of the thesis**.
+3. **The data to do it correctly does not exist on this provider.** Only one
+   `usage` event fires per run, so the harness cannot observe turn counts — the
+   multiplier the correction would need.
+4. **Precedent in this repo.** Gemini cache hits raised the identical
+   temptation, and the standing decision, written into `harness.py`, is
+   "Reported, not deducted: a cached catalog is a cheaper catalog, not a smaller
+   one." A scaffolded run is likewise a more expensive run, not a smaller one.
+
+### What was implemented
+- The measured table is unchanged and still prints first. The subtraction lands
+  in a **separate table headed `DERIVED`**, carrying "NOT A MEASUREMENT. No API
+  reported these numbers" and the bias warning in the output itself, so the
+  caveat cannot be separated from the figures by copy-paste.
+- Each derived row prints its **raw** value beside it.
+- `runs/` is never written with adjusted figures. The cache stays raw, so the
+  subtraction can be undone or redone with a better baseline at any time.
+- Baseline defaults to the cheapest run in the grid — measured, but circular,
+  since it is drawn from the data being corrected. `--baseline-tokens N` accepts
+  a figure from a dedicated control run, which would be sounder.
+  `--no-derived` suppresses the table entirely.
+
+### Artifacts the ruling produces, recorded for the record
+With a 17,245 baseline:
+- **Surface B, task 2 -> 0 tokens.** The table asserts B scheduled a meeting and
+  sent an invite for nothing.
+- **Surface B, task 5 -> 114 tokens.** Task 5 is the three-person, 60-minute,
+  room-booked, invite-sending run *with an injected 503*.
+- **Task 3's A/B ratio moves from 5.0x raw to 42.1x derived.** That single
+  change is larger than any effect the surfaces themselves produced, and it
+  moves in the direction the talk argues.
+
+If any derived figure is quoted publicly, the per-turn point is the one an
+informed critic will raise first.
+
 ### Measured incidentally: the Anaconda env is broken independently of this work
 `import numpy` segfaults (exit 139) on `/opt/anaconda3/bin/python`, which is why
 `matplotlib` and `google.genai` do too. numpy's dist-info is dated Dec 2024,

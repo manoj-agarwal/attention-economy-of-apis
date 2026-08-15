@@ -782,6 +782,81 @@ def run(variant, task_id, model, mock=False, quiet=False, provider="anthropic",
             "thinking": thinking}
 
 
+# A request that needs no tool, so the reply cost is the floor: the provider's
+# own prompt plus this surface's catalog, for exactly one turn.
+FLOOR_PROMPT = "Reply with exactly the word OK. Do not call any tool."
+
+
+def floor_path(provider, model, variant):
+    slug = re.sub(r"[^A-Za-z0-9._-]", "-", model)
+    return RUN_CACHE_DIR / f"floor_{provider}_{slug}_{variant}.json"
+
+
+def measure_floor(variant, model, provider, mock=False):
+    """What a run costs before any surface work happens.
+
+    Stated, never subtracted. Two reasons subtraction was rejected: the floor is
+    paid per TURN, not per run, so removing one flat figure under-corrects
+    whichever surface takes more turns; and on providers that report a single
+    usage event there is no turn count to multiply it by. Quoting it beside the
+    totals lets a reader do that reasoning with the numbers visible, instead of
+    inheriting an assumption baked into the table.
+
+    Measured per surface, so floor(A) - floor(B) is this surface pair's catalog
+    difference as this provider's own tokenizer sees it.
+    """
+    surface = surface_a if variant == "a" else surface_b
+    world = World(inject_room_failure=False)
+    session = SESSIONS[provider](surface, model, FLOOR_PROMPT, variant, mock, world)
+    tin = tout = calls = 0
+    if getattr(session, "owns_loop", False):
+        stream = session.turns()
+    else:
+        stream = [session.send()]
+    for resp in stream:
+        tin += resp["usage"]["input_tokens"]
+        tout += resp["usage"]["output_tokens"]
+        calls += sum(1 for b in resp["content"] if b["type"] == "tool_use")
+    row = {"variant": variant, "provider": provider, "model": model,
+           "tools": len(surface.TOOLS), "tin": tin, "tout": tout,
+           "tokens": tin + tout, "calls": calls,
+           "fingerprint": surface_fingerprint(surface),
+           "saved_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
+    if not mock:
+        RUN_CACHE_DIR.mkdir(exist_ok=True)
+        floor_path(provider, model, variant).write_text(json.dumps(row, indent=2, sort_keys=True))
+    return row
+
+
+def load_floor(provider, model, variant):
+    path = floor_path(provider, model, variant)
+    if not path.exists():
+        return None
+    try:
+        row = json.loads(path.read_text())
+    except ValueError:
+        return None
+    surface = surface_a if variant == "a" else surface_b
+    return row if row.get("fingerprint") == surface_fingerprint(surface) else None
+
+
+def report_floor(provider, model):
+    """State the floor beside the grid. Never subtract it from anything."""
+    a, b = load_floor(provider, model, "a"), load_floor(provider, model, "b")
+    if not (a and b):
+        print("\nfloor: not measured for this provider/model - run --measure-floor. "
+              "Totals above therefore include an unquantified per-turn overhead.")
+        return
+    print(f"\nfloor (measured, NOT subtracted): one turn, no tool call, "
+          f"surface loaded but unused")
+    print(f"  surface A, {a['tools']:>2} tools: {a['tokens']:>7,} tokens")
+    print(f"  surface B, {b['tools']:>2} tools: {b['tokens']:>7,} tokens")
+    print(f"  difference: {a['tokens'] - b['tokens']:,} tokens - what A's larger catalog "
+          "costs per turn, as this provider counts it")
+    print("  Every turn pays this again, so a run's share of it scales with turn count. "
+          "That is why it is stated and not deducted.")
+
+
 def run_or_resume(variant, task_id, model, mock, provider, resume, min_interval):
     surface = surface_a if variant == "a" else surface_b
     fingerprint = surface_fingerprint(surface)
@@ -821,6 +896,10 @@ def main():
                          + ", ".join(f"{p}={s:g}s" for p, s in sorted(MIN_REQUEST_INTERVAL.items()))
                          + ". Use 0 to disable (e.g. when recording, so the meter "
                            "does not sit idle between turns).")
+    ap.add_argument("--measure-floor", action="store_true",
+                    help="measure what one turn costs before any surface work happens, for "
+                         "each surface, and cache it. Reported beside the grid, never "
+                         "subtracted from it.")
     ap.add_argument("--list-models", action="store_true",
                     help="list model ids the caller's Cursor plan exposes, then exit "
                          "(--provider cursor). Availability is per-account; confirm "
@@ -834,6 +913,15 @@ def main():
     model = args.model or MODEL_DEFAULTS[args.provider]
     interval = (args.min_interval if args.min_interval is not None
                 else MIN_REQUEST_INTERVAL.get(args.provider, 0.0))
+    if args.measure_floor:
+        print(f"floor control: {FLOOR_PROMPT!r}")
+        for v in ("a", "b"):
+            row = measure_floor(v, model, args.provider, mock=args.mock)
+            print(f"  surface {v.upper()}: {row['tools']:>2} tools loaded -> "
+                  f"{row['tokens']:>7,} tokens ({row['tin']:,} in / {row['tout']:,} out), "
+                  f"{row['calls']} tool calls")
+        report_floor(args.provider, model)
+        return
     if args.all:
         rows = [run_or_resume(v, t, model, args.mock, args.provider, args.resume, interval)
                 for t in GRID for v in ("a", "b")]
@@ -846,18 +934,27 @@ def main():
             print(f"  excluded task {t}: {TASKS[t]['excluded']} (run it with --task {t})")
         print(f"{'task':>4} | {'A ok':>6} {'A tokens':>9} {'A calls':>7} | {'B ok':>6} {'B tokens':>9} {'B calls':>7}")
         def cell(r):
+            # A failed run stops early, so its totals are censored, not small.
+            # Marking them keeps the caveat attached to the number it applies to.
             flag = str(r["ok"]) + ("*" if r.get("resumed") else "")
-            return f"{flag:>6} {r['tokens']:>9,} {r['calls']:>7}"
+            calls = f"{r['calls']:,}" + ("" if r["ok"] else "\u2020")
+            return f"{flag:>6} {r['tokens']:>9,} {calls:>7}"
         for t in GRID:
             a = next(r for r in rows if r["task"] == t and r["variant"] == "a")
             b = next(r for r in rows if r["task"] == t and r["variant"] == "b")
             print(f"{t:>4} | {cell(a)} | {cell(b)}")
+        censored = [r for r in rows if not r["ok"]]
+        if censored:
+            print(f"\u2020 {len(censored)} of {len(rows)} runs FAILED. A failed run ends early, so "
+                  "its token and call figures are truncated, not small. Compare those two "
+                  "columns only between runs that BOTH succeeded.")
         resumed = [r for r in rows if r.get("resumed")]
         if resumed:
             stamps = sorted({r.get("saved_at", "unknown") for r in resumed})
             print(f"* {len(resumed)} of {len(rows)} rows were RESUMED from earlier runs "
                   f"({', '.join(stamps)}), not measured just now. Same model, same "
                   "provider, same surface hash - but not the same sitting.")
+        report_floor(args.provider, model)
         if args.provider == "gemini":
             for v in ("a", "b"):
                 hits = sum(r["cached"] for r in rows if r["variant"] == v)

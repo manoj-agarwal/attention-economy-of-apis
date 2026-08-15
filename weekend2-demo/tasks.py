@@ -104,6 +104,59 @@ TASKS = {
                     for e in _new_events(w))),
         "note": "Two outcomes in one request: Surface B needs schedule_meeting AND "
                 "block_focus_time, so this task breaks the one-tool-per-task mapping."},
+    9: {"prompt": "Set up my weekly 1:1s for next week: 30 minutes with Marcus and 30 "
+                  "minutes with Sam, and send them both invites.",
+        "failure_switch": False,
+        "check": lambda w: all(
+            any(set(e["attendees"]) == {"you", who} and _minutes(e) == 30 and _humane(e)
+                and w.invites.get(e["id"], {}).get(who) == "sent"
+                for e in _new_events(w))
+            for who in ("marcus", "sam")),
+        "note": "Repetition. The grid had no task requiring the same choreography twice, so "
+                "nothing measured whether Surface A's per-primitive cost compounds or "
+                "amortises. Two independent two-person meetings, no room, no notification.\n"
+                "PREDICTION (written 2026-08-15, before the first run): A repeats "
+                "find/create/attendee/invite per meeting and lands near twice task 2's 10 "
+                "calls, so 16-22; B calls schedule_meeting twice, so 2. Widest absolute call "
+                "gap in the grid.\n"
+                "FALSIFIED IF: A finishes in ~10 calls by reusing one free/busy sweep across "
+                "both meetings. That would mean the cost amortises and this task says nothing "
+                "task 2 didn't."},
+    10: {"prompt": "Get the three of us together for a 60-minute planning session in Room "
+                   "Basalt next week, send everyone invites, and block me two hours of prep "
+                   "time.",
+         "failure_switch": False,
+         "check": lambda w: (
+             any(set(e["attendees"]) == {"you", "marcus", "sam"}
+                 and _minutes(e) == 60
+                 and _humane(e)
+                 and any(b["room"] == "basalt" and b["start"] == e["start"]
+                         for b in w.room_bookings.values())
+                 and all(w.invites.get(e["id"], {}).get(p) == "sent" for p in ("marcus", "sam"))
+                 for e in _new_events(w))
+             and any(set(e["attendees"]) == {"you"} and _minutes(e) == 120 and _humane(e)
+                     for e in _new_events(w))),
+         # Excluded from the published grid, human ruling 2026-08-15, after one run
+         # of each surface. Kept runnable with --task 10, and the prediction below
+         # is left exactly as registered so the miss stays auditable.
+         "excluded": "both surfaces failed without writing anything: B spent every call on "
+                     "get_schedule_summary starting from an unparseable day='next week', A "
+                     "spent every call on reads and looked at the week before the world's "
+                     "start date. Verified passable by script, but not findable by a model - "
+                     "a defect in the task, not a property of either surface",
+         "note": "Additivity. Task 3 (three people + room + invites) and task 7 (meeting + "
+                 "focus block) each test one shape; nothing tested whether A's cost simply "
+                 "adds when a request carries both. Room Basalt, not Aurora, so it shares no "
+                 "state with task 3.\n"
+                 "PREDICTION (written 2026-08-15, before the first run): A pays task 3's "
+                 "sequence plus a focus-time create, so 18-24 calls; B needs exactly two "
+                 "tools, schedule_meeting and block_focus_time, so 2 - the same count as task "
+                 "9 despite far more work per call.\n"
+                 "FALSIFIED IF: B needs more than 2 calls, or A comes in at or below its task "
+                 "3 count of 20, which would mean the second sub-goal was effectively free.\n"
+                 "OUTCOME 2026-08-15: BOTH falsifiers fired - B took 6 calls, A took 7 - and "
+                 "both surfaces failed without creating anything. Prediction wrong; task "
+                 "excluded rather than tuned."},
     8: {"prompt": "Cancel my 1:1 with Sam and let him know.",
         "failure_switch": False,
         "check": lambda w: (w.events[w.sam_11]["status"] == "cancelled"
