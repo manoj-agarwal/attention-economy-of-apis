@@ -15,19 +15,38 @@ You are the research assistant. The human owns every judgment call.
 
 ## Commands
 
-Use `python3` / `python3 -m pip`, not `python` / `pip`. On this machine bare
-`python` and `pip` resolve to Anaconda, which does not have the SDKs; the
-interpreter that does is `/usr/bin/python3`.
+**No single interpreter runs everything.** Always spell the interpreter out in
+full; bare `python` / `pip` resolve to Anaconda and bare `python3` resolves to
+the 3.9 one, so neither says what you mean. Verified 2026-08-15:
+
+| work | interpreter |
+|---|---|
+| crawler, token counter, cover charge | either |
+| `03_make_charts.py` | **neither, currently** |
+| harness `--provider anthropic` | either |
+| harness `--provider gemini` | `/usr/bin/python3` only |
+| harness `--provider cursor` | `/opt/anaconda3/bin/python` only |
+
+- `/usr/bin/python3` is 3.9.6: has anthropic + google-genai, no matplotlib, and
+  cannot install `cursor-sdk` (needs >=3.10).
+- `/opt/anaconda3/bin/python` is 3.12.7: has anthropic + cursor-sdk, but
+  `import google.genai` and `import matplotlib` both segfault (exit 139)
+  because `import numpy` segfaults there. That breakage is dated Dec 2024 and
+  predates any SDK installed for this project — it is a pre-existing broken
+  Anaconda env, not something the demo did.
+- So charts cannot be regenerated on either interpreter right now. The PNGs in
+  `charts/` date from 2026-08-09. Fix the env before trusting `03_make_charts.py`.
 
 ```bash
-python3 -m pip install -r requirements.txt
-python3 01_collect_catalogs.py 250                       # crawl (resumable)
-python3 02_count_tokens.py                               # rebuild results.csv
-python3 03_make_charts.py                                # rebuild charts
-python3 04_cover_charge.py                               # surface cover charges
-python3 -m pip install anthropic
-python3 weekend2-demo/harness.py --variant a --task 3    # live demo run
-python3 weekend2-demo/harness.py --all                   # 6x2 grid (2,3,4,5,7,8)
+/usr/bin/python3 -m pip install -r requirements.txt
+/usr/bin/python3 01_collect_catalogs.py 250          # crawl (resumable)
+/usr/bin/python3 02_count_tokens.py                  # rebuild results.csv
+/usr/bin/python3 04_cover_charge.py                  # surface cover charges
+
+# demo - match the interpreter to the provider, per the table above
+/opt/anaconda3/bin/python weekend2-demo/harness.py --provider cursor --all --resume
+/usr/bin/python3 weekend2-demo/harness.py --provider gemini --variant a --task 3
+/opt/anaconda3/bin/python weekend2-demo/harness.py --variant a --task 3   # anthropic
 ```
 
 ## Non-negotiable rules

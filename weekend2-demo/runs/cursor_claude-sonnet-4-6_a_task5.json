@@ -1,0 +1,18 @@
+{
+  "cached": 80488,
+  "calls": 19,
+  "fingerprint": "38951e83ca6c",
+  "model": "claude-sonnet-4-6",
+  "ok": true,
+  "paced_secs": 0,
+  "provider": "cursor",
+  "resumed": false,
+  "saved_at": "2026-08-15T11:12:19",
+  "secs": 103,
+  "task": 5,
+  "thinking": 0,
+  "tin": 96809,
+  "tokens": 103544,
+  "tout": 6735,
+  "variant": "a"
+}

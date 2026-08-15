@@ -967,3 +967,67 @@ verification runs rather than a scored grid.
   but not the same shape the other two providers write.
 - Three live runs wrote three transcripts to `transcripts/`. Real runs, so they
   were left in place.
+
+## 2026-08-15 (midday): FIRST COMPLETE GRID. Provider: cursor. Tokens NOT quotable.
+
+`--provider cursor --all --resume`, 12 runs, ~8.5 minutes, no quota trouble.
+Twelve rows cached in `weekend2-demo/runs/`. **Read the caveats before using
+any number here.**
+
+```
+provider: cursor | model: claude-sonnet-4-6
+grid: tasks 2, 3, 4, 5, 7, 8 (6 of 8 defined tasks)
+  excluded task 1: always-true check; the row reports SUCCESS regardless of behaviour
+  excluded task 6: unpassable by both surfaces: 'you' has no Friday meetings ...
+task |   A ok  A tokens A calls |   B ok  B tokens B calls
+   2 |  False    61,609      10 |   True    17,245       1
+   3 |   True    95,607      20 |   True    19,107       1
+   4 |   True    65,107      10 |   True    53,689       8
+   5 |   True   103,544      19 |   True    17,359       1
+   7 |   True    70,740      16 |   True    35,279       3
+   8 |   True    55,607       8 |   True    54,160       9
+```
+
+### Divergent row (the grid prompt asks for these to be flagged)
+**Task 2: A FAIL, B SUCCESS.** Cause established from the transcript earlier
+today: `create_event` was called without its optional `attendee_ids`, so the
+surface defaulted the event to `["you"]`; `add_event_attendee` was never called;
+`send_invite` fired anyway and the agent reported success. A meeting was created
+that Marcus is not on. Genuine Surface A behaviour, correctly scored.
+
+### The call-count column is the cleanest result here
+It is the one column Cursor's scaffolding does not distort. A needed 10-20 calls
+where B needed 1 on the same task (2, 3, 5), and A's hero-task run took 20 calls
+against B's 1.
+
+Two rows are narrow, and both were **predicted in `tasks.py` before any run**:
+task 8 says "Suits Surface A ... B must first locate the day before it can
+cancel, so the gap here should be narrow" — measured A 8, B 9, i.e. B spent
+*more*. Task 4 came out A 10, B 8. The task design anticipated its own
+counterexamples, which is worth saying on stage.
+
+### Caveats — why the token columns are not quotable
+- Cursor's own scaffolding sets a floor: B's single-call runs cost 17,245 and
+  17,359 tokens for one tool call. That floor is not present on a raw-API run,
+  so these totals cannot be compared with anthropic/gemini rows or with the
+  corpus median. The A/B *ordering* survives; the *ratio* does not.
+- One `usage` event per run, so `secs` and the token total are whole-run figures
+  and there is no per-turn curve behind them.
+- One run per cell. No repeats, so no variance estimate and no claim about
+  stability.
+- Task 5 injects a transient 503 on room booking. Both surfaces still succeeded;
+  A spent 19 calls / 103s. The error-tax beat did not produce a failure here.
+- Whether Cursor's built-in tools were *offered* remains unverified (no `system`
+  message on any run); none were *used* in any of the 12 runs.
+
+### Docs updated (human-requested)
+`AGENTS.md` and `weekend2-demo/README.md` now carry the per-provider interpreter
+table instead of the stale "use python3" line.
+
+### Measured incidentally: the Anaconda env is broken independently of this work
+`import numpy` segfaults (exit 139) on `/opt/anaconda3/bin/python`, which is why
+`matplotlib` and `google.genai` do too. numpy's dist-info is dated Dec 2024,
+months before any SDK was installed for this project, so this is pre-existing
+and not caused by the demo. Consequence: **`03_make_charts.py` currently runs on
+neither interpreter** — matplotlib is missing on 3.9.6 and segfaults on 3.12.7.
+The PNGs in `charts/` date from 2026-08-09 and cannot presently be regenerated.

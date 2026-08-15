@@ -20,26 +20,45 @@ You record the difference. The token meter is the show.
 
 ## Quickstart
 
-Use `python3` / `python3 -m pip`, not `python` / `pip`. On this machine bare
-`python` and `pip` resolve to Anaconda, which does not have the SDKs; the
-interpreter that does is `/usr/bin/python3`.
+**Pick the interpreter to match the provider** — no single one runs all three,
+and bare `python` / `python3` will silently pick the wrong one:
+
+| provider | interpreter | key |
+|---|---|---|
+| anthropic | either | `ANTHROPIC_API_KEY` |
+| gemini | `/usr/bin/python3` (3.9.6) | `GEMINI_API_KEY` |
+| cursor | `/opt/anaconda3/bin/python` (3.12.7) | `CURSOR_API_KEY` |
+
+`cursor-sdk` needs Python >=3.10 so it cannot go on 3.9; `google.genai`
+segfaults on Anaconda. See `../AGENTS.md` for the full table.
 
 ```bash
-python3 -m pip install anthropic  # only dependency for live runs
+/opt/anaconda3/bin/python -m pip install anthropic cursor-sdk
 export ANTHROPIC_API_KEY=...      # key for the MEASURED agent (not Cursor)
 
-python3 harness.py --variant a --task 1 --mock    # plumbing test, no API needed
-python3 harness.py --variant a --task 3           # live run, surface A, hero task
-python3 harness.py --variant b --task 3           # same task, surface B
-python3 harness.py --all                          # full 6x2 grid, one run each, table at the end
+P=/opt/anaconda3/bin/python
+$P harness.py --variant a --task 1 --mock    # plumbing test, no API needed
+$P harness.py --variant a --task 3           # live run, surface A, hero task
+$P harness.py --variant b --task 3           # same task, surface B
+$P harness.py --all                          # full 6x2 grid, table at the end
 ```
 
-The Gemini path needs `python3 -m pip install google-genai` and `GEMINI_API_KEY`
-instead. Its free tier allows 5 requests/min/model and one turn is one request,
-so a grid trips the limit constantly; the harness waits each 429 out. If a grid
-dies anyway, `--all --resume` reuses completed runs recorded in `runs/` rather
-than re-spending quota, and marks those rows `*` in the table. `runs/` is
-derived and disposable — delete it to force a clean grid.
+`--all --resume` reuses completed runs recorded in `runs/` instead of
+re-spending quota, and marks those rows `*`. `runs/` is derived and disposable —
+delete it to force a clean grid.
+
+Per-provider notes:
+
+- **gemini** free tier is 5 requests/min *and 20 per day*, and one turn is one
+  request. A grid needs 100+, so it cannot finish on the free tier at any
+  pacing. The harness paces requests 12s apart (`--min-interval`) and waits out
+  per-minute 429s, but refuses to retry a per-day cap.
+- **cursor** routes through the caller's Cursor plan, exposing the surfaces as
+  custom tools. It has no practical quota ceiling — a full grid is ~10 minutes —
+  but **its token numbers are not comparable to the other providers**: Cursor's
+  own system prompt adds ~50k input tokens against a surface whose cover charge
+  is ~2,000, and only one `usage` event fires per run, so the per-turn meter
+  collapses to a single row. Use it for `ok`/`calls`, not for tokens or clips.
 
 Default measured model: claude-sonnet-4-6. A full 6x2 grid costs roughly a few
 dollars; run the grid before recording takes.
