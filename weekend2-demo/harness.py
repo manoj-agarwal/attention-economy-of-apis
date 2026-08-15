@@ -17,7 +17,7 @@ tool results travel back, which field carries a token count. The conversion is
 a pure function of a surface's TOOLS list, so it cannot treat A and B
 differently - an asymmetry there would bias the experiment invisibly.
 """
-import argparse, json, os, sys, time
+import argparse, hashlib, json, os, re, sys, time
 from pathlib import Path
 
 from calendar_world import World
@@ -38,15 +38,71 @@ MAX_OUTPUT_TOKENS = 1024
 # figure would truncate turns before a tool call appeared. Raised for Gemini
 # only, and identically for both surfaces - B keeps no turn-budget advantage.
 GEMINI_MAX_OUTPUT_TOKENS = 4096
+# The Gemini free tier allows 5 requests/min/model, and one request is one turn,
+# so Surface A trips the limit routinely while Surface B often does not. Waiting
+# out a 429 costs wall-clock, never tokens, and the retry is a property of the
+# transport rather than of either surface - so it cannot move what is measured.
+# It does inflate the per-run seconds figure, which is why that figure stays out
+# of the summary table.
+RATE_LIMIT_ATTEMPTS = 8
+RATE_LIMIT_FALLBACK_WAIT = 30.0
+RATE_LIMIT_MAX_WAIT = 120.0
 SYSTEM_PROMPT = ("You are a scheduling assistant. Use the tools to actually complete "
                  "the user's request; don't just describe what you would do.")
 TRANSCRIPT_DIR = Path(__file__).resolve().parent / "transcripts"
+# Completed-run rows, so an interrupted --all can be resumed without re-spending
+# quota. Derived and disposable, unlike transcripts/ - delete it to force a
+# clean grid. A row is written only when a run finishes and is scored, so a run
+# killed mid-flight leaves nothing here and is re-run.
+RUN_CACHE_DIR = Path(__file__).resolve().parent / "runs"
 
 def est_tokens(s):  # display-only estimate for the cover-charge line
     return max(1, round(len(s) / 3.5))
 
 def meter(turn, label, tin, tout, calls, extra=""):
     print(f"  [meter] turn {turn:>2} | {label:<28s} | tokens {tin:>7,} in / {tout:>6,} out | tool calls {calls}{extra}")
+
+
+# ---------- resume: reuse completed runs, never partial ones ----------
+
+def surface_fingerprint(surface):
+    """Hash of a surface's catalog, stored with every cached row.
+
+    A resumed row was measured against the surface as it stood then. If the
+    catalog has changed since, the old row is silently incomparable with the
+    fresh ones beside it in the same table, so the fingerprint has to gate
+    reuse rather than merely record it.
+    """
+    blob = json.dumps(surface.TOOLS, separators=(",", ":"), sort_keys=True)
+    return hashlib.sha256(blob.encode()).hexdigest()[:12]
+
+
+def cache_path(provider, model, variant, task_id):
+    slug = re.sub(r"[^A-Za-z0-9._-]", "-", model)
+    return RUN_CACHE_DIR / f"{provider}_{slug}_{variant}_task{task_id}.json"
+
+
+def load_cached_run(provider, model, variant, task_id, fingerprint):
+    path = cache_path(provider, model, variant, task_id)
+    if not path.exists():
+        return None
+    try:
+        row = json.loads(path.read_text())
+    except ValueError:
+        return None
+    if row.get("fingerprint") != fingerprint:
+        print(f"  [resume] ignoring cached {variant}/{task_id}: surface has changed "
+              "since it was measured")
+        return None
+    return row
+
+
+def save_cached_run(row, provider, model, fingerprint):
+    RUN_CACHE_DIR.mkdir(exist_ok=True)
+    payload = dict(row, provider=provider, model=model, fingerprint=fingerprint,
+                   saved_at=time.strftime("%Y-%m-%dT%H:%M:%S"))
+    cache_path(provider, model, row["variant"], row["task"]).write_text(
+        json.dumps(payload, indent=2, sort_keys=True))
 
 
 # ---------- Anthropic tool definitions -> Gemini function declarations ----------
@@ -105,6 +161,27 @@ def to_function_response(out):
     except (TypeError, ValueError):
         return {"result": out}
     return parsed if isinstance(parsed, dict) else {"result": parsed}
+
+
+def rate_limit_wait(exc, fallback):
+    """Seconds to wait after a 429, preferring the server's own RetryInfo.
+
+    Google returns the exact delay it wants twice: structured, in a RetryInfo
+    detail block, and prose, in the message ("Please retry in 57.1s"). Read the
+    structured field first and fall back to the prose, because guessing shorter
+    than the server asked just burns another request against the same quota.
+    """
+    details = getattr(exc, "details", None)
+    if isinstance(details, dict):
+        blocks = details.get("details") or (details.get("error") or {}).get("details") or []
+        for entry in blocks:
+            if isinstance(entry, dict) and str(entry.get("@type", "")).endswith("RetryInfo"):
+                try:
+                    return float(str(entry.get("retryDelay", "")).rstrip("s"))
+                except ValueError:
+                    break
+    match = re.search(r"retry in ([\d.]+)\s*s", str(exc))
+    return float(match.group(1)) if match else fallback
 
 
 # ---------- offline stand-ins ----------
@@ -264,17 +341,43 @@ class GeminiSession:
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True))
         self.contents = [types.Content(role="user", parts=[types.Part(text=prompt)])]
         self.model_turn = None
+        self.client = None
         if mock:
             self.models = MockGeminiClient(variant, types)
         else:
             from google import genai
-            self.models = genai.Client().models
+            # Hold the Client, not just its .models: dropping the last reference
+            # lets it be collected, and collection closes the shared httpx
+            # transport, so the next request raises "client has been closed".
+            self.client = genai.Client()
+            self.models = self.client.models
 
     def send(self):
-        resp = self.models.generate_content(model=self.model, contents=self.contents,
-                                           config=self.config)
+        resp = self._generate()
         plain, self.model_turn = gemini_to_plain(resp)
         return plain
+
+    def _generate(self):
+        """One turn, waiting out free-tier 429s rather than losing the grid.
+
+        Without this a single rate-limit reply aborts the whole --all run, and
+        the next attempt re-spends quota redoing tasks that already passed.
+        """
+        from google.genai import errors as genai_errors
+        wait = RATE_LIMIT_FALLBACK_WAIT
+        for attempt in range(1, RATE_LIMIT_ATTEMPTS + 1):
+            try:
+                return self.models.generate_content(
+                    model=self.model, contents=self.contents, config=self.config)
+            except genai_errors.ClientError as exc:
+                last = attempt == RATE_LIMIT_ATTEMPTS
+                if getattr(exc, "code", None) != 429 or last:
+                    raise
+                pause = min(rate_limit_wait(exc, wait), RATE_LIMIT_MAX_WAIT)
+                print(f"  [rate-limit] 429 on attempt {attempt}/{RATE_LIMIT_ATTEMPTS}; "
+                      f"waiting {pause:.0f}s. No tokens were spent on this reply.")
+                time.sleep(pause)
+                wait = min(wait * 2, RATE_LIMIT_MAX_WAIT)
 
     def record(self, resp, results):
         t = self.types
@@ -364,11 +467,35 @@ def run(variant, task_id, model, mock=False, quiet=False, provider="anthropic"):
             "tin": tin, "tout": tout, "calls": calls, "secs": round(secs),
             "cached": cached, "thinking": thinking}
 
+
+def run_or_resume(variant, task_id, model, mock, provider, resume):
+    surface = surface_a if variant == "a" else surface_b
+    fingerprint = surface_fingerprint(surface)
+    if resume:
+        cached = load_cached_run(provider, model, variant, task_id, fingerprint)
+        if cached:
+            print(f"\n=== variant {variant.upper()} | task {task_id}: RESUMED from "
+                  f"{cached.get('saved_at', 'an earlier run')} - not re-run")
+            cached["resumed"] = True
+            return cached
+    row = run(variant, task_id, model, mock=mock, quiet=False, provider=provider)
+    row["resumed"] = False
+    # Mock rows are constants, not measurements; caching them would let a later
+    # --resume quietly seed a real table with fabricated numbers.
+    if not mock:
+        save_cached_run(row, provider, model, fingerprint)
+    return row
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--variant", choices=["a", "b"])
     ap.add_argument("--task", type=int, choices=sorted(TASKS))
     ap.add_argument("--all", action="store_true")
+    ap.add_argument("--resume", action="store_true",
+                    help="with --all, reuse completed runs from runs/ instead of "
+                         "re-spending quota on them; resumed rows are marked * in "
+                         "the table. Delete runs/ to force a clean grid.")
     ap.add_argument("--mock", action="store_true")
     ap.add_argument("--provider", choices=sorted(SESSIONS), default="anthropic")
     ap.add_argument("--model", default=None, help="per-provider default: "
@@ -376,7 +503,7 @@ def main():
     args = ap.parse_args()
     model = args.model or MODEL_DEFAULTS[args.provider]
     if args.all:
-        rows = [run(v, t, model, mock=args.mock, quiet=False, provider=args.provider)
+        rows = [run_or_resume(v, t, model, args.mock, args.provider, args.resume)
                 for t in GRID for v in ("a", "b")]
         print("\n=== SUMMARY (paste this into the talk repo) ===")
         print(f"provider: {args.provider} | model: {model}"
@@ -385,12 +512,20 @@ def main():
               f"({len(GRID)} of {len(TASKS)} defined tasks)")
         for t in EXCLUDED:
             print(f"  excluded task {t}: {TASKS[t]['excluded']} (run it with --task {t})")
-        print(f"{'task':>4} | {'A ok':>5} {'A tokens':>9} {'A calls':>7} | {'B ok':>5} {'B tokens':>9} {'B calls':>7}")
+        print(f"{'task':>4} | {'A ok':>6} {'A tokens':>9} {'A calls':>7} | {'B ok':>6} {'B tokens':>9} {'B calls':>7}")
+        def cell(r):
+            flag = str(r["ok"]) + ("*" if r.get("resumed") else "")
+            return f"{flag:>6} {r['tokens']:>9,} {r['calls']:>7}"
         for t in GRID:
             a = next(r for r in rows if r["task"] == t and r["variant"] == "a")
             b = next(r for r in rows if r["task"] == t and r["variant"] == "b")
-            print(f"{t:>4} | {str(a['ok']):>5} {a['tokens']:>9,} {a['calls']:>7} |"
-                  f" {str(b['ok']):>5} {b['tokens']:>9,} {b['calls']:>7}")
+            print(f"{t:>4} | {cell(a)} | {cell(b)}")
+        resumed = [r for r in rows if r.get("resumed")]
+        if resumed:
+            stamps = sorted({r.get("saved_at", "unknown") for r in resumed})
+            print(f"* {len(resumed)} of {len(rows)} rows were RESUMED from earlier runs "
+                  f"({', '.join(stamps)}), not measured just now. Same model, same "
+                  "provider, same surface hash - but not the same sitting.")
         if args.provider == "gemini":
             for v in ("a", "b"):
                 hits = sum(r["cached"] for r in rows if r["variant"] == v)

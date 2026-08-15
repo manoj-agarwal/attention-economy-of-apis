@@ -20,15 +20,26 @@ You record the difference. The token meter is the show.
 
 ## Quickstart
 
-```bash
-pip install anthropic            # only dependency for live runs
-export ANTHROPIC_API_KEY=...     # key for the MEASURED agent (not Cursor)
+Use `python3` / `python3 -m pip`, not `python` / `pip`. On this machine bare
+`python` and `pip` resolve to Anaconda, which does not have the SDKs; the
+interpreter that does is `/usr/bin/python3`.
 
-python harness.py --variant a --task 1 --mock    # plumbing test, no API needed
-python harness.py --variant a --task 3           # live run, surface A, hero task
-python harness.py --variant b --task 3           # same task, surface B
-python harness.py --all                          # full 6x2 grid, one run each, table at the end
+```bash
+python3 -m pip install anthropic  # only dependency for live runs
+export ANTHROPIC_API_KEY=...      # key for the MEASURED agent (not Cursor)
+
+python3 harness.py --variant a --task 1 --mock    # plumbing test, no API needed
+python3 harness.py --variant a --task 3           # live run, surface A, hero task
+python3 harness.py --variant b --task 3           # same task, surface B
+python3 harness.py --all                          # full 6x2 grid, one run each, table at the end
 ```
+
+The Gemini path needs `python3 -m pip install google-genai` and `GEMINI_API_KEY`
+instead. Its free tier allows 5 requests/min/model and one turn is one request,
+so a grid trips the limit constantly; the harness waits each 429 out. If a grid
+dies anyway, `--all --resume` reuses completed runs recorded in `runs/` rather
+than re-spending quota, and marks those rows `*` in the table. `runs/` is
+derived and disposable — delete it to force a clean grid.
 
 Default measured model: claude-sonnet-4-6. A full 6x2 grid costs roughly a few
 dollars; run the grid before recording takes.

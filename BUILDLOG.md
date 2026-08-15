@@ -576,3 +576,162 @@ count(ct.compact(harness.to_gemini_declarations(surface_b.TOOLS)[0]))  # 724
 - Free-tier rate limits are unpublished. A full `--all` grid is 12 runs of up to
   25 turns each, which can plausibly hit an RPM cap; a 429 mid-grid would leave
   a partial table.
+
+## 2026-08-15: Run-environment audit + offline plumbing check (no live runs)
+
+Human asked how to run `weekend2-demo/` and what to expect. Read-only audit plus
+mock runs. No live request was sent, no surface touched, no seed touched.
+
+### Verified
+- Both surfaces import and all five demo files parse under the interpreter that
+  actually holds the SDKs (`/usr/bin/python3`, 3.9.6).
+- `--mock` completes the full loop on both providers: `a/1` and `b/3` on the
+  Anthropic path, `a/3` on the Gemini path (parses function calls, reads usage
+  fields, exercises the cached column). Cover-charge line reads 28 tools /
+  ~2,051 est for A and 6 tools / ~903 est for B; Gemini wire format for A reads
+  28 declarations / ~2,048 est, with the four no-argument tools named.
+- Mock runs were executed in a throwaway copy at `/tmp/apitalk_mockcheck`
+  (since deleted), so no constant-valued JSONL landed in `transcripts/`.
+  `transcripts/` remains empty — still zero live runs on record.
+- Working tree clean against HEAD before this entry.
+
+### Failed / open
+- **The documented command `python …` does not work on this machine.** `python`
+  resolves to `/opt/anaconda3/bin/python` (3.12.7), which has neither
+  `anthropic` nor `google-genai`. `python3` resolves to `/usr/bin/python3`
+  (3.9.6), which has both, installed into user site-packages. `AGENTS.md` and
+  `weekend2-demo/README.md` both say `python`. Not corrected — doc wording and
+  whether to build a venv are the human's call. `.venv/` and `venv/` exist at
+  the repo root but are both empty.
+- **`ANTHROPIC_API_KEY` is not set**, so the pinned default measured model
+  (`claude-sonnet-4-6`) cannot run. `GEMINI_API_KEY` is set, so
+  `--provider gemini` is the only live path currently available.
+- 3.9.6 is past end of life; `google-auth` and `urllib3` emit warnings on every
+  Gemini run. Cosmetic for correctness, but they land in the recording frame.
+- Switching providers to get a live number changes the measured agent. The
+  A-vs-B comparison stays internally valid only if both sides run on the same
+  provider and model; a Gemini grid is not comparable to an Anthropic grid, and
+  its `prompt_token_count` is not comparable to the corpus `o200k_base` median.
+  Reported, not acted on.
+
+## 2026-08-15: Gemini live path unblocked; grid attempted, NOT completed
+
+Human authorized a live `--all` grid on Gemini (accepting it as a separate
+experiment from the Anthropic numbers) and a docs fix. The grid did not run to
+completion. **No summary table exists. No live A/B numbers were produced.**
+
+### Changed (in-lane)
+- `harness.py`, `GeminiSession.__init__`: was `self.models = genai.Client().models`,
+  which keeps the `models` accessor but drops the last reference to the `Client`
+  that owns it. The `Client` is then garbage collected, collection closes the
+  shared httpx transport, and the first `generate_content` raises
+  `RuntimeError: Cannot send a request, as the client has been closed`. Now the
+  `Client` is held on the session. Provider plumbing only — it fires identically
+  for Surface A and Surface B, touches no surface, no seed, no scoring.
+- `AGENTS.md` and `weekend2-demo/README.md`: `python`/`pip` -> `python3`/
+  `python3 -m pip`, with a note naming `/usr/bin/python3` as the interpreter
+  holding the SDKs. Bare `pip` resolves to Anaconda's, same failure mode as
+  bare `python`.
+
+### Verified
+- Root cause reproduced directly, not inferred: discarding the `Client` and
+  keeping only `.models` fails with the closed-transport error; holding the
+  `Client` succeeds. Both patterns run back to back in one process.
+- A minimal live call to `gemini-3.6-flash` succeeds and returns usage
+  (`prompt_token_count=7`, `candidates_token_count=1`, `thoughts_token_count=95`
+  for a two-word prompt — thinking dominates at small sizes).
+- Gemini `--mock` path still passes after the fix (`b/3`, unchanged constants).
+- The first failure was NOT a sandbox artifact; it reproduced with the sandbox
+  fully disabled.
+
+### Failed / open
+- **The grid never ran.** Two attempts died on the client bug before the fix;
+  the post-fix attempt never launched because the agent's shell environment
+  stopped returning exit statuses. No transcript from any live grid run exists.
+- **A mock transcript is now sitting in `weekend2-demo/transcripts/`:**
+  `a_task1_1786777881.jsonl`, from a human-run `--variant a --task 1 --mock` in
+  a separate terminal. Every number in it is a `MockClient` constant, not a
+  measurement, and the folder is otherwise the live-evidence store. Left in
+  place — deleting from `transcripts/` is not the agent's call. Flagged for the
+  human to remove or annotate.
+- Live Gemini latency is ~10-25s per call with thinking enabled. A 12-run grid
+  of up to 25 turns each is plausibly 30-90 minutes, on top of the unpublished
+  free-tier rate limits already noted above.
+
+## 2026-08-15: First live grid attempt — killed by free-tier 429 at run 1
+
+Human ran `--provider gemini --all`. It died inside the first run (variant A,
+task 2) on turn 7. **No grid completed. No summary table. Still no live A/B
+numbers.** Console captured at `/tmp/gemini_grid.log`.
+
+### Measured: the free-tier limit is now a known quantity, not a guess
+The 429 body names it: metric
+`generativelanguage.googleapis.com/generate_content_free_tier_requests`, quotaId
+`GenerateRequestsPerMinutePerProjectPerModel-FreeTier`, **quotaValue 5** for
+`gemini-3.6-flash`, with `retryDelay: 57s`. Five requests per minute per model.
+One harness turn is one request. The earlier BUILDLOG note that free-tier limits
+were "unpublished" can be retired for this model.
+
+### Observed (partial run, NOT a result)
+Variant A / task 2 reached turn 6 and 13 tool calls at 32,244 input / 2,828
+output tokens without finishing, on "Schedule 30 minutes with Marcus next week."
+Call sequence included `get_working_hours` and `get_contact_timezone` twice
+each. Directionally this is the thesis, but the run was killed mid-flight and
+scored nothing, so it is an observation about a crashed trace and must not be
+quoted as a measurement.
+
+### Changed (in-lane)
+- `harness.py`: `GeminiSession` now retries 429s instead of letting one abort
+  the grid, waiting the delay the server itself specifies (RetryInfo block, then
+  the prose "retry in Ns", then exponential fallback), up to 8 attempts and
+  120s per wait. Each wait prints a visible `[rate-limit]` line.
+- Fairness: this is transport behaviour, identical for both surfaces, and a
+  waited-out 429 spends no tokens — it cannot move `tokens` or `calls`. It does
+  inflate the per-run `secs` figure, and it inflates it *more for Surface A*,
+  since A needs more turns and therefore trips the limit more often. `secs` is
+  not in the summary table; do not start quoting it without accounting for this.
+
+### Failed / open
+- **Unverified by execution.** The agent's shell has been unresponsive since
+  before this edit, so the retry path has not been run even in `--mock`. Syntax
+  and logic reviewed by reading only. Verify before trusting a long run.
+- **`--all` still has no resume.** Any abort restarts at task 2 variant A and
+  re-spends quota on work that already succeeded. At 5 RPM this is the dominant
+  cost of a failed attempt. Not fixed: making the grid skip or resume completed
+  runs changes what a published table represents, so it is the human's call.
+- A full grid is plausibly 100-150 requests. At 5 RPM that is a floor of roughly
+  20-30 minutes of pure waiting, before model latency.
+- Free-tier daily request caps (RPD) are a separate quota from this per-minute
+  one and have not been hit or characterised yet.
+
+### Added: `--all --resume` (human-requested)
+Opt-in. Off by default, so a plain `--all` is still a single clean sitting.
+
+- Completed, scored runs are written to `weekend2-demo/runs/` as one JSON row
+  each. `--resume` reuses them instead of re-spending quota; everything else
+  is measured normally.
+- **Resume keys on a completed row, not on a transcript.** A transcript cannot
+  reconstruct a table row: `ok` comes from running `task["check"](world)`
+  against final world state, and world state is not in the transcript. Skipping
+  on transcript existence would also have skipped the crashed task-2 run above,
+  whose transcript exists but whose run never finished — silently dropping a
+  row or reporting an unscored one. A row is saved only after scoring, so
+  interrupted runs leave no row and are re-run.
+- Each row stores a 12-char SHA-256 of that surface's `TOOLS`. A cached row is
+  refused if the fingerprint no longer matches, because a resumed row measured
+  against an older catalog would sit in the same table as fresh rows while
+  being incomparable to them. Model and provider are in the filename, so they
+  cannot cross-contaminate either.
+- Mock runs are never cached; caching constants would let a later `--resume`
+  seed a real table with fabricated numbers.
+- Resumed rows print `*` in the table, plus a footer naming how many rows came
+  from earlier sittings and when. A table that mixes sittings says so on its
+  face rather than in someone's memory.
+
+### Failed / open (resume)
+- **Also unverified by execution** — same dead shell. Neither the retry nor the
+  resume path has been run. Syntax and logic reviewed by reading only.
+- Resume deliberately does not check whether `harness.py` itself changed between
+  sittings, only the surface catalog. A harness edit that altered measurement
+  would not invalidate cached rows. Fingerprinting the harness was not done
+  unasked; flagged for the human.

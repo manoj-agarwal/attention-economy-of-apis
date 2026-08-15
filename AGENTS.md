@@ -15,15 +15,19 @@ You are the research assistant. The human owns every judgment call.
 
 ## Commands
 
+Use `python3` / `python3 -m pip`, not `python` / `pip`. On this machine bare
+`python` and `pip` resolve to Anaconda, which does not have the SDKs; the
+interpreter that does is `/usr/bin/python3`.
+
 ```bash
-pip install -r requirements.txt
-python 01_collect_catalogs.py 250                       # crawl (resumable)
-python 02_count_tokens.py                               # rebuild results.csv
-python 03_make_charts.py                                # rebuild charts
-python 04_cover_charge.py                               # surface cover charges
-pip install anthropic
-python weekend2-demo/harness.py --variant a --task 3    # live demo run
-python weekend2-demo/harness.py --all                   # 6x2 grid (2,3,4,5,7,8)
+python3 -m pip install -r requirements.txt
+python3 01_collect_catalogs.py 250                       # crawl (resumable)
+python3 02_count_tokens.py                               # rebuild results.csv
+python3 03_make_charts.py                                # rebuild charts
+python3 04_cover_charge.py                               # surface cover charges
+python3 -m pip install anthropic
+python3 weekend2-demo/harness.py --variant a --task 3    # live demo run
+python3 weekend2-demo/harness.py --all                   # 6x2 grid (2,3,4,5,7,8)
 ```
 
 ## Non-negotiable rules
