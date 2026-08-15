@@ -413,3 +413,166 @@ per-tool cost at the 16th percentile.
   which is a methods-note change and therefore human territory.
 - `weekend2-demo/README.md`'s "~2,050 tokens" sentence and
   `methods_note_template.md` remain untouched (AGENTS.md rule 3).
+
+## 2026-08-14: Gemini added as a second provider to the harness (mock only)
+
+### Why
+The human has no Anthropic key and does have a free Google AI Studio key. The
+Anthropic path is left intact for whenever a key appears; Gemini is an
+alternative, not a replacement.
+
+### Verified against the docs and against the installed SDK
+- Package: `google-genai`, imported `from google import genai`. The old
+  `google-generativeai` is deprecated with support ended **2025-11-30**
+  (ai.google.dev/gemini-api/docs/libraries, and the PyPI page for the old
+  package). Installed 1.47.0 `--user`.
+- Call shape: `client.models.generate_content(model=..., contents=[...],
+  config=types.GenerateContentConfig(system_instruction=..., tools=[...]))`.
+  The docs banner now pushes a newer **Interactions API**
+  (`client.interactions.create`, "only works for SDK newer than 2.0.0");
+  `hasattr(genai.Client, "interactions")` is **False** on 1.47.0, so
+  `models.generate_content` is the correct call here.
+- Token fields, read off `types.GenerateContentResponseUsageMetadata` rather
+  than from prose: `prompt_token_count`, `candidates_token_count`,
+  `cached_content_token_count`, `thoughts_token_count`,
+  `tool_use_prompt_token_count`, `total_token_count`. Semantics confirmed from
+  the aiplatform `UsageMetadata` proto and the js-genai type reference:
+  `total = prompt + candidates + tool_use_prompt + thoughts`;
+  `candidates` **excludes** thinking; `cached_content_token_count` is a
+  **subset of** `prompt_token_count`, not an addition to it.
+- Free tier, from ai.google.dev/gemini-api/docs/pricing (Standard rows reading
+  "Free of charge"): `gemini-3.6-flash`, `gemini-3.5-flash`,
+  `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`. Pro models read
+  "Not available" on the free tier. `gemini-3.7-flash` is listed as new stable
+  on the models page but has **no pricing section**, so its free-tier status is
+  unverified and it was not chosen as the default. Per-model RPM/RPD are no
+  longer published; the rate-limits page defers to AI Studio.
+- `Part.from_function_response` on 1.47.0 has signature
+  `(*, name, response, parts=None)` — **no `id` kwarg**, unlike the current docs
+  example. So the harness builds
+  `types.Part(function_response=types.FunctionResponse(id=..., name=..., response=...))`
+  directly, which does carry the id.
+
+### Applied (`harness.py` only)
+- `--provider {anthropic,gemini}` and a per-provider `--model` default:
+  `MODEL_DEFAULT` stays `claude-sonnet-4-6` (still line-quotable), plus
+  `GEMINI_MODEL_DEFAULT = gemini-3.6-flash`. `--model` overrides either.
+- `to_gemini_declarations(tools)`: the converter. Two rules, both pure functions
+  of the tool list, so A and B run the same code:
+  1. `input_schema` passes through **verbatim** as `parameters_json_schema`.
+     Gemini's typed `parameters` field is an OpenAPI 3.0 subset whose
+     `types.Schema.enum` is `Optional[list[str]]`, which **rejects** Surface B's
+     `duration_minutes: {"type":"integer","enum":[15,30,45,60]}` (reproduced: a
+     pydantic ValidationError). Taking that path would mean rewriting B's schema
+     and not A's — the exact asymmetry the fairness doctrine forbids.
+  2. A tool with empty `properties` is declared with **no parameters field at
+     all**. Fires on the four Surface A tools (`list_rooms`, `get_current_time`,
+     `get_notification_settings`, `get_user_preferences`) and on zero Surface B
+     tools, because only A owns no-argument tools. Same rule, different input.
+- Loop adapted: function-call parts in, function-response parts back. The
+  model's own `Content` object is appended **verbatim** before the results,
+  because Gemini 3 requires `thought_signature` parts to return inside the Part
+  they arrived in; rebuilding the turn from the normalized dict would strip them.
+- `gemini_to_plain()` normalizes into the existing plain shape, so one loop, one
+  meter and one summary table serve both providers. `tin` gets
+  prompt + tool_use_prompt, `tout` gets candidates + thoughts; those two sums
+  reconcile to `total_token_count` exactly, and a per-turn guard prints `[warn]`
+  if they ever fail to. Cached tokens are **reported, never added** (they are
+  already inside `prompt_token_count`). A second guard warns on any
+  `finish_reason` other than `STOP`, so a truncated turn cannot pass silently.
+- `MAX_OUTPUT_TOKENS` stays 1024 for Anthropic. `GEMINI_MAX_OUTPUT_TOKENS` is
+  4096 because Gemini 3.x Flash bills thinking against that budget and 1024
+  would truncate turns before a tool call appeared. Applied identically to both
+  surfaces, so B gains no turn-budget advantage. **Flagged for ratification:**
+  this is a harness knob, but it is the one number in this block that could be
+  argued to touch the comparison.
+- `MAX_TURNS` unchanged at 25 for both providers.
+
+### Verified (mock only, no live call, no key present)
+- Anthropic path is **byte-identical** to the pre-change harness: stdout diffed
+  across all 10 grid runs (variants a/b x tasks 2,3,4,5,7,8 — 10 of the 12
+  compared) and the JSONL transcript bodies compared equal.
+- All 16 Gemini combinations (variants a/b x tasks 1-8) run through the real
+  argparse path with no exception and **no `[warn]` line**, Python 3.9.6.
+- The exact request body was captured by intercepting
+  `BaseApiClient.request` — after the body is assembled, before anything is
+  sent — with a dummy key. Surface A: 28 declarations, 24 carrying
+  `parameters_json_schema`, 0 carrying the legacy `parameters`, 4 with no
+  parameters key, **0 shipping an empty `properties` object**, and every
+  surviving schema byte-identical to the surface source. Surface B: 6/6/0/0/0,
+  same identity check, integer enum intact. Bodies 7,543 and 3,598 compact bytes.
+- The SDK ships this field as snake_case `parameters_json_schema` on the Gemini
+  Developer API path (there is no `_FunctionDeclaration_to_mldev` converter, only
+  a Vertex one, so the fields pass through unrenamed). That is valid ProtoJSON —
+  protobuf.dev/programming-guides/json/ states parsers must accept both
+  lowerCamelCase and the original proto field name — and python-genai issue
+  #1147 plus livekit/agents PR #5560 both record `parameters_json_schema`
+  working on the regular `generate_content` path. **Caveat: it does NOT work on
+  Live API models**, where it silently yields empty arguments.
+- Surfaces are not mutated by conversion: `surface_a.TOOLS` and
+  `surface_b.TOOLS` serialize identically before and after.
+- Tool results go back as parsed objects, not escaped strings. All 28 Surface A
+  and 6 Surface B dispatch outputs parse to dicts, so `to_function_response`'s
+  string fallback never fires for either surface.
+- Transcripts were redirected to a scratch dir for every check;
+  `weekend2-demo/transcripts/` is still present and still **empty**, as the
+  aborted live run left it. Scratch artifacts live outside the repo at
+  `/tmp/apitalk_scratch/`, `/tmp/apitalk_scratch2/` and `/tmp/verify_*.py`, and
+  were left in place rather than deleted.
+- Files modified vs `3ad8f9f`: `weekend2-demo/harness.py` and this log only.
+  `surface_a.py`, `surface_b.py`, `calendar_world.py`, `tasks.py` untouched.
+  Seed 1776 untouched. Not committed, not pushed.
+
+### Measured: wire-format serialization cost (report-only, not a live number)
+Code path — recipe imported, never reimplemented, per the data-handling rule:
+
+```python
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("count_tokens", "02_count_tokens.py")
+ct = importlib.util.module_from_spec(spec); spec.loader.exec_module(ct)
+count, method = ct.build_counter()          # -> tiktoken:o200k_base
+sys.path.insert(0, "weekend2-demo")
+import surface_a, surface_b, harness
+count(ct.compact(surface_a.TOOLS))                                    # 1703
+count(ct.compact(harness.to_gemini_declarations(surface_a.TOOLS)[0]))  # 1667
+count(ct.compact(surface_b.TOOLS))                                    # 719
+count(ct.compact(harness.to_gemini_declarations(surface_b.TOOLS)[0]))  # 724
+```
+
+| surface | anthropic format | gemini format | delta |
+|---|---|---|---|
+| A | 1,703 | 1,667 | −2.1% |
+| B | 719 | 724 | +0.7% |
+
+- A/B ratio moves from **2.37x to 2.30x**. A shrinks because its four
+  no-argument tools shed a whole `{"type":"object","properties":{},"required":[]}`
+  block that B never had; B grows slightly because `input_schema` is a shorter
+  key than `parameters_json_schema` and B pays that rename on every tool.
+- **These are o200k_base counts of Gemini-format JSON.** They measure how much
+  JSON each format spends, not what Gemini's own tokenizer would charge.
+
+### Failed / open
+- **Nothing here is a live measurement.** No key was present, no request was
+  sent, and every token figure in this block is either a MockClient constant or
+  an o200k_base count of a serialized catalog.
+- The cover-charge statistic in `data/results.csv` and `04_cover_charge.py` is
+  `tiktoken:o200k_base`; Gemini uses its own tokenizer. A live Gemini
+  `prompt_token_count` is therefore **not comparable** to the corpus median of
+  1,879 tokens. Reported, not acted on.
+- The SDK ships a local tokenizer (`google.genai.local_tokenizer`) but it needs
+  the `sentencepiece` extra and `_local_tokenizer_loader` maps only up to
+  Gemini 2.5 (gemma3); there is **no Gemini 3.x entry**, so it cannot price
+  `gemini-3.6-flash` offline.
+- **Implicit caching is a live threat to the A/B comparison.** It is on by
+  default for Gemini 2.5 and newer, with a minimum of 4,096 tokens for the
+  Gemini 3 family (2,048 for Gemini 2). Surface A's prompt can cross that floor
+  while Surface B's may never reach it, so A could quietly collect a 90%
+  discount B is ineligible for. The harness therefore prints cache hits as a
+  separate figure and never deducts them. No mitigation applied — this is the
+  human's call.
+- `gemini-3.6-flash` is a thinking model, so a share of `tout` is thinking
+  rather than visible output. The meter breaks it out; the summary table folds
+  it into the token total, as it must to stay comparable with Anthropic output.
+- Free-tier rate limits are unpublished. A full `--all` grid is 12 runs of up to
+  25 turns each, which can plausibly hit an RPM cap; a 429 mid-grid would leave
+  a partial table.

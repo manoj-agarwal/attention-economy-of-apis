@@ -1,14 +1,14 @@
 # Agent instructions — API Attention Study
 
 This repo contains the empirical work behind the keynote "The Attention Economy of
-APIs": a measurement study of public MCP server tool catalogs (weekend1-starter/)
+APIs": a measurement study of public MCP server tool catalogs (root-level scripts)
 and a recorded demo pair comparing two tool-surface designs (weekend2-demo/).
 You are the research assistant. The human owns every judgment call.
 
 ## Layout
 
-- `weekend1-starter/` — registry crawler, token counter, chart scripts, data/,
-  data dictionary, wrapper checklist, methods note.
+- Repo root — registry crawler, token counter, chart scripts, cover-charge
+  script, `data/`, `charts/`, data dictionary, wrapper checklist, methods note.
 - `weekend2-demo/` — simulated calendar world, Surface A (endpoint wrapper),
   Surface B (task tools), harness with token meter, tasks, transcripts/.
 - `BUILDLOG.md` — running record of delegated work and human verification.
@@ -16,13 +16,14 @@ You are the research assistant. The human owns every judgment call.
 ## Commands
 
 ```bash
-pip install -r weekend1-starter/requirements.txt
-python weekend1-starter/01_collect_catalogs.py 250      # crawl (resumable)
-python weekend1-starter/02_count_tokens.py              # rebuild results.csv
-python weekend1-starter/03_make_charts.py               # rebuild charts
+pip install -r requirements.txt
+python 01_collect_catalogs.py 250                       # crawl (resumable)
+python 02_count_tokens.py                               # rebuild results.csv
+python 03_make_charts.py                                # rebuild charts
+python 04_cover_charge.py                               # surface cover charges
 pip install anthropic
 python weekend2-demo/harness.py --variant a --task 3    # live demo run
-python weekend2-demo/harness.py --all                   # full 6x2 grid
+python weekend2-demo/harness.py --all                   # 6x2 grid (2,3,4,5,7,8)
 ```
 
 ## Non-negotiable rules

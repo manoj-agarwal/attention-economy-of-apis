@@ -1,6 +1,6 @@
 ---
 description: Data-handling guardrails for the catalog-cost measurement pipeline
-globs: ["weekend1-starter/**"]
+globs: ["0*_*.py", "data/**", "charts/**", "data_dictionary.md"]
 alwaysApply: false
 ---
 
