@@ -1,0 +1,22 @@
+---
+description: Data-handling guardrails for the catalog-cost measurement pipeline
+globs: ["weekend1-starter/**"]
+alwaysApply: false
+---
+
+# Measurement pipeline rules
+
+- Do keep dedupe logic in `02_count_tokens.py` (analysis), not in the crawler,
+  because silently dropping catalogs at collection time hides evidence.
+- Do preserve the `count_method` column and its estimate/tiktoken distinction;
+  rows marked `estimate:*` must never feed a headline statistic, because only
+  tokenizer-true counts are quotable on stage.
+- Do treat `collect_log.csv` as append-only attempt history, because the
+  retry trail (fail at 10:02, succeed at 11:40) is audit evidence, not noise.
+- Do keep one serialization recipe (compact JSON, sorted keys, unicode kept)
+  for every server, because formatting drift would masquerade as design drift.
+- Do not change data-dictionary field definitions without flagging it as a
+  methods-note change, because frozen definitions are what make N comparable
+  across crawl extensions.
+- When adding any new derived statistic, print the code path that produced it
+  in BUILDLOG.md, because every number needs a reproducible origin.

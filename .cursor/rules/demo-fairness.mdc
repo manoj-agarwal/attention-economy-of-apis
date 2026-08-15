@@ -1,0 +1,25 @@
+---
+description: Fairness doctrine for the demo surfaces - the credibility of the talk depends on these
+globs: ["weekend2-demo/**"]
+alwaysApply: false
+---
+
+# Demo fairness rules
+
+- Surface A is competent, not sabotaged: accurate schemas, truthful terse
+  descriptions, verbose-but-honest payloads, bare status-code errors. Do not
+  "improve" A's descriptions or errors, because A's realism (its cover charge
+  sits at the field median) is the demo's defense against strawman accusations.
+- Surface B gets no secret powers: same world primitives, same model, same
+  turn budget as A. Do not add capabilities to B that A cannot reach through
+  its own tools, because the demo's claim is architectural, not magical.
+- The error-style contrast is intentional: A relays "503 Service Unavailable",
+  B translates and retries. Do not unify them, because that contrast IS the
+  error-tax exhibit.
+- Bug fixes may touch `harness.py`, `tasks.py` checks, and `calendar_world.py`
+  plumbing. Any change to either surface's tools, descriptions, schemas, or
+  dispatch behavior requires explicit human approval first, because surface
+  changes alter the experiment itself.
+- Never edit files in `transcripts/`, because recorded runs are evidence.
+- Keep the world deterministic: seed stays 1776; the only sanctioned
+  nondeterminism is the model's own sampling.
