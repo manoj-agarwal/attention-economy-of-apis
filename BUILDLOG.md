@@ -378,3 +378,38 @@ per-tool cost at the 16th percentile.
   number regenerates like the rest of the derived data.
 - Still no live API runs, so there remain no measured token or verdict numbers
   for the A/B comparison itself.
+
+## 2026-08-14: cover charge promoted to a tracked script
+
+### Applied
+- Added `04_cover_charge.py` at the repo root, beside `01_`/`02_`/`03_`. (The
+  scripts live at the root; `AGENTS.md` still describes a `weekend1-starter/`
+  directory that does not exist. Followed the repo, not the doc.)
+- It is now the reproducible origin for the cover-charge statistic recorded in
+  the previous entry, replacing the inline snippet there.
+- The recipe is imported, never reimplemented: `importlib.util.spec_from_file_location`
+  loads `02_count_tokens.py` (its leading digit blocks a normal import) and the
+  script calls that module's own `compact()` and `build_counter()`. Nothing is
+  hardcoded — every figure, including the corpus median, 90th percentile and all
+  percentiles, is recomputed from `data/results.csv` and `data/raw/` at run time.
+- Output is stdout only. No file is written anywhere, so no new derived data and
+  no data-dictionary question.
+
+### Verified
+- Reproduces the previous entry's figures exactly: Surface A 1,703 tokens,
+  Surface B 719 tokens, ratio 2.37x, under `tiktoken:o200k_base`.
+- Deterministic: two consecutive runs are byte-identical.
+- The estimate guard works. With the tokenizer forced to fail, the script prints
+  a NOT QUOTABLE banner, reports `estimate:chars/3.5`, and exits **1**; with the
+  real tokenizer it exits 0. That fallback path also confirms where the README's
+  "~2,050" came from — the estimate counter returns exactly 2,051 for Surface A
+  and 903 for Surface B.
+- `git status` shows only the new untracked script; `data/` is unchanged.
+
+### Not done
+- Not committed and not pushed; the human reviews the script first.
+- No CSV output. Proposed instead of applied: if this should feed a chart or the
+  methods note, a `data/cover_charge.csv` would need new data-dictionary fields,
+  which is a methods-note change and therefore human territory.
+- `weekend2-demo/README.md`'s "~2,050 tokens" sentence and
+  `methods_note_template.md` remain untouched (AGENTS.md rule 3).
