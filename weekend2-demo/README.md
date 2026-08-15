@@ -66,7 +66,9 @@ BUILDLOG.md with today's date, flag any task where A succeeded and B failed
   Errors are bare status codes, because that is what real wrappers relay.
 - `surface_b.py` — 6 task tools. Choreography, timezone math, retries, and error
   translation live inside the tools, where they are deterministic and free.
-- `tasks.py` — 6 tasks with programmatic success checks against world state.
+- `tasks.py` — 8 tasks with programmatic success checks against world state; 6 run
+  in the `--all` grid, and tasks 1 and 6 are excluded with their reasons stated in
+  the file and reprinted above the summary table.
   Task 5 flips the failure switch (one transient 503 on room booking).
 - `harness.py` — the agent loop, live token meter, JSONL transcripts, results table.
 - `transcripts/` — evidence. Never edited, never regenerated in place.

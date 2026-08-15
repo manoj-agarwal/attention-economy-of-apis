@@ -15,7 +15,7 @@ from pathlib import Path
 
 from calendar_world import World
 import surface_a, surface_b
-from tasks import TASKS
+from tasks import TASKS, GRID, EXCLUDED
 
 MODEL_DEFAULT = "claude-sonnet-4-6"
 MAX_TURNS = 25
@@ -33,8 +33,8 @@ class MockClient:
         self.script = ([("search_contacts", {"query": "priya"}), ("get_free_busy",
                         {"contact_id": "priya", "time_min": "2026-08-24T00:00:00Z",
                          "time_max": "2026-08-29T00:00:00Z"})] if variant == "a"
-                       else [("find_meeting_time", {"attendees": ["Priya"]}),
-                             ("schedule_meeting", {"attendees": ["Priya"], "topic": "Q3 roadmap"})])
+                       else [("find_meeting_time", {"attendees": ["Marcus"]}),
+                             ("schedule_meeting", {"attendees": ["Marcus"], "topic": "Q3 roadmap"})])
         self.i = 0
     def create(self, **kw):
         if self.i < len(self.script):
@@ -66,6 +66,8 @@ def run(variant, task_id, model, mock=False, quiet=False):
     catalog = json.dumps(surface.TOOLS, separators=(",", ":"), sort_keys=True)
     if not quiet:
         print(f"\n=== variant {variant.upper()} | task {task_id}: {task['prompt'][:60]}...")
+        if task.get("excluded"):
+            print(f"  [note] task {task_id} is excluded from the --all grid: {task['excluded']}")
         print(f"  [meter] cover charge: {len(surface.TOOLS)} tools, ~{est_tokens(catalog):,} tokens (est)")
     if mock:
         client = MockClient(variant)
@@ -125,10 +127,14 @@ def main():
     args = ap.parse_args()
     if args.all:
         rows = [run(v, t, args.model, mock=args.mock, quiet=False)
-                for t in sorted(TASKS) for v in ("a", "b")]
+                for t in GRID for v in ("a", "b")]
         print("\n=== SUMMARY (paste this into the talk repo) ===")
+        print(f"grid: tasks {', '.join(str(t) for t in GRID)} "
+              f"({len(GRID)} of {len(TASKS)} defined tasks)")
+        for t in EXCLUDED:
+            print(f"  excluded task {t}: {TASKS[t]['excluded']} (run it with --task {t})")
         print(f"{'task':>4} | {'A ok':>5} {'A tokens':>9} {'A calls':>7} | {'B ok':>5} {'B tokens':>9} {'B calls':>7}")
-        for t in sorted(TASKS):
+        for t in GRID:
             a = next(r for r in rows if r["task"] == t and r["variant"] == "a")
             b = next(r for r in rows if r["task"] == t and r["variant"] == "b")
             print(f"{t:>4} | {str(a['ok']):>5} {a['tokens']:>9,} {a['calls']:>7} |"

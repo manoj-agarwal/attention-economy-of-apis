@@ -184,6 +184,26 @@ timezones (LA/NY), not 4 across 4.
 5. The grid is now 8x2, not 6x2. The live run will cost roughly a third more
    than the README's estimate.
 
+## 2026-08-14: First commit of weekend2-demo + guardrails (agent block)
+
+### Applied
+- Commit `e4c2579` on `main`: 13 files, 1110 insertions. weekend2-demo
+  (calendar_world, surface_a, surface_b, harness, tasks, README), AGENTS.md,
+  `.cursor/rules/` (data-handling, demo-fairness), TokenCost.png, ToosCount.png,
+  a `.gitignore` for macOS/Python junk, and this BUILDLOG.
+
+### Verified
+- Staged exactly the 13 intended paths. `git status --porcelain` before the
+  commit showed no `.DS_Store` (root and `.cursor/` copies now ignored) and
+  nothing under `data/raw/`.
+- Working tree clean after the commit, apart from this entry, which is left
+  uncommitted for human review.
+- Not pushed. The repo has no `origin` remote and `gh` was not invoked.
+
+### Failed / open
+- Nothing failed in this block. Still no live API runs, so nothing in this
+  commit carries measured token numbers.
+
 ## 2026-08-14: Live hero-task measurement ATTEMPTED — aborted, no numbers (agent block)
 
 ### Attempted
@@ -239,3 +259,122 @@ because variant B was never run.
 - The first real measurement is still outstanding. The human holds the key; the
   two commands above are unchanged and ready to re-run as-is once it is present
   in the harness's environment.
+
+## 2026-08-14: grid trimmed to 6x2 by visible exclusion (mock only)
+
+### Applied
+- `tasks.py`: tasks 1 and 6 keep their definitions and their checks byte-for-byte
+  and gain an `excluded` string plus a comment giving the reason. Added `GRID`
+  (tasks 2, 3, 4, 5, 7, 8) and `EXCLUDED` (tasks 1, 6) derived from that flag,
+  so the grid membership is computed from the stated reason rather than from a
+  hand-maintained second list. No renumbering; task 3 is still the hero task.
+- `harness.py`: `--all` iterates `GRID`; `--task N` still accepts all 8 ids, and
+  running an excluded one prints `[note] task N is excluded from the --all grid:
+  <reason>`. The summary block now opens with the grid membership and one line
+  per excluded task including its reason, so the exclusions travel with the
+  table when it is pasted.
+- `harness.py` MockClient: the variant-B script now schedules with Marcus
+  instead of Priya, who is unschedulable under the 9-17 band. The smoke test
+  covers the success path again — variant B on task 2 reports SUCCESS in mock
+  where it previously hit `no_slot`. The variant-A script was left on Priya:
+  its two calls are reads that already succeed.
+
+### Verified
+- Perfect-play direct-dispatch simulation re-run. All six grid tasks still pass
+  for BOTH surfaces, with call counts unchanged from the previous block
+  (A: 6/13/5/14/11/4 for tasks 2/3/4/5/7/8; B: 1/1/1/1/2/2). Nothing regressed.
+- Excluded tasks behave as ruled: task 1 still passes both surfaces (vacuously),
+  task 6 still fails both. Neither appears in `--all`.
+- `--all --mock` runs 12 combinations (6x2) and prints both exclusion lines.
+  `--variant b --task 1 --mock` still runs on demand and shows the note.
+- Transcripts redirected to a scratch dir for all verification; the empty
+  `weekend2-demo/transcripts/` from the failed live run is untouched and still
+  empty. Scratch deleted. No live API calls, so **no measurement numbers exist
+  from this block**; the mock token figures are MockClient constants.
+- Files modified vs `e4c2579`: `tasks.py`, `harness.py`, `BUILDLOG.md` only.
+  `surface_a.py`, `surface_b.py`, `calendar_world.py` untouched.
+
+### Open
+- `find_meeting_time` is still exercised by no task, for the reason recorded in
+  the previous entry: it mutates nothing, so an outcome check cannot see it.
+- Priya and Elena remain absent from every scheduling task. Restoring them needs
+  the 9-17 band widening, which has not been approved.
+- The live 6x2 measurement is still outstanding.
+
+## 2026-08-14: tokenizer-true cover charge for both demo surfaces
+
+### Method and code path
+- `tiktoken 0.13.0` installed `--user` (satisfies `requirements.txt: tiktoken>=0.7`);
+  `o200k_base` vocabulary downloaded and loaded successfully.
+- The recipe was **imported, not reimplemented**, so it cannot drift from the
+  corpus: `02_count_tokens.py` was loaded via `importlib` and its own
+  `compact()` and `build_counter()` were used. `build_counter()` returned
+  `tiktoken:o200k_base`, so every figure below is quotable under the
+  data-handling rule. Reproduce with:
+
+```python
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("count_tokens", "02_count_tokens.py")
+ct = importlib.util.module_from_spec(spec); spec.loader.exec_module(ct)
+count, method = ct.build_counter()          # -> tiktoken:o200k_base
+sys.path.insert(0, "weekend2-demo")
+import surface_a, surface_b
+count(ct.compact(surface_a.TOOLS))          # -> 1703
+count(ct.compact(surface_b.TOOLS))          # -> 719
+```
+
+### Numbers (tiktoken:o200k_base, compact/sorted/unicode-kept)
+| | tools | cover charge | median tokens/tool | harness `est_tokens()` | est error |
+|---|---|---|---|---|---|
+| Surface A | 28 | **1,703** | 43 | 2,051 | +20.4% |
+| Surface B | 6 | **719** | 106 | 903 | +25.6% |
+
+- Ratio A/B, tokenizer-true: **2.37x** (the estimate put it at 2.27x).
+- The README's "~2,050 tokens" is the character heuristic and overstates the
+  true count by 348 tokens. Not corrected here — rule 3, human's to write.
+
+### Corpus comparison (data/results.csv, 162 rows, all `tiktoken:o200k_base`)
+- Median catalog cost 1,879; 90th percentile 13,488; median tool count 7.0;
+  median of per-catalog `median_tool_tokens` 191. (Recomputed from the CSV, and
+  they match the figures already in this log.)
+- Surface A at 1,703 tokens = **44th percentile, 0.91x the field median**.
+- Surface B at 719 tokens = 30th percentile.
+
+### Comparability verdict: NOT strictly apples-to-apples
+The corpus rows are real MCP catalogs; `surface_a.TOOLS` is an Anthropic-format
+list built by a local `_t()` helper. Measured differences across all 2,401
+corpus tools:
+- Schema key naming is a non-issue: all 2,401 corpus tools use `inputSchema`,
+  Surface A uses `input_schema`, and renaming costs **+0 tokens** under o200k_base.
+- Envelope is the real gap. Corpus tools routinely carry keys Surface A has
+  none of: `annotations` on 1,324 tools (55%), `title` 1,035 (43%),
+  `outputSchema` 973 (41%), `execution` 726 (30%), `_meta` 217 (9%). Inside the
+  schema, `$schema` appears on 847 (35%) and `additionalProperties` on 775 (32%);
+  Surface A's schemas carry only `type`/`properties`/`required`.
+- Adding just the two commonest schema-internal extras to Surface A takes it
+  from 1,703 to **2,263 tokens (+33%)**, moving it to the 54th percentile and
+  1.20x the median. That is a floor on the correction, not the whole of it —
+  it excludes `annotations`, `outputSchema`, `title` and `_meta` entirely.
+- So Surface A as authored is **leaner** than a real registry catalog carrying
+  the same tools. The direction favours honesty about A (it is not padded to
+  win the argument), but it means the median comparison is being made against
+  rows that include envelope A does not pay for.
+
+### The composition caveat the "typical public server" claim depends on
+Surface A only lands near the median in total because two atypical properties
+cancel:
+- 28 tools = **86th percentile** by tool count (only 23 of 162 catalogs have >=28).
+- 43 tokens/tool = **0th percentile** by per-tool cost, against a field median
+  of 191 tokens/tool.
+A is therefore a large, unusually terse catalog, not a median-shaped one.
+Surface B, at 6 tools, is nearer to typical on tool count (48th percentile) with
+per-tool cost at the 16th percentile.
+
+### Not done, deliberately
+- `weekend2-demo/README.md`'s cover-charge sentence and
+  `methods_note_template.md` were left untouched (AGENTS.md rule 3).
+- No permanent script was added for this statistic; the snippet above is the
+  reproducible origin. Proposed: promote it to `04_cover_charge.py` so the
+  number regenerates like the rest of the derived data.
+- Still no live API runs, so there remain no measured token or verdict numbers
+  for the A/B comparison itself.

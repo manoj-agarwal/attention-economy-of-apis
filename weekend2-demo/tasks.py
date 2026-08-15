@@ -43,6 +43,10 @@ TASKS = {
     1: {"prompt": "What's on my calendar tomorrow?",
         "failure_switch": False,
         "check": lambda w: True,  # informational; judge by transcript, both surfaces should breeze
+        # Excluded from the published grid, human ruling 2026-08-14: the check is
+        # always true, so the row reports SUCCESS whatever either surface does.
+        # Still runnable on demand with --task 1.
+        "excluded": "always-true check; the row reports SUCCESS regardless of behaviour",
         "note": "Fairness task: A should succeed too. Shows B is not magic."},
     2: {"prompt": "Schedule 30 minutes with Marcus next week to talk through the Q3 roadmap.",
         "failure_switch": False,
@@ -80,6 +84,10 @@ TASKS = {
             for e in w.events.values()
             if "you" in e["attendees"] and e["start"].strftime("%A") == "Friday"
             and e["start"] < w.t0 + timedelta(days=7)) and len(w.notifications) > 0,
+        # Excluded from the published grid, human ruling 2026-08-14: unpassable by
+        # either surface. Still runnable on demand with --task 6.
+        "excluded": "unpassable by both surfaces: 'you' has no Friday meetings under the "
+                    "day-shifted seeding, and the seeding fix was declined",
         "note": "Bulk operation with side duty (notifications). KNOWN BROKEN: the world's "
                 "day-shifted seeding leaves 'you' with no Friday meetings, so the cancellation "
                 "clause is vacuous and only the notification clause bites. Left as-is by "
@@ -103,3 +111,9 @@ TASKS = {
         "note": "Suits Surface A: one known event, one delete, one notification. B must first "
                 "locate the day before it can cancel, so the gap here should be narrow."},
 }
+
+# The published grid. Excluded tasks stay defined above and stay runnable via
+# --task N; they are dropped from --all rather than deleted, so the reason a row
+# is missing travels with the table instead of living only in someone's memory.
+GRID = [tid for tid in sorted(TASKS) if not TASKS[tid].get("excluded")]
+EXCLUDED = [tid for tid in sorted(TASKS) if TASKS[tid].get("excluded")]
