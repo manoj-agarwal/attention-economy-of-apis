@@ -183,3 +183,59 @@ timezones (LA/NY), not 4 across 4.
    and the two most dramatic timezone gaps are unused by the measured set.
 5. The grid is now 8x2, not 6x2. The live run will cost roughly a third more
    than the README's estimate.
+
+## 2026-08-14: Live hero-task measurement ATTEMPTED — aborted, no numbers (agent block)
+
+### Attempted
+The authorized live run of the hero task (task 3) on both surfaces, from
+`weekend2-demo/`, Python 3.9.6, `anthropic` 0.122.0:
+
+    python3 harness.py --variant a --task 3   # invoked; aborted before first API call
+    python3 harness.py --variant b --task 3   # NEVER invoked (see below)
+
+Model: none was contacted. `--model` was not passed, so the harness default
+`claude-sonnet-4-6` (`harness.py` MODEL_DEFAULT, line 20) would have been used,
+but no request reached the API, so even the model string is unverified here.
+
+### Result: no measured numbers exist for this block
+Variant A raised `TypeError: "Could not resolve authentication method..."` from
+`anthropic/_client.py::_validate_headers`; the SDK found no credential in this
+shell's environment. The traceback terminates inside `_build_request`, before
+any HTTP request is sent. Therefore:
+
+- Zero tokens billed, zero turns, zero tool calls, no SUCCESS/FAIL verdict.
+  There is no A:B token ratio, because a ratio needs two totals and we have none.
+- Intended design was n=1 per variant; achieved n=0 per variant.
+- `transcripts/` was created (harness.py line 83, which runs before the turn
+  loop) but is EMPTY — 0 files. `tpath` is only written once a response arrives,
+  and none did. The empty directory is left in place, not deleted.
+- Per the human's standing instruction: credentials were not inspected, no shell
+  profile or config file was searched, and the failing run was not retried.
+  Variant B was deliberately not invoked — it fails identically at the same line
+  and yields no measurement, and the instruction on an auth failure is to stop.
+
+### The one figure that printed, and why it is not quotable
+    [meter] cover charge: 28 tools, ~2,051 tokens (est)
+
+Code path for this derived figure (per `.cursor/rules/data-handling.mdc`):
+`harness.py` line 66 serializes `surface_a.TOOLS` via
+`json.dumps(..., separators=(",",":"), sort_keys=True)`; line 69 passes that
+string to `est_tokens()` (line 24), which is `max(1, round(len(s) / 3.5))` — a
+character heuristic, not a tokenizer. An estimate must never feed a headline
+statistic, so 2,051 is a display number only. The `28 tools` count is exact
+(`len(surface_a.TOOLS)`). Surface B's cover-charge line was never printed,
+because variant B was never run.
+
+### Environment change, outside the repo
+- `python3 -m pip install --user anthropic` (sanctioned by AGENTS.md, and
+  human-approved at the prompt): installed anthropic 0.122.0 plus 16 deps into
+  `~/Library/Python/3.9/`. An in-workspace virtualenv was attempted first and
+  refused by the sandbox.
+- No source file was modified. Seed 1776, world, surfaces, and tasks untouched.
+  `git status --short` showed only ` M BUILDLOG.md` from a concurrent agent's
+  uncommitted edit, which was left alone.
+
+### Failed / open
+- The first real measurement is still outstanding. The human holds the key; the
+  two commands above are unchanged and ready to re-run as-is once it is present
+  in the harness's environment.
