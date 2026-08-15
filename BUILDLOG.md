@@ -735,3 +735,235 @@ Opt-in. Off by default, so a plain `--all` is still a single clean sitting.
   sittings, only the surface catalog. A harness edit that altered measurement
   would not invalidate cached rows. Fingerprinting the harness was not done
   unasked; flagged for the human.
+
+## 2026-08-15 (morning): The Gemini free tier cannot run this grid — 20/day
+
+### Measured: there are TWO free-tier quotas, and the binding one is per-day
+Last night's 429 named `GenerateRequestsPerMinutePerProjectPerModel-FreeTier`,
+quotaValue **5** — a burst limit. This morning's names
+`GenerateRequestsPerDayPerProjectPerModel-FreeTier`, quotaValue **20** for
+`gemini-3.6-flash`. Twenty requests per day, and one harness turn is one
+request.
+
+Surface A alone spent 13 tool calls across 6 turns on task 2 without finishing.
+A full 6x2 grid is on the order of 100+ requests. **The grid is roughly five
+times the entire daily free-tier allowance, so it cannot complete on this tier
+at any pacing.** Even the two clips the Sunday gate needs (task 3 on A and B)
+are ~18 requests, i.e. essentially the whole day's budget with nothing left for
+a retake.
+
+Today's allowance is spent. Nothing further runs on this key until the daily
+boundary.
+
+### Changed (in-lane)
+- `harness.py`: added `Pacer`, holding requests to a fixed minimum spacing,
+  applied in the shared `run()` loop so it covers both providers. Interval is
+  per-provider (`MIN_REQUEST_INTERVAL`: gemini 12.0s = 60/5, anthropic 0.0) and
+  overridable with `--min-interval`; `--min-interval 0` disables it, which is
+  what recording takes should use so the meter does not sit idle between turns.
+  Pacing is skipped entirely for `--mock`. Per-run `paced_secs` is now in the
+  result row and printed beside `secs`, so wall-clock stays interpretable.
+- `harness.py`: fixed a retry bug this run exposed. A per-day 429 carries
+  `retryDelay: 0s`, so the loop spun attempts 2-5 in about a second and
+  reported exhaustion rather than the real cause. Retries now floor at
+  `RATE_LIMIT_MIN_WAIT` (5s), and `is_daily_quota()` refuses to retry a per-day
+  cap at all, printing that pacing and retrying are both powerless against it.
+
+### Verified
+- `Pacer(1.0)` over four calls waits `[0, 1, 1, 1]`, elapsed 3.01s, no drift;
+  `Pacer(0)` is a no-op.
+- Pacing engaged live: `[pace] holding requests 12s apart (5/min)`.
+- The retry safety net works live — it absorbed two per-minute 429s and the run
+  proceeded to turn 1 and three tool calls.
+- `is_daily_quota` returns True for the per-day violation and the string
+  fallback, False for the per-minute one and for unrelated errors. The 0.539s
+  server delay now floors to 5.0s.
+
+### Failed / open
+- **Still zero completed live runs.** `weekend2-demo/runs/` is empty, no summary
+  table has ever been produced, and there are still no live A/B numbers of any
+  kind. Every token figure quoted anywhere so far is either a mock constant, an
+  offline tokenizer count, or a partial from a killed run.
+- Pacing addressed the per-minute limit, which turned out not to be the binding
+  constraint. It is correct and worth keeping, but it did not and cannot solve
+  this. Recorded plainly so the next session does not re-derive it.
+- The per-day reset boundary was not confirmed from the API (commonly midnight
+  Pacific, unverified here). Do not plan around an assumed reset time.
+- Decision now belongs to the human: paid tier on Google, an Anthropic key for
+  the pinned `claude-sonnet-4-6`, a different free model with a larger daily
+  cap (changes the measured agent), or scoping the run down to what 20
+  requests/day can actually buy.
+
+## 2026-08-15 (midday): Spike — can the Cursor SDK drive the frozen surfaces?
+
+Human has LLM access through a Cursor enterprise plan and asked whether it can
+be used from code. Built a standalone spike, **not** wired into `harness.py`.
+`spike_cursor_sdk.py` imports the surfaces read-only, writes no transcript, and
+touches neither `transcripts/` nor `runs/`.
+
+### Environment: consolidation ATTEMPTED AND FAILED — correcting this entry
+`cursor-sdk` requires Python >=3.10, so `/usr/bin/python3` (3.9.6) cannot host
+it — `pip index` reports no matching distribution there. Installed
+`cursor-sdk`, `anthropic` (0.122.0) and `google-genai` (2.18.1) into
+`/opt/anaconda3/bin/python` (3.12.7).
+
+**This entry originally claimed all three SDKs now share one interpreter. That
+is false and is corrected here rather than rewritten away.** Under Anaconda,
+`from google.genai import types` **segfaults on import** (exit 139), before any
+harness code runs. Anaconda ships `libprotobuf.25.3.0.dylib` with pip
+`protobuf` 4.25.3, and google-genai 2.18.1 crashes against that pairing.
+Forcing `PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python` does not help — still
+139. Not pursued further: base-env protobuf surgery risks other conda packages,
+and the Gemini free tier is a dead end regardless.
+
+**Standing rule until someone fixes it:**
+
+| provider | interpreter |
+|---|---|
+| cursor, anthropic | `/opt/anaconda3/bin/python` (3.12.7) |
+| gemini | `/usr/bin/python3` (3.9.6) |
+
+No single interpreter runs all three. The `python3` guidance added to AGENTS.md
+and the demo README this morning points at the 3.9 one, which has no
+`cursor-sdk`. Docs not re-edited — which interpreter is canonical is the
+human's call.
+
+### Verified by introspection, not from docs
+- `AgentOptions` carries `tools` / `disallowed_tools`; `LocalAgentOptions`
+  carries `custom_tools`. `CustomTool(execute, description, input_schema)`.
+- `TokenUsage(input_tokens, output_tokens, cache_read_tokens,
+  cache_write_tokens, total_tokens, reasoning_tokens)` — the fields the meter
+  needs exist.
+
+### Q1 ANSWERED (offline, no key): the surfaces transfer verbatim
+Surface A 28 tools -> 28 `CustomTool`; Surface B 6 -> 6; every tool converted;
+`input_schema` passes through **by identity**, not copied or reshaped, so no
+asymmetric rewrite can creep in the way it did for the Gemini wire format; and
+`execute()` reaches `surface.dispatch` and returns real payloads
+(`list_contacts` 459 chars, `get_schedule_summary` 107 chars).
+
+### Open — blocked on `CURSOR_API_KEY`, which is not set
+- **Q2** does the agent actually call the surface tools and mutate the world?
+- **Q3** do per-turn `usage` stream events fire, so the meter survives?
+- **Q4** does `tools=["mcp"]` genuinely exclude Cursor's built-ins? The docs say
+  an empty allowlist offers no built-ins and that disallowing `"mcp"` also drops
+  custom tools, which is why the spike allowlists `["mcp"]` rather than passing
+  `[]`. **Unverified.** If built-ins leak in, the cover charge measures Cursor's
+  toolset plus the surface and no token number from this path means anything.
+
+### Risks to record regardless of how the spike lands
+- The system prompt is not ours. Cursor's own prompt and scaffolding land inside
+  `input_tokens`. Constant across A and B, so the *gap* survives, but absolute
+  numbers stop being comparable to the corpus median of 1,879 or to any
+  Anthropic-direct run — and the cover-charge claim leans on that comparability.
+- The agent loop is not ours either: `MAX_TURNS`, context handling and any
+  compaction belong to Cursor. Compaction would directly bend the token growth
+  curve the demo exists to show.
+- `README.md` opens by warning against conflating the editor's agent with the
+  measured agent. This path merges them. Defensible if said out loud on stage;
+  it is a choice, not a detail, and it is the human's to make.
+
+### Merged into the harness (human-requested): `--provider cursor`
+The standalone `spike_cursor_sdk.py` is gone; its behaviour now lives in
+`harness.py` and its `--list-models` diagnostic is a harness flag.
+
+- `CursorSession` does **not** implement `send()`/`record()`, because it cannot
+  do so honestly. The other two sessions return one model turn and let `run()`
+  dispatch the tools and decide whether to continue; the Cursor SDK runs the
+  whole conversation inside `agent.send()` and invokes tools through the
+  `execute` callbacks. So it sets `owns_loop = True` and exposes `turns()`, and
+  `run()` takes a separate branch that accounts for what the SDK reports rather
+  than pretending to drive the loop.
+- Per-turn rows come from the SDK's `usage` stream events. Tool calls are
+  attributed to a turn by the growth of the `calls` list between those events,
+  which is exact — the callbacks fire on real invocations — rather than parsed
+  out of a model reply.
+- `tools=["mcp"]` allowlists only the group carrying custom tools, so Cursor's
+  built-in read/edit/shell are not offered. **Still unverified live.** If they
+  leak in, the cover charge is Cursor's toolset plus the surface and no token
+  figure from this provider means anything.
+- `MAX_TURNS` does not bind on this path and `secs` excludes pacing
+  (`paced_secs` is 0; `MIN_REQUEST_INTERVAL["cursor"]` is 0.0, no known cap).
+
+### Verified
+- Providers register as `['anthropic', 'cursor', 'gemini']` with per-provider
+  model defaults and intervals.
+- `--provider cursor --mock` completes the loop for surface A and B, driving the
+  real `CustomTool.execute` callbacks into `surface.dispatch`, with constant
+  token figures as the other mocks do.
+- Anthropic and Cursor mock rows are identical (4,960 tokens, 2 calls) under
+  Anaconda; the Gemini mock cannot run there at all (segfault above).
+- Regression runs used a redirected `harness.TRANSCRIPT_DIR`, per the pattern
+  from 2026-08-14, so `transcripts/` was not written to. One mock transcript
+  *was* created before that (`a_task2_1786815481.jsonl`) and was deleted —
+  it was an agent-made artefact from this session, not testimony.
+
+## 2026-08-15 (late morning): `--provider cursor` runs live. First live runs of the weekend.
+
+Human supplied `CURSOR_API_KEY`. Three live runs of variant A / task 2, ~50s
+each. **These are verification runs, not measurements** — see the token finding
+below for why nothing here is quotable as a result.
+
+### The pinned model is available on this plan
+`--list-models` returns 36 ids including **`claude-sonnet-4-6`**, which is
+exactly `MODEL_DEFAULT`. `CURSOR_MODEL_DEFAULT` was changed from a guessed id
+(`claude-4.6-sonnet-medium-thinking`, not offered to this account) to
+`MODEL_DEFAULT`, so both paths name the same model. That makes
+cursor-vs-anthropic a comparison of the surrounding agent loop rather than of
+two different models. `gemini-3.6-flash` is also on the list.
+
+### Built-in tools: NOT used; whether they were OFFERED is still unknown
+All 9 tool calls were surface tools (`get_current_time`, `search_contacts`,
+`get_free_busy`, `get_user_preferences`, `get_working_hours`, `create_event`,
+`send_invite`, ...). The SDK reports every custom tool under an envelope named
+`mcp`, carrying the real name inside `args` — the first detector flagged `mcp`
+itself as foreign, a false positive now fixed by unwrapping `args.toolName`.
+No `read`/`edit`/`shell` appeared. **But the SDK emitted no `system` message on
+any of the three runs, and `system.tools` is the only field that reports the
+offered catalog, so `tools=["mcp"]` remains unconfirmed.** Not-used is weaker
+evidence than not-offered, and cover charge depends on what is offered.
+
+### DECISIVE: the token numbers are not comparable, catalog question or not
+53,053 input tokens for a surface whose own cover charge is ~2,051. Roughly 50k
+of that is Cursor's system prompt, scaffolding and context. For scale, the same
+task on Gemini reached 32,244 input across six turns *cumulatively*. Whatever
+the catalog turns out to be, this provider cannot be compared against
+anthropic or gemini rows, nor against the corpus median.
+
+### The per-turn meter does not survive this path
+Exactly **one** `usage` event fired per run, covering the whole conversation, so
+the meter collapses to a single row. The turn-by-turn climb — "the meter is the
+show" — does not exist here. Recorded as a property of the path, not a bug to
+paper over.
+
+### Observed: Surface A failed the task while reporting success
+Scored FAIL on all three runs while the agent's final message claimed the
+meeting was booked and the invite sent. The transcript (now carrying real tool
+arguments) shows why:
+
+```
+create_event -> {"calendar_id":"cal_you","summary":"Q3 Roadmap Discussion",
+                 "start":"2026-08-17T13:00:00-04:00","end":"...13:30:00-04:00"}
+send_invite  -> {"event_id":"evt_207","contact_id":"marcus"}
+```
+
+`create_event` accepts an optional `attendee_ids`; it was not passed, so the
+surface defaulted the event to `["you"]`. `add_event_attendee` exists and was
+never called. The model created a meeting with only itself on it, sent Marcus an
+invite, and reported success. The task check requires
+`set(attendees) == {"you","marcus"}`, so it correctly scored FAIL.
+
+**This is a genuine Surface A outcome, not a harness or scoring bug**, and it is
+the thesis in a live trace: a 1:1 endpoint wrapper lets a competent model skip a
+step in a three-call choreography and be unable to tell. Caveats that must
+travel with it: one task, three runs, on the non-comparable provider, from
+verification runs rather than a scored grid.
+
+### Failed / open
+- `tools=["mcp"]` still unconfirmed; needs a run where the SDK emits `system`,
+  or another way to read the offered catalog.
+- Transcript `input` stores the whole SDK envelope
+  (`providerIdentifier`/`toolName`/`args`) rather than the inner args. Readable,
+  but not the same shape the other two providers write.
+- Three live runs wrote three transcripts to `transcripts/`. Real runs, so they
+  were left in place.

@@ -31,7 +31,14 @@ MODEL_DEFAULT = "claude-sonnet-4-6"
 # if this one is rate-limited: gemini-3.5-flash, gemini-3.5-flash-lite,
 # gemini-3.1-flash-lite. Pro models are paid-tier only.
 GEMINI_MODEL_DEFAULT = "gemini-3.6-flash"
-MODEL_DEFAULTS = {"anthropic": MODEL_DEFAULT, "gemini": GEMINI_MODEL_DEFAULT}
+# Routed through the caller's Cursor plan rather than a raw model API. Confirm
+# with --list-models before pinning: model availability is per-account. This
+# deliberately matches MODEL_DEFAULT, because the same model id is offered on
+# both paths - which makes Cursor-vs-Anthropic a test of the surrounding agent
+# loop rather than of two different models.
+CURSOR_MODEL_DEFAULT = MODEL_DEFAULT
+MODEL_DEFAULTS = {"anthropic": MODEL_DEFAULT, "gemini": GEMINI_MODEL_DEFAULT,
+                  "cursor": CURSOR_MODEL_DEFAULT}
 MAX_TURNS = 25
 MAX_OUTPUT_TOKENS = 1024
 # Gemini 3.x Flash bills thinking tokens against this budget, so the Anthropic
@@ -47,6 +54,18 @@ GEMINI_MAX_OUTPUT_TOKENS = 4096
 RATE_LIMIT_ATTEMPTS = 8
 RATE_LIMIT_FALLBACK_WAIT = 30.0
 RATE_LIMIT_MAX_WAIT = 120.0
+# A per-day 429 arrives with a sub-second RetryInfo, which would otherwise spin
+# the retry loop through every attempt in a few seconds and spend the budget on
+# nothing. Never wait less than this, and never retry a per-day cap at all.
+RATE_LIMIT_MIN_WAIT = 5.0
+# Seconds between requests, per provider. Reacting to a 429 is strictly worse
+# than not earning one: the server's retry delay is the age of the oldest
+# request in the window, so honouring it yields about one request per minute
+# instead of the five the tier actually allows. Pacing at 60/5 = 12s spends the
+# whole allowance and never trips the limit. Anthropic is 0 because no limit is
+# known to bind there, and pacing it would add dead wall-clock for nothing;
+# --min-interval overrides either.
+MIN_REQUEST_INTERVAL = {"anthropic": 0.0, "gemini": 12.0, "cursor": 0.0}
 SYSTEM_PROMPT = ("You are a scheduling assistant. Use the tools to actually complete "
                  "the user's request; don't just describe what you would do.")
 TRANSCRIPT_DIR = Path(__file__).resolve().parent / "transcripts"
@@ -61,6 +80,34 @@ def est_tokens(s):  # display-only estimate for the cover-charge line
 
 def meter(turn, label, tin, tout, calls, extra=""):
     print(f"  [meter] turn {turn:>2} | {label:<28s} | tokens {tin:>7,} in / {tout:>6,} out | tool calls {calls}{extra}")
+
+
+class Pacer:
+    """Holds requests to a fixed minimum spacing, whatever the provider.
+
+    Waiting costs wall-clock and never tokens, and the interval is a property of
+    the provider, not of either surface, so pacing cannot move `tokens` or
+    `calls`. Surface A does wait longer in total, purely because it takes more
+    turns to finish - which is the finding, not an artefact of the pacing.
+    """
+
+    def __init__(self, min_interval):
+        self.min_interval = max(0.0, float(min_interval or 0.0))
+        self.last = None
+        self.total_waited = 0.0
+
+    def wait(self):
+        """Sleep until the next request is due. Returns seconds actually slept."""
+        if not self.min_interval:
+            return 0.0
+        pause = 0.0
+        if self.last is not None:
+            pause = max(0.0, self.last + self.min_interval - time.monotonic())
+            if pause:
+                time.sleep(pause)
+        self.last = time.monotonic()
+        self.total_waited += pause
+        return pause
 
 
 # ---------- resume: reuse completed runs, never partial ones ----------
@@ -184,6 +231,26 @@ def rate_limit_wait(exc, fallback):
     return float(match.group(1)) if match else fallback
 
 
+def is_daily_quota(exc):
+    """True when a 429 names a per-day cap rather than a per-minute burst.
+
+    The two are not the same failure. A per-minute 429 clears by waiting a
+    minute; a per-day one clears at the quota's daily boundary, and the server
+    still attaches a sub-second retryDelay to it, so a retry loop that trusts
+    that delay burns its whole budget in seconds and reports the wrong cause.
+    """
+    for source in (getattr(exc, "details", None), str(exc)):
+        if isinstance(source, dict):
+            blocks = source.get("details") or (source.get("error") or {}).get("details") or []
+            for entry in blocks:
+                for violation in (entry or {}).get("violations", []) or []:
+                    if "PerDay" in str(violation.get("quotaId", "")):
+                        return True
+        elif isinstance(source, str) and "PerDay" in source:
+            return True
+    return False
+
+
 # ---------- offline stand-ins ----------
 
 def mock_script(variant):
@@ -300,7 +367,7 @@ def gemini_to_plain(resp):
 
 class AnthropicSession:
     """tool_use blocks out, tool_result blocks back."""
-    def __init__(self, surface, model, prompt, variant, mock):
+    def __init__(self, surface, model, prompt, variant, mock, world=None):
         self.surface, self.model, self.mock = surface, model, mock
         self.no_argument = []
         self.msgs = [{"role": "user", "content": prompt}]
@@ -325,7 +392,7 @@ class AnthropicSession:
 
 class GeminiSession:
     """function_call parts out, function_response parts back."""
-    def __init__(self, surface, model, prompt, variant, mock):
+    def __init__(self, surface, model, prompt, variant, mock, world=None):
         try:
             from google.genai import types
         except ImportError as exc:  # pragma: no cover - environment guard
@@ -370,10 +437,17 @@ class GeminiSession:
                 return self.models.generate_content(
                     model=self.model, contents=self.contents, config=self.config)
             except genai_errors.ClientError as exc:
-                last = attempt == RATE_LIMIT_ATTEMPTS
-                if getattr(exc, "code", None) != 429 or last:
+                if getattr(exc, "code", None) != 429:
                     raise
-                pause = min(rate_limit_wait(exc, wait), RATE_LIMIT_MAX_WAIT)
+                if is_daily_quota(exc):
+                    print("  [rate-limit] DAILY quota exhausted for this model. Retrying "
+                          "cannot clear it and pacing cannot prevent it; the counter "
+                          "resets at the quota's daily boundary. Stopping.")
+                    raise
+                if attempt == RATE_LIMIT_ATTEMPTS:
+                    raise
+                pause = min(max(rate_limit_wait(exc, wait), RATE_LIMIT_MIN_WAIT),
+                            RATE_LIMIT_MAX_WAIT)
                 print(f"  [rate-limit] 429 on attempt {attempt}/{RATE_LIMIT_ATTEMPTS}; "
                       f"waiting {pause:.0f}s. No tokens were spent on this reply.")
                 time.sleep(pause)
@@ -392,10 +466,191 @@ class GeminiSession:
                  for block, out in results]
         self.contents.append(t.Content(role="user", parts=parts))
 
-SESSIONS = {"anthropic": AnthropicSession, "gemini": GeminiSession}
+def build_cursor_tools(surface, world, calls):
+    """Surface TOOLS -> cursor_sdk CustomTool, one for one.
+
+    The surfaces already speak `{name, description, input_schema}` and dispatch
+    on `(world, name, args)`, so this is a transliteration, not a rewrite:
+    `input_schema` is passed by reference, never reshaped. The Gemini path shows
+    why that matters - reshaping schemas there cost Surface A bytes and gave
+    Surface B bytes, moving the ratio before a single token was measured.
+    """
+    from cursor_sdk import CustomTool
+
+    def make(name):
+        def execute(args, context=None):
+            calls.append(name)
+            return surface.dispatch(world, name, dict(args or {}))
+        return execute
+
+    return {tool["name"]: CustomTool(description=tool["description"],
+                                     input_schema=tool["input_schema"],
+                                     execute=make(tool["name"]))
+            for tool in surface.TOOLS}
 
 
-def run(variant, task_id, model, mock=False, quiet=False, provider="anthropic"):
+class CursorSession:
+    """Cursor SDK: the agent loop belongs to the SDK, not to this harness.
+
+    The other two sessions hand back one model turn and let `run()` dispatch the
+    tools and decide whether to continue. The SDK instead runs the whole
+    conversation inside `agent.send()`, invoking tools through the `execute`
+    callbacks we registered. So this session cannot implement `send()`/`record()`
+    honestly; it exposes `turns()` instead and sets `owns_loop`, and `run()`
+    takes the other branch.
+
+    That difference is not cosmetic, and it is why this provider is not
+    interchangeable with the other two for measurement purposes:
+
+    - The system prompt is Cursor's, not `SYSTEM_PROMPT`. Its tokens land in
+      `input_tokens`. Constant across A and B, so the gap between surfaces
+      survives, but absolute totals are not comparable to an Anthropic-direct
+      run or to the corpus median.
+    - Turn count, context handling and any compaction are the SDK's. `MAX_TURNS`
+      does not bind here.
+    - Tool calls are counted by the `execute` callbacks, which is exact, rather
+      than by parsing tool_use blocks out of a model reply.
+    """
+
+    owns_loop = True
+
+    def __init__(self, surface, model, prompt, variant, mock, world):
+        self.surface, self.model, self.prompt, self.mock = surface, model, prompt, mock
+        self.world = world
+        self.calls = []
+        self.no_argument = []
+        self.status = None
+        self.final_text = ""
+        self.message_types = set()
+        self.tools = build_cursor_tools(surface, world, self.calls)
+        # Everything the model was actually offered / actually invoked, as the
+        # SDK reports it - not as we hoped when we passed tools=["mcp"]. If a
+        # name here is not one of ours, the cover charge is Cursor's toolset
+        # plus the surface and no token figure from this run is quotable.
+        self.offered_tools = None
+        self.tool_events = []
+        self.surface_names = {t["name"] for t in surface.TOOLS}
+
+    # The SDK reports every custom-tool invocation under this envelope name
+    # rather than the tool's own name, which is carried inside `args`.
+    CUSTOM_TOOL_ENVELOPE = "mcp"
+
+    @staticmethod
+    def unwrap_name(event):
+        """Best-effort real tool name for a reported call.
+
+        The docs warn that `args` is untyped and unstable, so this reads
+        defensively and falls back to the envelope name rather than guessing.
+        """
+        if event["name"] != CursorSession.CUSTOM_TOOL_ENVELOPE:
+            return event["name"]
+        args = event.get("args")
+        if isinstance(args, dict):
+            for key in ("name", "tool", "toolName", "tool_name"):
+                if isinstance(args.get(key), str):
+                    return args[key]
+        return event["name"]
+
+    def foreign_tools(self):
+        """Tools offered or used that are neither ours nor the custom envelope.
+
+        Anything returned here means Cursor's own toolset reached the model.
+        An empty list is NOT proof of a clean catalog: it rules out built-ins
+        being *used*, but only the `system` message reports what was *offered*,
+        and the SDK does not always emit one.
+        """
+        seen = {self.unwrap_name(e) for e in self.tool_events}
+        if self.offered_tools:
+            seen |= set(self.offered_tools)
+        return sorted(seen - self.surface_names - {self.CUSTOM_TOOL_ENVELOPE})
+
+    def _mock_turns(self):
+        """Offline stand-in. Exercises the real tool wiring - the custom tools
+        are invoked through the same `execute` callbacks a live run uses - while
+        every token figure is a constant, as in the other providers' mocks.
+        """
+        script = (mock_script("a" if self.surface is surface_a else "b"))
+        for i, (name, args) in enumerate(script, start=1):
+            if name in self.tools:
+                self.tools[name].execute(args, None)
+            yield {"stop_reason": "tool_use",
+                   "usage": {"input_tokens": 1200 + 300 * i, "output_tokens": 60,
+                             "cached_tokens": 0, "reasoning_tokens": 0},
+                   "content": [{"type": "tool_use", "id": f"mock_{i}", "name": name,
+                                "input": args}]}
+        self.status = "finished"
+        self.final_text = "(mock) Done - plumbing verified."
+        yield {"stop_reason": "end_turn",
+               "usage": {"input_tokens": 1500, "output_tokens": 40,
+                         "cached_tokens": 0, "reasoning_tokens": 0},
+               "content": [{"type": "text", "text": self.final_text}]}
+
+    def turns(self):
+        """Yield one plain-shaped dict per turn that reported usage.
+
+        Tool calls are attributed to a turn by the growth of `self.calls` between
+        usage events, which is why `execute` appends to it.
+        """
+        if self.mock:
+            yield from self._mock_turns()
+            return
+        try:
+            from cursor_sdk import Agent, AgentOptions, LocalAgentOptions
+        except ImportError as exc:  # pragma: no cover - environment guard
+            raise SystemExit("--provider cursor needs the Cursor SDK (Python >=3.10): "
+                             "python3 -m pip install cursor-sdk") from exc
+        seen = 0
+        with Agent.create(AgentOptions(
+                model=self.model,
+                api_key=os.environ.get("CURSOR_API_KEY"),
+                # Only the group that carries custom tools. Without this the
+                # model is also offered read/edit/shell, and the cover charge
+                # would be Cursor's toolset plus the surface.
+                tools=["mcp"],
+                local=LocalAgentOptions(cwd=str(Path(__file__).resolve().parent),
+                                        custom_tools=self.tools,
+                                        setting_sources=[]))) as agent:
+            run_handle = agent.send(f"{SYSTEM_PROMPT}\n\n{self.prompt}")
+            call_ids = set()
+            for message in run_handle.messages():
+                self.message_types.add(message.type)
+                if message.type == "system":
+                    # The catalog the model was actually handed.
+                    self.offered_tools = list(getattr(message, "tools", None) or [])
+                    continue
+                if message.type == "tool_call":
+                    # Fires more than once per call as status advances; keep the
+                    # first sighting so args survive into the transcript.
+                    cid = getattr(message, "call_id", None)
+                    if cid not in call_ids:
+                        call_ids.add(cid)
+                        self.tool_events.append({"id": cid, "name": message.name,
+                                                 "args": getattr(message, "args", None)})
+                    continue
+                if message.type != "usage":
+                    continue
+                usage = message.usage
+                fresh, seen = self.tool_events[seen:], len(self.tool_events)
+                yield {"stop_reason": "tool_use" if fresh else "end_turn",
+                       "usage": {"input_tokens": usage.input_tokens,
+                                 "output_tokens": usage.output_tokens,
+                                 "cached_tokens": usage.cache_read_tokens,
+                                 "cache_write_tokens": usage.cache_write_tokens,
+                                 "reasoning_tokens": usage.reasoning_tokens or 0},
+                       "content": [{"type": "tool_use", "id": e["id"],
+                                    "name": self.unwrap_name(e), "input": e["args"]}
+                                   for e in fresh]}
+            result = run_handle.wait()
+        self.status = getattr(result, "status", None)
+        self.final_text = getattr(result, "result", "") or ""
+
+
+SESSIONS = {"anthropic": AnthropicSession, "gemini": GeminiSession,
+            "cursor": CursorSession}
+
+
+def run(variant, task_id, model, mock=False, quiet=False, provider="anthropic",
+        min_interval=0.0):
     surface = surface_a if variant == "a" else surface_b
     task = TASKS[task_id]
     world = World(inject_room_failure=task["failure_switch"])
@@ -405,7 +660,10 @@ def run(variant, task_id, model, mock=False, quiet=False, provider="anthropic"):
         if task.get("excluded"):
             print(f"  [note] task {task_id} is excluded from the --all grid: {task['excluded']}")
         print(f"  [meter] cover charge: {len(surface.TOOLS)} tools, ~{est_tokens(catalog):,} tokens (est)")
-    session = SESSIONS[provider](surface, model, task["prompt"], variant, mock)
+    session = SESSIONS[provider](surface, model, task["prompt"], variant, mock, world)
+    if provider == "cursor" and not quiet:
+        print(f"  [note] the agent loop belongs to the Cursor SDK: its system prompt is "
+              f"billed into input_tokens, and MAX_TURNS does not bind")
     if provider == "gemini" and not quiet:
         wire = json.dumps(to_gemini_declarations(surface.TOOLS)[0],
                           separators=(",", ":"), sort_keys=True)
@@ -415,10 +673,63 @@ def run(variant, task_id, model, mock=False, quiet=False, provider="anthropic"):
               f"{', '.join(session.no_argument) or 'none'}")
     tin = tout = calls = 0
     cached = thinking = 0
+    pacer = Pacer(0.0 if mock else min_interval)
+    if pacer.min_interval and not quiet:
+        print(f"  [pace] holding requests {pacer.min_interval:.0f}s apart "
+              f"({60 / pacer.min_interval:.0f}/min); wall-clock only, no tokens")
     TRANSCRIPT_DIR.mkdir(exist_ok=True)
     tpath = TRANSCRIPT_DIR / f"{variant}_task{task_id}_{int(time.time())}.jsonl"
     t0 = time.time()
+    if getattr(session, "owns_loop", False):
+        # The SDK ran the conversation and dispatched the tools itself, so there
+        # is nothing here to feed back. Account for what it reports and stop.
+        for turn, resp in enumerate(session.turns(), start=1):
+            tin += resp["usage"]["input_tokens"]; tout += resp["usage"]["output_tokens"]
+            cached += resp["usage"].get("cached_tokens", 0)
+            thinking += resp["usage"].get("reasoning_tokens", 0)
+            with tpath.open("a") as fh:
+                fh.write(json.dumps(resp) + "\n")
+            fresh = [b["name"] for b in resp["content"] if b["type"] == "tool_use"]
+            calls += len(fresh)
+            if not quiet:
+                label = fresh[-1] if fresh else "(final answer)"
+                meter(turn, label, tin, tout, calls,
+                      f" | cached {cached:,} of in | reasoning {thinking:,}")
+        if not quiet:
+            print(f"  agent: {session.final_text[:200]}")
+            if session.status not in (None, "finished"):
+                print(f"  [warn] run status {session.status!r} - not a clean measurement")
+            print(f"  [note] stream message types seen: {sorted(session.message_types) or 'n/a'}")
+            offered = getattr(session, "offered_tools", None)
+            print(f"  [note] catalog the model was offered: "
+                  f"{len(offered)} tools" if offered is not None else
+                  "  [note] catalog not reported by the SDK on this run")
+            foreign = session.foreign_tools()
+            if foreign:
+                print(f"  [WARN] {len(foreign)} tool(s) outside the surface were offered or "
+                      f"used: {', '.join(foreign)}")
+                print(f"  [WARN] the cover charge is Cursor's toolset PLUS the surface, so no "
+                      "token figure from this run is comparable to the other providers")
+            else:
+                print("  [note] no tool outside the surface was USED. Whether Cursor's "
+                      "built-ins were OFFERED is unknown unless the catalog line above "
+                      "reports a count.")
+            print(f"  [note] surface tools actually dispatched (our callbacks): "
+                  f"{len(session.calls)} - {', '.join(session.calls[:6])}"
+                  + (" ..." if len(session.calls) > 6 else ""))
+        secs = time.time() - t0
+        ok = bool(task["check"](world))
+        verdict = "SUCCESS" if ok else "FAIL"
+        if mock:
+            verdict += " (mock: verdict not meaningful)"
+        if not quiet:
+            print(f"  RESULT: {verdict} | {tin+tout:,} total tokens | {calls} tool calls "
+                  f"| {secs:.0f}s")
+        return {"variant": variant, "task": task_id, "ok": ok, "tokens": tin + tout,
+                "tin": tin, "tout": tout, "calls": calls, "secs": round(secs),
+                "paced_secs": 0, "cached": cached, "thinking": thinking}
     for turn in range(1, MAX_TURNS + 1):
+        pacer.wait()
         resp = session.send()
         tin += resp["usage"]["input_tokens"]; tout += resp["usage"]["output_tokens"]
         cached += resp["usage"].get("cached_tokens", 0)
@@ -458,17 +769,20 @@ def run(variant, task_id, model, mock=False, quiet=False, provider="anthropic"):
     if mock:
         verdict += " (mock: verdict not meaningful)"
     if not quiet:
-        print(f"  RESULT: {verdict} | {tin+tout:,} total tokens | {calls} tool calls | {secs:.0f}s")
+        waited = f" ({pacer.total_waited:.0f}s of it pacing)" if pacer.total_waited else ""
+        print(f"  RESULT: {verdict} | {tin+tout:,} total tokens | {calls} tool calls "
+              f"| {secs:.0f}s{waited}")
         if provider == "gemini" and cached:
             print(f"  [meter] {cached:,} of those {tin:,} input tokens were cache hits, billed at a "
                   "discount. Reported, not deducted: a cached catalog is a cheaper catalog, "
                   "not a smaller one.")
     return {"variant": variant, "task": task_id, "ok": ok, "tokens": tin + tout,
             "tin": tin, "tout": tout, "calls": calls, "secs": round(secs),
-            "cached": cached, "thinking": thinking}
+            "paced_secs": round(pacer.total_waited), "cached": cached,
+            "thinking": thinking}
 
 
-def run_or_resume(variant, task_id, model, mock, provider, resume):
+def run_or_resume(variant, task_id, model, mock, provider, resume, min_interval):
     surface = surface_a if variant == "a" else surface_b
     fingerprint = surface_fingerprint(surface)
     if resume:
@@ -478,7 +792,8 @@ def run_or_resume(variant, task_id, model, mock, provider, resume):
                   f"{cached.get('saved_at', 'an earlier run')} - not re-run")
             cached["resumed"] = True
             return cached
-    row = run(variant, task_id, model, mock=mock, quiet=False, provider=provider)
+    row = run(variant, task_id, model, mock=mock, quiet=False, provider=provider,
+              min_interval=min_interval)
     row["resumed"] = False
     # Mock rows are constants, not measurements; caching them would let a later
     # --resume quietly seed a real table with fabricated numbers.
@@ -500,10 +815,27 @@ def main():
     ap.add_argument("--provider", choices=sorted(SESSIONS), default="anthropic")
     ap.add_argument("--model", default=None, help="per-provider default: "
                     + ", ".join(f"{p}={m}" for p, m in sorted(MODEL_DEFAULTS.items())))
+    ap.add_argument("--min-interval", type=float, default=None,
+                    help="seconds to hold between requests, to stay under a "
+                         "requests-per-minute cap. Per-provider default: "
+                         + ", ".join(f"{p}={s:g}s" for p, s in sorted(MIN_REQUEST_INTERVAL.items()))
+                         + ". Use 0 to disable (e.g. when recording, so the meter "
+                           "does not sit idle between turns).")
+    ap.add_argument("--list-models", action="store_true",
+                    help="list model ids the caller's Cursor plan exposes, then exit "
+                         "(--provider cursor). Availability is per-account; confirm "
+                         "before pinning one.")
     args = ap.parse_args()
+    if args.list_models:
+        from cursor_sdk import Cursor
+        for entry in Cursor.models.list():
+            print(getattr(entry, "id", entry))
+        return
     model = args.model or MODEL_DEFAULTS[args.provider]
+    interval = (args.min_interval if args.min_interval is not None
+                else MIN_REQUEST_INTERVAL.get(args.provider, 0.0))
     if args.all:
-        rows = [run_or_resume(v, t, model, args.mock, args.provider, args.resume)
+        rows = [run_or_resume(v, t, model, args.mock, args.provider, args.resume, interval)
                 for t in GRID for v in ("a", "b")]
         print("\n=== SUMMARY (paste this into the talk repo) ===")
         print(f"provider: {args.provider} | model: {model}"
@@ -535,7 +867,8 @@ def main():
         return
     if not (args.variant and args.task):
         ap.error("either --all, or both --variant and --task")
-    run(args.variant, args.task, model, mock=args.mock, provider=args.provider)
+    run(args.variant, args.task, model, mock=args.mock, provider=args.provider,
+        min_interval=interval)
 
 if __name__ == "__main__":
     main()

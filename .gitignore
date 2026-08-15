@@ -8,3 +8,9 @@ __pycache__/
 # Virtualenvs
 .venv/
 venv/
+
+# Secrets. This repo is published alongside the talk, so a committed key would
+# be a live credential in public history.
+.env
+.env.*
+!.env.example
