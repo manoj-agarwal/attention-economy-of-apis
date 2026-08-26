@@ -1470,3 +1470,16 @@ The PNGs in `charts/` date from 2026-08-09 and cannot presently be regenerated.
 ### Verified
 - Repo-wide search for `weekend` / `weekend1` / `weekend2` outside `data/raw/`
   hits only this entry and the README note about those two raw files.
+
+### Follow-up: the tracked path outlived the directory
+The rename left 16 `weekend2-demo/runs/*.json` rows still tracked in git — they
+had been deleted on disk before this session but the deletions were never
+committed, so the old folder name was still published. Committed those
+deletions. They are derived run rows superseded by the `.jsonl` format (rule 2:
+derived files are disposable), so nothing was recovered or rewritten.
+
+**Consequence to decide:** `demo/runs/` now has no committed run rows at all.
+The current `.jsonl` rows, the `harness.py` change that writes them, the two
+modified `floor_*.json` records, and `demo/transcripts/` are all still
+uncommitted. Publishing the data without the harness change would leave the
+repo internally inconsistent, so this was not done unasked.
