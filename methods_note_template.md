@@ -1,4 +1,4 @@
-# Methods & Limitations (fill in Sunday, ~30 minutes)
+# Methods & Limitations (fill in by hand, ~30 minutes)
 
 Snapshot taken **[DATE]**, from the official MCP Registry
 (registry.modelcontextprotocol.io, API v0), pages fetched in registry order until

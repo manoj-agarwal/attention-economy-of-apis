@@ -1,4 +1,4 @@
-# Wrapper Test — scoring sheet (weeknight task, ~30 min sessions)
+# Wrapper Test — scoring sheet (~30 min sessions)
 
 **Purpose:** classify a random 50 of the measured servers as endpoint-wrappers or
 task-oriented designs — using a fixed rule, not a vibe. Publish this sheet AND your

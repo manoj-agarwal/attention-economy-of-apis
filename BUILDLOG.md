@@ -57,7 +57,7 @@
 3. Popular servers (high github_stars) have higher auth-gate rate than the
    registry sample — 62% failure vs 44% previously.
 
-## 2026-08-14: weekend2-demo plumbing shakedown (mock only, agent block)
+## 2026-08-14: demo plumbing shakedown (mock only, agent block)
 
 ### What ran
 - Environment: Python 3.9.6. No live API calls, no `ANTHROPIC_API_KEY` used,
@@ -67,11 +67,11 @@
 - All 12 combinations (variants a/b x tasks 1-6) complete the agent loop in
   `--mock` without error. No 3.9 syntax problems in any module.
 - Verification ran from a scratch dir with `harness.TRANSCRIPT_DIR` redirected,
-  so `weekend2-demo/transcripts/` was never created. Scratch dir deleted after.
+  so `demo/transcripts/` was never created. Scratch dir deleted after.
 
 ### Changed (in-lane)
 - `harness.py`: transcript path was CWD-relative (`Path("transcripts")`), so the
-  invocation documented in AGENTS.md (`python weekend2-demo/harness.py`) would
+  invocation documented in AGENTS.md (`python demo/harness.py`) would
   have written evidence into the repo root instead of the demo folder. Now
   anchored to the script dir via `TRANSCRIPT_DIR`. Per-turn write also moved to
   a context manager. No effect on world state, seeds, or results.
@@ -117,7 +117,7 @@
 - Note the two findings point opposite ways: the design favours B, while the
   implementation bugs make B lose badly. Both need the human's decision.
 
-## 2026-08-14: weekend2-demo task redesign against human rulings (mock only)
+## 2026-08-14: demo task redesign against human rulings (mock only)
 
 ### Applied
 - `surface_b.py` (the only surface change authorised): `_candidates()` gains
@@ -160,7 +160,7 @@ timezones (LA/NY), not 4 across 4.
   tools, including the 503 retry on task 5 (14 calls vs 13 on task 3).
 - All 16 `--variant/--task --mock` combinations run through the real argparse
   path with no exceptions, Python 3.9.6. Transcripts redirected to a scratch
-  dir; `weekend2-demo/transcripts/` was never created. Scratch deleted.
+  dir; `demo/transcripts/` was never created. Scratch deleted.
 - No live API calls. **No token or verdict measurements exist for this block** —
   the A/B call counts above are simulation counts, not model behaviour.
 
@@ -184,10 +184,10 @@ timezones (LA/NY), not 4 across 4.
 5. The grid is now 8x2, not 6x2. The live run will cost roughly a third more
    than the README's estimate.
 
-## 2026-08-14: First commit of weekend2-demo + guardrails (agent block)
+## 2026-08-14: First commit of demo + guardrails (agent block)
 
 ### Applied
-- Commit `e4c2579` on `main`: 13 files, 1110 insertions. weekend2-demo
+- Commit `e4c2579` on `main`: 13 files, 1110 insertions. demo
   (calendar_world, surface_a, surface_b, harness, tasks, README), AGENTS.md,
   `.cursor/rules/` (data-handling, demo-fairness), TokenCost.png, ToosCount.png,
   a `.gitignore` for macOS/Python junk, and this BUILDLOG.
@@ -208,7 +208,7 @@ timezones (LA/NY), not 4 across 4.
 
 ### Attempted
 The authorized live run of the hero task (task 3) on both surfaces, from
-`weekend2-demo/`, Python 3.9.6, `anthropic` 0.122.0:
+`demo/`, Python 3.9.6, `anthropic` 0.122.0:
 
     python3 harness.py --variant a --task 3   # invoked; aborted before first API call
     python3 harness.py --variant b --task 3   # NEVER invoked (see below)
@@ -288,7 +288,7 @@ because variant B was never run.
 - `--all --mock` runs 12 combinations (6x2) and prints both exclusion lines.
   `--variant b --task 1 --mock` still runs on demand and shows the note.
 - Transcripts redirected to a scratch dir for all verification; the empty
-  `weekend2-demo/transcripts/` from the failed live run is untouched and still
+  `demo/transcripts/` from the failed live run is untouched and still
   empty. Scratch deleted. No live API calls, so **no measurement numbers exist
   from this block**; the mock token figures are MockClient constants.
 - Files modified vs `e4c2579`: `tasks.py`, `harness.py`, `BUILDLOG.md` only.
@@ -317,7 +317,7 @@ import importlib.util, sys
 spec = importlib.util.spec_from_file_location("count_tokens", "02_count_tokens.py")
 ct = importlib.util.module_from_spec(spec); spec.loader.exec_module(ct)
 count, method = ct.build_counter()          # -> tiktoken:o200k_base
-sys.path.insert(0, "weekend2-demo")
+sys.path.insert(0, "demo")
 import surface_a, surface_b
 count(ct.compact(surface_a.TOOLS))          # -> 1703
 count(ct.compact(surface_b.TOOLS))          # -> 719
@@ -371,7 +371,7 @@ Surface B, at 6 tools, is nearer to typical on tool count (48th percentile) with
 per-tool cost at the 16th percentile.
 
 ### Not done, deliberately
-- `weekend2-demo/README.md`'s cover-charge sentence and
+- `demo/README.md`'s cover-charge sentence and
   `methods_note_template.md` were left untouched (AGENTS.md rule 3).
 - No permanent script was added for this statistic; the snippet above is the
   reproducible origin. Proposed: promote it to `04_cover_charge.py` so the
@@ -383,7 +383,7 @@ per-tool cost at the 16th percentile.
 
 ### Applied
 - Added `04_cover_charge.py` at the repo root, beside `01_`/`02_`/`03_`. (The
-  scripts live at the root; `AGENTS.md` still describes a `weekend1-starter/`
+  scripts live at the root; `AGENTS.md` still described a separate starter
   directory that does not exist. Followed the repo, not the doc.)
 - It is now the reproducible origin for the cover-charge statistic recorded in
   the previous entry, replacing the inline snippet there.
@@ -411,7 +411,7 @@ per-tool cost at the 16th percentile.
 - No CSV output. Proposed instead of applied: if this should feed a chart or the
   methods note, a `data/cover_charge.csv` would need new data-dictionary fields,
   which is a methods-note change and therefore human territory.
-- `weekend2-demo/README.md`'s "~2,050 tokens" sentence and
+- `demo/README.md`'s "~2,050 tokens" sentence and
   `methods_note_template.md` remain untouched (AGENTS.md rule 3).
 
 ## 2026-08-14: Gemini added as a second provider to the harness (mock only)
@@ -515,11 +515,11 @@ alternative, not a replacement.
   and 6 Surface B dispatch outputs parse to dicts, so `to_function_response`'s
   string fallback never fires for either surface.
 - Transcripts were redirected to a scratch dir for every check;
-  `weekend2-demo/transcripts/` is still present and still **empty**, as the
+  `demo/transcripts/` is still present and still **empty**, as the
   aborted live run left it. Scratch artifacts live outside the repo at
   `/tmp/apitalk_scratch/`, `/tmp/apitalk_scratch2/` and `/tmp/verify_*.py`, and
   were left in place rather than deleted.
-- Files modified vs `3ad8f9f`: `weekend2-demo/harness.py` and this log only.
+- Files modified vs `3ad8f9f`: `demo/harness.py` and this log only.
   `surface_a.py`, `surface_b.py`, `calendar_world.py`, `tasks.py` untouched.
   Seed 1776 untouched. Not committed, not pushed.
 
@@ -531,7 +531,7 @@ import importlib.util, sys
 spec = importlib.util.spec_from_file_location("count_tokens", "02_count_tokens.py")
 ct = importlib.util.module_from_spec(spec); spec.loader.exec_module(ct)
 count, method = ct.build_counter()          # -> tiktoken:o200k_base
-sys.path.insert(0, "weekend2-demo")
+sys.path.insert(0, "demo")
 import surface_a, surface_b, harness
 count(ct.compact(surface_a.TOOLS))                                    # 1703
 count(ct.compact(harness.to_gemini_declarations(surface_a.TOOLS)[0]))  # 1667
@@ -579,7 +579,7 @@ count(ct.compact(harness.to_gemini_declarations(surface_b.TOOLS)[0]))  # 724
 
 ## 2026-08-15: Run-environment audit + offline plumbing check (no live runs)
 
-Human asked how to run `weekend2-demo/` and what to expect. Read-only audit plus
+Human asked how to run `demo/` and what to expect. Read-only audit plus
 mock runs. No live request was sent, no surface touched, no seed touched.
 
 ### Verified
@@ -600,7 +600,7 @@ mock runs. No live request was sent, no surface touched, no seed touched.
   resolves to `/opt/anaconda3/bin/python` (3.12.7), which has neither
   `anthropic` nor `google-genai`. `python3` resolves to `/usr/bin/python3`
   (3.9.6), which has both, installed into user site-packages. `AGENTS.md` and
-  `weekend2-demo/README.md` both say `python`. Not corrected — doc wording and
+  `demo/README.md` both say `python`. Not corrected — doc wording and
   whether to build a venv are the human's call. `.venv/` and `venv/` exist at
   the repo root but are both empty.
 - **`ANTHROPIC_API_KEY` is not set**, so the pinned default measured model
@@ -628,7 +628,7 @@ completion. **No summary table exists. No live A/B numbers were produced.**
   `RuntimeError: Cannot send a request, as the client has been closed`. Now the
   `Client` is held on the session. Provider plumbing only — it fires identically
   for Surface A and Surface B, touches no surface, no seed, no scoring.
-- `AGENTS.md` and `weekend2-demo/README.md`: `python`/`pip` -> `python3`/
+- `AGENTS.md` and `demo/README.md`: `python`/`pip` -> `python3`/
   `python3 -m pip`, with a note naming `/usr/bin/python3` as the interpreter
   holding the SDKs. Bare `pip` resolves to Anaconda's, same failure mode as
   bare `python`.
@@ -648,7 +648,7 @@ completion. **No summary table exists. No live A/B numbers were produced.**
 - **The grid never ran.** Two attempts died on the client bug before the fix;
   the post-fix attempt never launched because the agent's shell environment
   stopped returning exit statuses. No transcript from any live grid run exists.
-- **A mock transcript is now sitting in `weekend2-demo/transcripts/`:**
+- **A mock transcript is now sitting in `demo/transcripts/`:**
   `a_task1_1786777881.jsonl`, from a human-run `--variant a --task 1 --mock` in
   a separate terminal. Every number in it is a `MockClient` constant, not a
   measurement, and the folder is otherwise the live-evidence store. Left in
@@ -707,7 +707,7 @@ quoted as a measurement.
 ### Added: `--all --resume` (human-requested)
 Opt-in. Off by default, so a plain `--all` is still a single clean sitting.
 
-- Completed, scored runs are written to `weekend2-demo/runs/` as one JSON row
+- Completed, scored runs are written to `demo/runs/` as one JSON row
   each. `--resume` reuses them instead of re-spending quota; everything else
   is measured normally.
 - **Resume keys on a completed row, not on a transcript.** A transcript cannot
@@ -748,7 +748,7 @@ request.
 Surface A alone spent 13 tool calls across 6 turns on task 2 without finishing.
 A full 6x2 grid is on the order of 100+ requests. **The grid is roughly five
 times the entire daily free-tier allowance, so it cannot complete on this tier
-at any pacing.** Even the two clips the Sunday gate needs (task 3 on A and B)
+at any pacing.** Even the two hero clips the recording plan needs (task 3 on A and B)
 are ~18 requests, i.e. essentially the whole day's budget with nothing left for
 a retake.
 
@@ -780,7 +780,7 @@ boundary.
   server delay now floors to 5.0s.
 
 ### Failed / open
-- **Still zero completed live runs.** `weekend2-demo/runs/` is empty, no summary
+- **Still zero completed live runs.** `demo/runs/` is empty, no summary
   table has ever been produced, and there are still no live A/B numbers of any
   kind. Every token figure quoted anywhere so far is either a mock constant, an
   offline tokenizer count, or a partial from a killed run.
@@ -898,7 +898,7 @@ The standalone `spike_cursor_sdk.py` is gone; its behaviour now lives in
   *was* created before that (`a_task2_1786815481.jsonl`) and was deleted —
   it was an agent-made artefact from this session, not testimony.
 
-## 2026-08-15 (late morning): `--provider cursor` runs live. First live runs of the weekend.
+## 2026-08-15 (late morning): `--provider cursor` runs live. First live runs.
 
 Human supplied `CURSOR_API_KEY`. Three live runs of variant A / task 2, ~50s
 each. **These are verification runs, not measurements** — see the token finding
@@ -971,7 +971,7 @@ verification runs rather than a scored grid.
 ## 2026-08-15 (midday): FIRST COMPLETE GRID. Provider: cursor. Tokens NOT quotable.
 
 `--provider cursor --all --resume`, 12 runs, ~8.5 minutes, no quota trouble.
-Twelve rows cached in `weekend2-demo/runs/`. **Read the caveats before using
+Twelve rows cached in `demo/runs/`. **Read the caveats before using
 any number here.**
 
 ```
@@ -1021,7 +1021,7 @@ counterexamples, which is worth saying on stage.
   message on any run); none were *used* in any of the 12 runs.
 
 ### Docs updated (human-requested)
-`AGENTS.md` and `weekend2-demo/README.md` now carry the per-provider interpreter
+`AGENTS.md` and `demo/README.md` now carry the per-provider interpreter
 table instead of the stale "use python3" line.
 
 ## 2026-08-15: Tasks 9 and 10 added — PREDICTIONS REGISTERED BEFORE ANY RUN
@@ -1174,6 +1174,175 @@ is censored) are tasks 3, 4, 5, 7 and 8 — which read 20-vs-1, 10-vs-8, 19-vs-1
 16-vs-3 and 8-vs-9. Tasks 2 and 9 show Surface A failing outright. Token columns
 remain non-quotable on this provider for the reasons recorded above.
 
+## 2026-08-15: Transcripts now record tool OUTPUTS. The 503 is finally on record.
+
+Human asked for the per-run transcripts behind tasks 3, 5, 8 and 9 to write
+narration from, specifically the bare "503 Service Unavailable".
+
+### Found: no transcript in this repo had ever recorded a tool result
+`run()` wrote the model's response — the `tool_use` blocks — and never the
+value `surface.dispatch()` returned. True for every provider since the harness
+was written. A grep for "503" across all task-5 transcripts returned one hit,
+which was the digits inside `"cache_write_tokens": 29503`. So the error string
+Surface A is built to relay had **never been captured by any run that provoked
+it**, despite task 5 existing to provoke exactly that.
+
+### Fixed
+- `run()`: transcript write moved after dispatch, into `write_turn(resp,
+  results)`, so each turn's line now carries a `tool_results` array of
+  `{id, name, output}`. Lines written before this change simply lack the field.
+- `CursorSession.turns()`: tool_call events are now keyed by `call_id` and
+  updated in place when the SDK's `result` field arrives, since the event fires
+  repeatedly as status advances. Yields `tool_results` alongside `content`.
+- Mock path records outputs too, so `--mock` exercises the same shape.
+
+### Verified live — task 5 re-run on both surfaces
+```
+A  book_room        -> {"error": "503 Service Unavailable"}
+B  schedule_meeting -> {"scheduled": ..., "invites_sent": 2,
+                        "note": "Room Aurora booked."}
+```
+`a_task5_1786826112.jsonl` and `b_task5_1786826189.jsonl`. Both runs SUCCESS;
+A took 20 calls / 85,729 tokens, B took 1 call / 20,152.
+
+**Observation, not a change:** Surface B's retry loop sets a note reading
+"booked after one automatic retry (transient 503)" and then overwrites it with
+"booked." when the second attempt succeeds. So B's transcript carries no trace
+of the retry, and the model is never told the infrastructure failed. That is
+existing frozen-surface behaviour; left alone. It arguably strengthens the beat
+rather than weakening it.
+
+### Also delivered
+`MANIFEST.md` at the repo root: every deck artifact with path, row count and
+commit SHA, plus an explicit NOT AVAILABLE section covering `data/labels.csv`
+(never produced, no seed chosen), the methods note (still an unfilled
+template), the absent PDF, and the absence of any Anthropic-provider numbers.
+It also records that no "freeze" event exists anywhere in this repo —
+`results.csv` and `collect_log.csv` have simply been untouched since `8312ed0`.
+
+## 2026-08-15: THIRD SAMPLE. Reliability is the finding; token totals are not.
+
+`runs/` now appends one JSONL line per sample instead of overwriting, so repeats
+accumulate. Samples 1 and 2 were migrated in (sample 1 recovered from git
+`c9a3032`, sample 2 from the working tree) before sample 3 was run. The summary
+table now reports **medians across samples**, plus a spread column, a `!` on any
+cell whose verdict disagreed between samples, and a caution when the thinnest
+cell has fewer than 3.
+
+```
+task |   A ok  A med tok A cal  A spr |   B ok  B med tok B cal  B spr
+   2 |   1/3!     61,609   10†    43% |    3/3     17,297     1    16%
+   3 |   2/3!     81,568   17†    34% |    3/3     19,107     1    15%
+   4 |    3/3     90,552    10    48% |    3/3     53,689     7    60%
+   5 |    3/3    103,544    20    23% |    3/3     19,652     1    16%
+   7 |    3/3     82,908    16    30% |    3/3     35,279     3    15%
+   8 |    3/3     55,607     7    11% |    3/3     62,255     8    43%
+   9 |    0/3     64,714   13†    62% |    3/3     29,991     4    13%
+```
+
+### THE RESULT, and it is not a token count
+**Surface B completed 21 of 21 runs. Surface A completed 15 of 21 (71%).**
+Same model, same world, same seed, same prompts, three samples of seven tasks.
+This is reproducible, needs no tokenizer caveat, and survives everything that
+makes the token columns unusable.
+
+Per-sample verdicts for the cells that moved:
+```
+ a_task2: FAIL | OK   | FAIL     1/3
+ a_task3: OK   | OK   | FAIL     2/3   <- the hero task
+ a_task9: FAIL | FAIL | FAIL     0/3
+ b_task3: OK   | OK   | OK       3/3
+```
+
+### The hero task is not reliable, which matters for the clips
+**Task 3 — the cold open — failed on its third run.** Surface A succeeded twice
+and then did not. Any recording plan that assumes one take of `--variant a
+--task 3` will behave is wrong; budget for the run failing on camera, or pick
+the beat knowing it is 2-in-3.
+
+### Calls are stable; tokens are not
+Spread across samples, per cell:
+- **tokens: median 27%, max 62%**
+- **calls: median 3%, max 60%**
+
+Call counts barely move (a/2 was 10,10,10; a/9 13,13,12; b/3 1,1,1) while token
+totals swing by a quarter to two thirds. The call column is the robust
+measurement on this provider; the token column is not, independently of the
+scaffolding-floor problem already recorded.
+
+### Floor across three samples
+A: 5,473 -> 5,712 -> 6,286. B: 5,125 -> 5,364 -> 5,912. Difference: **348, 348,
+374**. The absolute floor drifted up ~15% across the day — Cursor's own prompt
+is not constant — while the A-minus-B catalog difference stayed within 7%. The
+difference is the reproducible part; the absolute floor is not.
+
+### Open
+- Floor records still overwrite rather than append; the three values above are
+  only recoverable from this log and git history.
+- Three samples is enough to show the numbers move, not enough to publish an
+  interval. The reliability figure (15/21 vs 21/21) is the claim that currently
+  has support.
+
+## 2026-08-15: SECOND SAMPLE. Single-run cells are not stable; one verdict flipped.
+
+Re-ran the whole grid fresh (`--all`, no `--resume`, so nothing was replayed)
+plus the floor. Sample 1 is preserved in git at `c9a3032`; `runs/` now holds
+sample 2, since the cache stores only the latest run per cell.
+
+```
+   cell   ok 1   ok 2 | calls1 calls2 |     tok1     tok2    delta
+    a/2  False   True |     10     10 |   61,609   51,462     -16%  <-- FLIPPED
+    a/3   True   True |     20     17 |   95,607   81,568     -15%
+    a/4   True   True |     10     10 |   65,107   90,552      39%
+    a/5   True   True |     19     20 |  103,544  107,145       3%
+    a/7   True   True |     16     16 |   70,740   91,989      30%
+    a/8   True   True |      8      7 |   55,607   55,022      -1%
+    a/9  False  False |     13     13 |   64,714   45,382     -30%
+    b/2   True   True |      1      1 |   17,245   17,297       0%
+    b/3   True   True |      1      1 |   19,107   17,528      -8%
+    b/4   True   True |      8      5 |   53,689   36,134     -33%
+    b/5   True   True |      1      1 |   17,359   19,652      13%
+    b/7   True   True |      3      3 |   35,279   36,031       2%
+    b/8   True   True |      9      7 |   54,160   62,255      15%
+    b/9   True   True |      4      4 |   28,748   29,991       4%
+```
+(`a/10`, `b/10` show 0% because task 10 is excluded from the grid and was not
+re-run; those cached rows are stale sample-1 values.)
+
+### What did not reproduce — this is the important one
+**Task 2, Surface A flipped from FAIL to SUCCESS.** The finding reported this
+morning — Surface A creating a meeting without its attendee and declaring
+success — happened in sample 1 and did **not** happen in sample 2. On the
+evidence available it is a behaviour Surface A *can* produce, observed once in
+two attempts. It must not be stated as what Surface A does.
+
+### What did reproduce
+- **Task 9, Surface A failed both times** (13 calls both times). The stronger of
+  the two failure findings; sample 1's transcript showed the invented `evt_206`.
+- **Task 8 does not favour B**: calls were 8-vs-9 then 7-vs-7. The registered
+  counterexample holds.
+- **The floor difference is exactly 348 tokens in both samples.** The absolute
+  floor moved uniformly (+239 on both surfaces: A 5,473->5,712, B
+  5,125->5,364), so the base shifted while the catalog delta stayed identical.
+  The catalog cost is the reproducible part of that measurement.
+
+### Magnitude of the noise
+Token totals moved by a **median of 13% and up to 39%** per cell between two
+runs of an identical configuration — same model, same seed, same surfaces, same
+prompts. Call counts moved too (a/3 20->17, b/4 8->5, b/8 9->7).
+
+**Consequence: no single-cell number in this grid should be quoted as a point
+estimate, and no per-row claim should rest on one run.** The large ordering
+results survive — A takes many more calls than B on tasks 2, 3, 5 in both
+samples — but the specific figures do not.
+
+### Open
+- `runs/` stores one row per cell, so re-running overwrites the previous sample.
+  Keeping N>1 needs a different storage scheme (e.g. append-per-sample plus a
+  median across samples). Not built; flagged for the human.
+- Two samples cannot give a variance estimate worth publishing. Three or more
+  would be the minimum for any per-row claim.
+
 ## 2026-08-15: Ruling REVERSED — state the floor, do not subtract it. Floor measured.
 
 Human reversed the subtraction decision recorded below: "state the floor rather
@@ -1276,3 +1445,28 @@ months before any SDK was installed for this project, so this is pre-existing
 and not caused by the demo. Consequence: **`03_make_charts.py` currently runs on
 neither interpreter** — matplotlib is missing on 3.9.6 and segfaults on 3.12.7.
 The PNGs in `charts/` date from 2026-08-09 and cannot presently be regenerated.
+
+## 2026-08-26: Public-share prep — rename demo dir, drop sprint language
+
+### Applied
+- Renamed `weekend2-demo/` → `demo/` (`git mv -k`; the already-deleted `.json`
+  run rows stayed as deletions, the current `.jsonl` rows moved as untracked).
+- Rewrote path and sprint wording in `AGENTS.md`, `demo/README.md`,
+  `04_cover_charge.py`, `03_make_charts.py`, `01_collect_catalogs.py`,
+  `data_dictionary.md`, `methods_note_template.md`, `wrapper_checklist.md`,
+  `.cursor/rules/demo-fairness.mdc`, `MANIFEST.md`, and this log. Historical
+  log entries now point at `demo/` so a public clone matches the tree.
+- Added a root `README.md` and `.env.example`. Removed the personal canvas
+  path from `MANIFEST.md`.
+
+### Left alone, deliberately
+- `data/raw/` — two catalogs mention "weekend" inside third-party tool
+  descriptions. Testimony; not edited.
+- Calendar-world "Sunday meetings" in this log (task-6 exclusion) — domain
+  content, not sprint language.
+- No `LICENSE` added. Copyright choice is human territory.
+- Methods-note placeholders still unfilled (rule 3).
+
+### Verified
+- Repo-wide search for `weekend` / `weekend1` / `weekend2` outside `data/raw/`
+  hits only this entry and the README note about those two raw files.

@@ -1,6 +1,6 @@
 # Data Dictionary — one row per measured server in `data/results.csv`
 
-Written before collection, frozen for the weekend. If a field must change, note it
+Written before collection and frozen. If a field must change, note it
 in the methods note.
 
 | Field | Type | Definition | How collected |

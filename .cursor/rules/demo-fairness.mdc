@@ -1,6 +1,6 @@
 ---
 description: Fairness doctrine for the demo surfaces - the credibility of the talk depends on these
-globs: ["weekend2-demo/**"]
+globs: ["demo/**"]
 alwaysApply: false
 ---
 

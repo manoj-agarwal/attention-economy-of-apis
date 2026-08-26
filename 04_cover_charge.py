@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tokenizer-true cover charge for the two weekend-2 demo surfaces.
+"""Tokenizer-true cover charge for the two demo surfaces.
 
 Usage: python 04_cover_charge.py
 Outputs: stdout only. Writes nothing.
@@ -21,7 +21,7 @@ HERE = Path(__file__).resolve().parent
 COUNTER_SRC = HERE / "02_count_tokens.py"
 RESULTS = HERE / "data" / "results.csv"
 RAW = HERE / "data" / "raw"
-SURFACE_DIR = HERE / "weekend2-demo"
+SURFACE_DIR = HERE / "demo"
 
 # The sensitivity adjustment models only these schema-internal keys.
 ENVELOPE_KEYS = {"$schema": "http://json-schema.org/draft-07/schema#",

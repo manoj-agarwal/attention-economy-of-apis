@@ -262,7 +262,7 @@ def main():
     print(f"\nDone. collected={ok} failed={fail} skipped_no_remote={skipped} resumed={resumed}")
     print(f"Raw catalogs in {RAW_DIR}/, full log in {LOG_PATH}")
     if ok < 100:
-        print("CHECKPOINT: under 100 catalogs — remember the Saturday-lunch pivot rule.")
+        print("CHECKPOINT: under 100 catalogs — below the intended collection floor.")
 
 
 if __name__ == "__main__":

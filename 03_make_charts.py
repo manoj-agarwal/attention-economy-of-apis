@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draw the two weekend-1 histograms from data/results.csv.
+"""Draw the catalog-cost and tool-count histograms from data/results.csv.
 
 Usage: python 03_make_charts.py
 Outputs: charts/catalog_cost_hist.png, charts/tool_count_hist.png

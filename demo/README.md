@@ -1,4 +1,4 @@
-# Weekend 2 Starter Kit — The Demo Pair
+# Demo pair — two surfaces, one calendar world
 
 **Goal:** the same agent, the same simulated calendar world, the same tasks — through
 two different tool surfaces:
@@ -8,7 +8,7 @@ two different tool surfaces:
 
 You record the difference. The token meter is the show.
 
-## Two AIs are in play this weekend — don't conflate them
+## Two AIs are in play — don't conflate them
 
 1. **The editor's agent (Cursor):** writes and fixes code in this repo. Pick any
    model you like in Cursor's model picker; it is a construction worker, not a
@@ -71,7 +71,7 @@ matters most: **the surfaces are frozen** — fixes may touch `harness.py`,
 `tasks.py` checks, and world plumbing, but any change to either surface's tools,
 descriptions, schemas, or dispatch needs your explicit approval first.
 
-Saturday shakedown prompt (Agent mode):
+Plumbing prompt (Agent mode):
 
 ```
 Run harness.py --variant a --task 1 and --variant b --task 1 live. If a success
@@ -111,7 +111,7 @@ BUILDLOG.md with today's date, flag any task where A succeeded and B failed
 2. The backend is simulated and seeded; interface shapes mirror real calendar APIs.
 3. Both surfaces, all transcripts, and this doctrine are published. Re-run me.
 
-## Recording (Sunday)
+## Recording
 
 - Record from a **plain terminal window**, not the editor's embedded panel — the
   frame should contain the meter and nothing else. 22pt+ font, dark theme,
@@ -121,9 +121,3 @@ BUILDLOG.md with today's date, flag any task where A succeeded and B failed
 - Clip 2 (payoff): `--variant b --task 3`.
 - Also capture: the final table from `--all` for the summary slide, and one
   `--variant a --task 5` run for the error-tax beat if it lands well.
-
-## The gate
-
-Two usable clips plus the 6x2 table by Sunday dinner — or the fallback cold open
-(corpus findings + a real public GitHub-issue failure) goes in the talk instead.
-Footage first, polish never before Sunday.

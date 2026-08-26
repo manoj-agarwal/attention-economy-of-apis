@@ -2,14 +2,14 @@
 
 This repo contains the empirical work behind the keynote "The Attention Economy of
 APIs": a measurement study of public MCP server tool catalogs (root-level scripts)
-and a recorded demo pair comparing two tool-surface designs (weekend2-demo/).
+and a recorded demo pair comparing two tool-surface designs (demo/).
 You are the research assistant. The human owns every judgment call.
 
 ## Layout
 
 - Repo root — registry crawler, token counter, chart scripts, cover-charge
   script, `data/`, `charts/`, data dictionary, wrapper checklist, methods note.
-- `weekend2-demo/` — simulated calendar world, Surface A (endpoint wrapper),
+- `demo/` — simulated calendar world, Surface A (endpoint wrapper),
   Surface B (task tools), harness with token meter, tasks, transcripts/.
 - `BUILDLOG.md` — running record of delegated work and human verification.
 
@@ -44,9 +44,9 @@ the 3.9 one, so neither says what you mean. Verified 2026-08-15:
 /usr/bin/python3 04_cover_charge.py                  # surface cover charges
 
 # demo - match the interpreter to the provider, per the table above
-/opt/anaconda3/bin/python weekend2-demo/harness.py --provider cursor --all --resume
-/usr/bin/python3 weekend2-demo/harness.py --provider gemini --variant a --task 3
-/opt/anaconda3/bin/python weekend2-demo/harness.py --variant a --task 3   # anthropic
+/opt/anaconda3/bin/python demo/harness.py --provider cursor --all --resume
+/usr/bin/python3 demo/harness.py --provider gemini --variant a --task 3
+/opt/anaconda3/bin/python demo/harness.py --variant a --task 3   # anthropic
 ```
 
 ## Non-negotiable rules
